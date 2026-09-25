@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_atlas" inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[@name='div_origin']" position="before">
+            <div t-if="o.atlas_irsaliye_no" class="col col-3 mw-100 mb-2" name="div_atlas_irsaliye">
+                <strong>İrsaliye No</strong>
+                <div t-field="o.atlas_irsaliye_no" class="m-0"/>
+            </div>
+            <div t-if="o.atlas_fiili_sevk_tarihi" class="col col-3 mw-100 mb-2" name="div_atlas_sevk_tarihi">
+                <strong>Fiili Sevk Tarihi</strong>
+                <div t-field="o.atlas_fiili_sevk_tarihi" class="m-0"/>
+            </div>
+            <div t-if="o.atlas_arac_plaka" class="col col-3 mw-100 mb-2" name="div_atlas_arac">
+                <strong>Araç / Şoför</strong>
+                <div class="m-0"><span t-field="o.atlas_arac_plaka"/> <span t-if="o.atlas_dorse_plaka" t-field="o.atlas_dorse_plaka"/></div>
+                <div t-if="o.atlas_sofor_adi" t-field="o.atlas_sofor_adi" class="m-0"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

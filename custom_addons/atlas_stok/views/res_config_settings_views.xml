@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_atlas_stok" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.atlas.stok</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="default_accounts" position="before">
+                <block title="Stok Muhasebesi" id="atlas_stok_muhasebesi">
+                    <setting string="Maliyet Yöntemi" company_dependent="1"
+                             help="Stok çıkışlarının maliyeti. Ürün kategorisinde farklı bir yöntem seçilebilir.">
+                        <field name="atlas_cost_method" widget="radio"/>
+                    </setting>
+                    <setting string="Envanter Yöntemi" company_dependent="1"
+                             help="Aralıklı: alışlar stok hesabına, maliyet dönem sonu stok kapanışında. Sürekli: her stok hareketinde muhasebe kaydı.">
+                        <field name="atlas_inventory_valuation" widget="radio"/>
+                        <div class="content-group mt-2" invisible="atlas_inventory_valuation != 'periodic'">
+                            <div class="row">
+                                <label for="atlas_inventory_period" string="Otomatik Kapanış" class="col-lg-4 o_light_label"/>
+                                <field name="atlas_inventory_period"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Varsayılan Stok Hesabı" company_dependent="1"
+                             help="Kategorisinde stok hesabı tanımlı olmayan ürünler için.">
+                        <field name="atlas_stock_valuation_account_id" options="{'no_create': True}"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_stok_kapanis" name="Stok Kapanışı (Aralıklı Envanter)" parent="atlas_donem.menu_atlas_donem_root"
+              action="action_atlas_stok_kapanis" sequence="5" groups="account.group_account_manager"/>
+</odoo>

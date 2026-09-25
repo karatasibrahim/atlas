@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_atlas_irsaliye" model="ir.ui.view">
+        <field name="name">stock.picking.form.atlas.irsaliye</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="atlas_irsaliye_no" invisible="picking_type_code != 'outgoing'"/>
+                <field name="atlas_seri_id" invisible="picking_type_code != 'outgoing'" readonly="atlas_irsaliye_no"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="atlas_tedarikci_irsaliye_no" invisible="picking_type_code != 'incoming'"/>
+            </field>
+            <page name="extra" position="before">
+                <page string="Sevk Bilgileri" name="atlas_sevk" invisible="picking_type_code != 'outgoing'">
+                    <group>
+                        <group>
+                            <field name="atlas_fiili_sevk_tarihi"/>
+                            <field name="atlas_arac_plaka"/>
+                            <field name="atlas_dorse_plaka"/>
+                        </group>
+                        <group>
+                            <field name="atlas_sofor_adi"/>
+                            <field name="atlas_sofor_tckn"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record id="vpicktree_atlas_irsaliye" model="ir.ui.view">
+        <field name="name">stock.picking.list.atlas.irsaliye</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="atlas_irsaliye_no" optional="show"/>
+                <field name="atlas_tedarikci_irsaliye_no" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_picking_search_atlas_irsaliye" model="ir.ui.view">
+        <field name="name">stock.picking.search.atlas.irsaliye</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="atlas_irsaliye_no"/>
+                <field name="atlas_tedarikci_irsaliye_no"/>
+            </field>
+        </field>
+    </record>
+</odoo>
