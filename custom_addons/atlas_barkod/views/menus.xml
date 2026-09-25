@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_atlas_barkod_app" model="ir.actions.client">
+        <field name="name">Barkod</field>
+        <field name="tag">atlas_barkod.app</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <menuitem id="menu_atlas_barkod_root" name="Barkod" action="action_atlas_barkod_app"
+              web_icon="atlas_barkod,static/description/icon.png" sequence="40"
+              groups="stock.group_stock_user,mrp.group_mrp_user"/>
+</odoo>

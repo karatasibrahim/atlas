@@ -1,0 +1,38 @@
+.o_atlas_barkod {
+    background-color: $o-view-background-color;
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+
+    .o_atlas_barkod_header {
+        background-color: #215aa0;
+        color: #fff;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem) !important;
+    }
+
+    .o_atlas_barkod_scanbar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background-color: $o-view-background-color;
+        border-bottom: 1px solid $border-color;
+    }
+
+    .o_atlas_barkod_qty {
+        max-width: 5.5rem;
+    }
+
+    .o_atlas_barkod_tile {
+        min-height: 8.5rem;
+        border-radius: 0.75rem;
+    }
+
+    .o_atlas_barkod_msg {
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .list-group-item {
+        font-size: 0.95rem;
+    }
+}

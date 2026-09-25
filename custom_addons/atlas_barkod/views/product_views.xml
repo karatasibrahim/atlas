@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_category_form_view_atlas_takip" model="ir.ui.view">
+        <field name="name">product.category.form.atlas.takip</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="atlas_varsayilan_takip"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_production_lot_form_atlas_qr" model="ir.ui.view">
+        <field name="name">stock.lot.form.atlas.qr</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="atlas_qr" readonly="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>

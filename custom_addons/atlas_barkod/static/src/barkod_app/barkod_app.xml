@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="atlas_barkod.App">
+        <div class="o_action o_atlas_barkod d-flex flex-column h-100">
+            <!-- Üst çubuk -->
+            <header class="o_atlas_barkod_header d-flex align-items-center gap-2 px-3 py-2">
+                <button t-if="this.state.ekran !== 'ana'" class="btn btn-link text-white p-0 fs-4" t-on-click="() => this.geri()" title="Geri">
+                    <i class="oi" data-icon="arrow_back"/>
+                </button>
+                <div class="flex-grow-1 text-truncate">
+                    <div class="fw-bold">
+                        <t t-if="this.state.ekran === 'ana'">Atlas Barkod</t>
+                        <t t-elif="this.state.ekran === 'belge'" t-out="this.state.belge.ad"/>
+                        <t t-elif="this.state.ekran === 'bilgi'">Okutulan Kod</t>
+                        <t t-else="" t-out="this.islemAdi"/>
+                    </div>
+                    <div class="small opacity-75 text-truncate" t-if="this.state.ekran === 'belge'" t-out="this.islemAdi + (this.state.belge.cari ? ' · ' + this.state.belge.cari : '')"/>
+                    <div class="small opacity-75" t-if="this.state.ekran === 'ana'" t-out="this.state.ozet.kullanici"/>
+                </div>
+                <span t-if="this.state.yukleniyor" class="spinner-border spinner-border-sm"/>
+                <button t-if="this.state.ekran === 'ana'" class="btn btn-link text-white p-0" t-on-click="() => this.cikis()" title="Odoo'ya dön">
+                    <i class="oi fs-4" data-icon="logout"/>
+                </button>
+            </header>
+
+            <!-- Okutma çubuğu: her ekranda -->
+            <div class="o_atlas_barkod_scanbar d-flex gap-2 p-2">
+                <button t-if="this.kameraVar" class="btn btn-primary btn-lg flex-shrink-0" t-on-click="() => this.kameraAc()" title="Kamerayla okut">
+                    <i class="oi" data-icon="photo_camera"/>
+                </button>
+                <input t-ref="this.kodInputRef" class="form-control form-control-lg" type="text" autocomplete="off"
+                       placeholder="Barkod / QR okutun veya yazın" t-on-keydown="(ev) => this.inputTus(ev)"/>
+                <input t-if="this.state.ekran === 'belge'" class="form-control form-control-lg o_atlas_barkod_qty" type="number"
+                       min="0" step="any" t-att-value="this.state.miktar" t-on-change="(ev) => this.miktarDegisti(ev)" title="Miktar"/>
+            </div>
+
+            <!-- Bildirim -->
+            <div t-if="this.state.mesaj" t-attf-class="o_atlas_barkod_msg mx-2 mb-2 px-3 py-2 rounded {{ this.state.mesajTip === 'hata' ? 'bg-danger' : this.state.mesajTip === 'uyari' ? 'bg-warning' : 'bg-success' }} text-white"
+                 t-on-click="() => this.mesajKapat()">
+                <t t-out="this.state.mesaj"/>
+            </div>
+
+            <main class="flex-grow-1 overflow-auto px-2 pb-4">
+
+                <!-- Ana ekran -->
+                <t t-if="this.state.ekran === 'ana'">
+                    <div class="row g-2">
+                        <t t-foreach="this.islemAnahtarlari" t-as="key" t-key="key">
+                            <div class="col-6">
+                                <button t-attf-class="btn btn-{{ this.islemler[key].renk }} w-100 o_atlas_barkod_tile" t-on-click="() => this.islemSec(key)">
+                                    <i class="oi oi-2x d-block mb-2" t-att-data-icon="this.islemler[key].ikon"/>
+                                    <div class="fw-bold" t-out="this.islemler[key].ad"/>
+                                    <span t-if="this.state.ozet[key] !== undefined" class="badge text-bg-light mt-1" t-out="this.state.ozet[key] + ' bekleyen'"/>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                    <p class="text-muted small mt-3 text-center">
+                        Herhangi bir ürün, seri, lokasyon, irsaliye veya üretim emri kodunu okutarak bilgisine ulaşabilirsiniz.
+                    </p>
+                </t>
+
+                <!-- Liste -->
+                <t t-elif="this.state.ekran === 'liste'">
+                    <input class="form-control mb-2" type="search" placeholder="Ara..." t-att-value="this.state.arama"
+                           t-on-change="(ev) => this.aramaDegisti(ev)"/>
+                    <div t-if="!this.state.liste.length" class="text-muted text-center py-4">Bekleyen belge yok.</div>
+                    <div class="list-group">
+                        <t t-foreach="this.state.liste" t-as="kayit" t-key="kayit.id">
+                            <button class="list-group-item list-group-item-action py-3" t-on-click="() => this.belgeAc(kayit.id)">
+                                <div class="d-flex justify-content-between">
+                                    <span class="fw-bold" t-out="kayit.ad"/>
+                                    <span class="small text-muted" t-out="kayit.tarih"/>
+                                </div>
+                                <div class="small" t-out="kayit.alt"/>
+                                <div class="small text-muted" t-out="kayit.bilgi"/>
+                            </button>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- Belge -->
+                <t t-elif="this.state.ekran === 'belge'">
+                    <t t-set="belge" t-value="this.state.belge"/>
+                    <div class="d-flex justify-content-between align-items-center small text-muted mb-2">
+                        <span><i class="oi" data-icon="location_on"/> <t t-out="belge.lokasyon"/></span>
+                        <span t-out="this.ilerleme.tamam + ' / ' + this.ilerleme.toplam"/>
+                    </div>
+
+                    <!-- Üretim: mamul -->
+                    <div t-if="this.state.islem === 'uretim'" class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="fw-bold" t-out="belge.mamul.urun.ad"/>
+                            <div class="small">Üretilecek: <t t-out="belge.mamul.miktar"/> <t t-out="belge.mamul.birim"/></div>
+                            <div t-if="belge.mamul.seriler.length" class="small">Seriler: <t t-out="belge.mamul.seriler.join(', ')"/></div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button t-if="belge.mamul.urun.takip !== 'none'" class="btn btn-sm btn-outline-primary" t-on-click="() => this.seriUret(false)">
+                                    <i class="oi" data-icon="wand_stars"/> Mamul Serisi Üret
+                                </button>
+                                <button t-if="belge.mamul.seri_ids.length" class="btn btn-sm btn-outline-secondary" t-on-click="() => this.etiketYazdir(belge.mamul.seri_ids)">
+                                    <i class="oi" data-icon="qr_code"/> Seri Etiketleri
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.uretimQrYazdir()">
+                                    <i class="oi" data-icon="print"/> Üretim Fişi (QR)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Satırlar -->
+                    <div class="list-group mb-3">
+                        <t t-foreach="belge.satirlar" t-as="satir" t-key="satir.move_id or satir.quant_id">
+                            <t t-if="this.state.islem === 'sayim'">
+                                <div t-attf-class="list-group-item {{ satir.sayilan !== null ? (satir.fark ? 'list-group-item-warning' : 'list-group-item-success') : '' }}">
+                                    <div class="fw-bold" t-out="satir.urun.ad"/>
+                                    <div t-if="satir.seri" class="small">Seri: <t t-out="satir.seri"/></div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span>Sistem: <t t-out="satir.sistem"/> <t t-out="satir.birim"/></span>
+                                        <span class="fw-bold">Sayılan: <t t-out="satir.sayilan === null ? '-' : satir.sayilan"/></span>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div t-attf-class="list-group-item {{ satir.tamam ? 'list-group-item-success' : satir.okutulan ? 'list-group-item-warning' : '' }}">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold" t-out="satir.urun.ad"/>
+                                        <span class="fw-bold text-nowrap" t-out="satir.okutulan + ' / ' + satir.istenen + ' ' + satir.birim"/>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <t t-out="satir.urun.barkod or satir.urun.kod"/>
+                                        <span t-if="satir.urun.takip === 'serial'" class="badge text-bg-secondary ms-1">Seri</span>
+                                        <span t-if="satir.urun.takip === 'lot'" class="badge text-bg-secondary ms-1">Lot</span>
+                                    </div>
+                                    <div t-if="satir.seriler.length" class="small text-break" t-out="satir.seriler.join(', ')"/>
+                                    <button t-if="this.state.islem === 'mal_kabul' and satir.urun.takip !== 'none' and !satir.tamam"
+                                            class="btn btn-sm btn-outline-primary mt-1" t-on-click="() => this.seriUret(satir)">
+                                        <i class="oi" data-icon="wand_stars"/> Seri Üret
+                                    </button>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+
+                    <button t-if="this.state.seriIds.length" class="btn btn-outline-secondary w-100 mb-2" t-on-click="() => this.etiketYazdir()">
+                        <i class="oi" data-icon="qr_code"/> Son Üretilen Seri Etiketlerini Yazdır (<t t-out="this.state.seriIds.length"/>)
+                    </button>
+
+                    <!-- Onay -->
+                    <div t-if="this.state.onay" class="card border-primary mb-2">
+                        <div class="card-body">
+                            <t t-if="this.state.islem === 'sayim'">
+                                <p class="mb-2">Sayılan miktarlar stoğa işlenecek.</p>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="atlas_sifirla" t-att-checked="this.state.sifirla" t-on-change="(ev) => this.sifirlaDegisti(ev)"/>
+                                    <label class="form-check-label" for="atlas_sifirla">Bu lokasyonda okutulmayanları sıfırla</label>
+                                </div>
+                                <button class="btn btn-primary w-100" t-on-click="() => this.dogrula(true)">Sayımı Uygula</button>
+                            </t>
+                            <t t-else="">
+                                <p class="mb-2">Okutulmayan / eksik kalan miktarlar için ne yapılsın?</p>
+                                <button class="btn btn-primary w-100 mb-2" t-on-click="() => this.dogrula(true)">Tamamla, kalanlar için yeni belge aç</button>
+                                <button class="btn btn-outline-danger w-100" t-on-click="() => this.dogrula(false)">Tamamla, kalanları iptal et</button>
+                            </t>
+                            <button class="btn btn-link w-100 mt-1" t-on-click="() => this.onayIptal()">Vazgeç</button>
+                        </div>
+                    </div>
+                    <button t-if="!this.state.onay" class="btn btn-success btn-lg w-100" t-on-click="() => this.dogrulaSor()">
+                        <i class="oi" data-icon="check"/>
+                        <t t-if="this.state.islem === 'uretim'"> Üretimi Tamamla</t>
+                        <t t-elif="this.state.islem === 'sayim'"> Sayımı Uygula</t>
+                        <t t-else=""> Doğrula</t>
+                    </button>
+                </t>
+
+                <!-- Bilgi -->
+                <t t-elif="this.state.ekran === 'bilgi'">
+                    <t t-set="bilgi" t-value="this.state.bilgi"/>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="small text-muted text-break" t-out="bilgi.kod"/>
+                            <t t-if="bilgi.urun">
+                                <h5 class="mt-2" t-out="bilgi.urun.ad"/>
+                                <div class="small">Kod: <t t-out="bilgi.urun.kod"/> · Barkod: <t t-out="bilgi.urun.barkod or '-'"/></div>
+                            </t>
+                            <div t-if="bilgi.seri" class="mt-1">Seri: <b t-out="bilgi.seri.ad"/></div>
+                            <div t-if="bilgi.lokasyon" class="mt-1">Lokasyon: <b t-out="bilgi.lokasyon.ad"/></div>
+                            <div t-if="bilgi.belge" class="mt-1">Belge: <b t-out="bilgi.belge.ad"/></div>
+                            <table t-if="bilgi.stok and bilgi.stok.length" class="table table-sm mt-2 mb-0">
+                                <thead><tr><th>Lokasyon</th><th>Seri</th><th class="text-end">Miktar</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="bilgi.stok" t-as="s" t-key="s_index">
+                                        <td t-out="s.lokasyon"/><td t-out="s.seri"/><td class="text-end" t-out="s.miktar"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div t-elif="bilgi.urun" class="small text-muted mt-2">Stokta yok.</div>
+                            <button t-if="bilgi.seri" class="btn btn-outline-secondary mt-2" t-on-click="() => this.etiketYazdir([bilgi.seri.id])">
+                                <i class="oi" data-icon="qr_code"/> Etiketi Yazdır
+                            </button>
+                        </div>
+                    </div>
+                </t>
+            </main>
+        </div>
+    </t>
+
+</templates>

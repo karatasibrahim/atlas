@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Seri / lot QR etiketi (60x40 mm, her seri bir sayfa) -->
+    <record id="action_report_seri_etiket" model="ir.actions.report">
+        <field name="name">Seri QR Etiketi</field>
+        <field name="model">stock.lot</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_barkod.report_seri_etiket</field>
+        <field name="paperformat_id" ref="paperformat_atlas_etiket"/>
+        <field name="print_report_name">'Etiket %s' % object.name</field>
+        <field name="binding_model_id" ref="stock.model_stock_lot"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_seri_etiket">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="lot">
+                <div class="page" style="page-break-after: always; font-family: Arial, sans-serif;">
+                    <table style="width: 100%; border: 0;">
+                        <tr>
+                            <td style="width: 36mm; vertical-align: top;">
+                                <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=300&amp;height=300' % quote_plus(lot.atlas_qr)"
+                                     style="width: 34mm; height: 34mm;"/>
+                            </td>
+                            <td style="vertical-align: top; font-size: 9pt; line-height: 1.25;">
+                                <div style="font-weight: bold;" t-out="lot.product_id.default_code or ''"/>
+                                <div t-out="lot.product_id.name"/>
+                                <div style="margin-top: 2mm; font-size: 8pt;">Seri No</div>
+                                <div style="font-weight: bold; font-size: 10pt; word-break: break-all;" t-out="lot.name"/>
+                                <div style="margin-top: 1mm; font-size: 7pt;" t-out="lot.create_date" t-options="{'widget': 'date'}"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Üretim emri çıktısında barkod yerine uygulamanın okuduğu QR -->
+    <template id="report_mrporder_atlas_qr" inherit_id="mrp.report_mrporder">
+        <xpath expr="//span[hasclass('top-barcode')]" position="replace">
+            <div class="text-end">
+                <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=200&amp;height=200' % quote_plus(o.atlas_qr)"
+                     style="width: 30mm; height: 30mm;"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
