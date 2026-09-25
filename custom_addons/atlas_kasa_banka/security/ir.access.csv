@@ -1,0 +1,13 @@
+id,name,model_id,group_id/id,operation,domain
+access_atlas_kasa_banka_hareket_invoice,atlas.kasa.banka.hareket invoice,atlas.kasa.banka.hareket,account.group_account_invoice,r,
+access_atlas_kasa_banka_hareket_readonly,atlas.kasa.banka.hareket readonly,atlas.kasa.banka.hareket,account.group_account_readonly,r,
+atlas_kasa_banka_hareket_comp_rule,Kasa/Banka hareketleri şirket kuralı,atlas.kasa.banka.hareket,,r,"[('company_id', 'in', company_ids)]"
+access_atlas_banka_kural_user,atlas.banka.kural user,atlas.banka.kural,account.group_account_user,r,
+access_atlas_banka_kural_manager,atlas.banka.kural manager,atlas.banka.kural,account.group_account_manager,crud,
+atlas_banka_kural_comp_rule,Banka kuralı şirket kuralı,atlas.banka.kural,,crud,"[('company_id', 'in', company_ids)]"
+access_atlas_banka_ekstre_sablon_user,atlas.banka.ekstre.sablon user,atlas.banka.ekstre.sablon,account.group_account_user,r,
+access_atlas_banka_ekstre_sablon_manager,atlas.banka.ekstre.sablon manager,atlas.banka.ekstre.sablon,account.group_account_manager,crud,
+access_atlas_virman_wizard,atlas.virman.wizard,atlas.virman.wizard,account.group_account_user,crud,
+access_atlas_banka_ekstre_import,atlas.banka.ekstre.import,atlas.banka.ekstre.import,account.group_account_user,crud,
+access_atlas_banka_user,atlas.banka user,atlas.banka,base.group_user,r,
+access_atlas_banka_manager,atlas.banka manager,atlas.banka,account.group_account_manager,crud,

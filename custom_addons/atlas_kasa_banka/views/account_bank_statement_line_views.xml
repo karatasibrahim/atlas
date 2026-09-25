@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_banka_eslestirme_list" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.list.atlas.eslestirme</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Banka Eşleştirme" editable="bottom" create="0" delete="0"
+                  decoration-muted="is_reconciled" default_order="date, id">
+                <header>
+                    <button name="action_atlas_oner" type="object" string="Öneri Oluştur"/>
+                    <button name="action_atlas_eslestir" type="object" string="Seçilenleri Eşleştir" class="btn-primary"/>
+                    <button name="action_atlas_geri_al" type="object" string="Eşleştirmeyi Geri Al"/>
+                </header>
+                <field name="date" readonly="1"/>
+                <field name="journal_id" optional="hide" readonly="1"/>
+                <field name="statement_id" optional="hide" readonly="1"/>
+                <field name="payment_ref" string="Açıklama" readonly="1"/>
+                <field name="atlas_referans" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+                <field name="amount" sum="Toplam" readonly="1" decoration-danger="amount &lt; 0"/>
+                <field name="atlas_ekstre_bakiye" optional="hide"/>
+                <field name="partner_id" readonly="is_reconciled" options="{'no_create': True}"/>
+                <field name="atlas_fatura_id" readonly="is_reconciled or not partner_id" options="{'no_create': True}" optional="show"/>
+                <field name="atlas_karsi_hesap_id" readonly="is_reconciled" options="{'no_create': True}"/>
+                <field name="atlas_bekleyen_line_id" readonly="1" optional="show"/>
+                <field name="atlas_oneri" optional="show"/>
+                <field name="is_reconciled" string="Eşleşti" widget="boolean" readonly="1"/>
+                <button name="action_atlas_eslestir" type="object" string="Eşleştir" icon="fa-link" invisible="is_reconciled"/>
+                <button name="action_atlas_geri_al" type="object" string="Geri Al" icon="fa-undo" invisible="not is_reconciled"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_banka_eslestirme_search" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.search.atlas.eslestirme</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="payment_ref" string="Açıklama"/>
+                <field name="partner_id"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <field name="amount"/>
+                <filter name="eslesmemis" string="Eşleşmemiş" domain="[('is_reconciled', '=', False)]"/>
+                <filter name="eslesmis" string="Eşleşmiş" domain="[('is_reconciled', '=', True)]"/>
+                <separator/>
+                <filter name="giris" string="Girişler" domain="[('amount', '&gt;', 0)]"/>
+                <filter name="cikis" string="Çıkışlar" domain="[('amount', '&lt;', 0)]"/>
+                <separator/>
+                <filter name="date" string="Tarih" date="date"/>
+                <group>
+                    <filter name="group_by_journal" string="Banka" context="{'group_by': 'journal_id'}"/>
+                    <filter name="group_by_statement" string="Ekstre" context="{'group_by': 'statement_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_banka_eslestirme" model="ir.actions.act_window">
+        <field name="name">Banka Eşleştirme</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('journal_id.type', '=', 'bank')]</field>
+        <field name="view_id" ref="view_atlas_banka_eslestirme_list"/>
+        <field name="search_view_id" ref="view_atlas_banka_eslestirme_search"/>
+        <field name="context">{'search_default_eslesmemis': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Eşleştirilecek banka hareketi yok</p>
+            <p>Banka ekstresini Excel olarak yükleyin; hareketler burada cari, fatura veya hesapla eşleştirilir.</p>
+        </field>
+    </record>
+</odoo>

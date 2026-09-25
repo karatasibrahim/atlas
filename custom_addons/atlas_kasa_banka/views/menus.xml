@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_kasa_banka_root" name="Kasa / Banka" parent="account.menu_finance" sequence="5"
+              groups="account.group_account_user">
+        <menuitem id="menu_atlas_kasa" name="Kasalar" action="action_atlas_kasa" sequence="10"/>
+        <menuitem id="menu_atlas_banka" name="Banka Hesapları" action="action_atlas_banka" sequence="20"/>
+        <menuitem id="menu_atlas_kasa_banka_hareket" name="Kasa / Banka Hareketleri" action="action_atlas_kasa_banka_hareket" sequence="30"/>
+        <menuitem id="menu_atlas_virman" name="Virman" action="action_atlas_virman_wizard" sequence="40"/>
+        <menuitem id="menu_atlas_ekstre_import" name="Banka Ekstresi Yükle" action="action_atlas_banka_ekstre_import" sequence="50"/>
+        <menuitem id="menu_atlas_banka_eslestirme" name="Banka Eşleştirme" action="action_atlas_banka_eslestirme" sequence="60"/>
+    </menuitem>
+
+    <menuitem id="menu_atlas_kasa_banka_config" name="Kasa / Banka" parent="account.menu_finance_configuration" sequence="16"
+              groups="account.group_account_manager">
+        <menuitem id="menu_atlas_banka_kural" name="Banka Eşleştirme Kuralları" action="action_atlas_banka_kural" sequence="10"/>
+        <menuitem id="menu_atlas_banka_ekstre_sablon" name="Banka Ekstre Şablonları" action="action_atlas_banka_ekstre_sablon" sequence="20"/>
+        <menuitem id="menu_atlas_bankalar" name="Bankalar" action="action_atlas_banka_liste" sequence="30"/>
+    </menuitem>
+</odoo>

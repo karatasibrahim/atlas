@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_banka_ekstre_sablon_list" model="ir.ui.view">
+        <field name="name">atlas.banka.ekstre.sablon.list</field>
+        <field name="model">atlas.banka.ekstre.sablon</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="banka_id"/>
+                <field name="baslik_satiri"/>
+                <field name="col_tarih"/>
+                <field name="col_tutar"/>
+                <field name="col_borc"/>
+                <field name="col_alacak"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_banka_ekstre_sablon_form" model="ir.ui.view">
+        <field name="name">atlas.banka.ekstre.sablon.form</field>
+        <field name="model">atlas.banka.ekstre.sablon</field>
+        <field name="arch" type="xml">
+            <form string="Banka Ekstre Şablonu">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="banka_id" options="{'no_create': True}"/>
+                            <field name="baslik_satiri"/>
+                            <field name="tarih_formati" placeholder="%d.%m.%Y"/>
+                            <field name="tutar_ters"/>
+                        </group>
+                        <group string="Sütunlar (harf veya başlık metni)">
+                            <field name="col_tarih" placeholder="otomatik"/>
+                            <field name="col_aciklama" placeholder="otomatik"/>
+                            <field name="col_tutar" placeholder="otomatik"/>
+                            <field name="col_borc" placeholder="otomatik"/>
+                            <field name="col_alacak" placeholder="otomatik"/>
+                            <field name="col_bakiye" placeholder="otomatik"/>
+                            <field name="col_referans" placeholder="otomatik"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        Boş bırakılan alanlar Excel başlıklarından otomatik bulunur (Tarih, Açıklama, Tutar, Borç, Alacak, Bakiye, Dekont No).
+                        Yalnızca otomatik algılamanın tutmadığı bankalar için doldurun.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_atlas_banka_list" model="ir.ui.view">
+        <field name="name">atlas.banka.list</field>
+        <field name="model">atlas.banka</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="eft_kodu"/>
+                <field name="name"/>
+                <field name="bic"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_banka_liste" model="ir.actions.act_window">
+        <field name="name">Bankalar</field>
+        <field name="res_model">atlas.banka</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record id="action_atlas_banka_ekstre_sablon" model="ir.actions.act_window">
+        <field name="name">Banka Ekstre Şablonları</field>
+        <field name="res_model">atlas.banka.ekstre.sablon</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

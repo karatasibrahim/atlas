@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_banka_kural_list" model="ir.ui.view">
+        <field name="name">atlas.banka.kural.list</field>
+        <field name="model">atlas.banka.kural</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="yon"/>
+                <field name="journal_id" options="{'no_create': True}"/>
+                <field name="account_id" options="{'no_create': True}"/>
+                <field name="partner_id" options="{'no_create': True}"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_banka_kural" model="ir.actions.act_window">
+        <field name="name">Banka Eşleştirme Kuralları</field>
+        <field name="res_model">atlas.banka.kural</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Eşleştirme kuralı ekleyin</p>
+            <p>Ekstre açıklamasında geçen kelimeye göre (ör. MASRAF, BSMV, FAİZ) karşı hesap önerilir.</p>
+        </field>
+    </record>
+</odoo>
