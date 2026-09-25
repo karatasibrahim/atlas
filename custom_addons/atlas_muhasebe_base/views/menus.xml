@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_currency_rates"
+              name="Döviz Kurları"
+              parent="account.account_account_menu"
+              action="base.act_view_currency_rates"
+              groups="account.group_account_manager"
+              sequence="20"/>
+    <menuitem id="menu_atlas_tcmb_rate_wizard"
+              name="TCMB Geçmiş Kur Çekme"
+              parent="account.account_account_menu"
+              action="action_atlas_tcmb_rate_wizard"
+              groups="account.group_account_manager"
+              sequence="21"/>
+</odoo>

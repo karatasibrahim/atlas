@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_currency_rate_tree_atlas" model="ir.ui.view">
+        <field name="name">res.currency.rate.list.atlas</field>
+        <field name="model">res.currency.rate</field>
+        <field name="inherit_id" ref="base.view_currency_rate_tree"/>
+        <field name="arch" type="xml">
+            <field name="rate" position="after">
+                <field name="atlas_forex_buying" optional="show"/>
+                <field name="atlas_forex_selling" optional="show"/>
+                <field name="atlas_banknote_buying" optional="hide"/>
+                <field name="atlas_banknote_selling" optional="hide"/>
+                <field name="atlas_bulletin_date" optional="show"/>
+                <field name="atlas_source" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

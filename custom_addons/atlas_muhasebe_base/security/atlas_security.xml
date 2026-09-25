@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Community sürümünde tam muhasebe özellikleri (yevmiye kayıtları, mizan, mutabakat...)
+        account.group_account_user grubuna bağlı ve kullanıcı formunda seçilemiyor.
+        Muhasebe yetki seviyeleri: Faturalama < Muhasebeci < Yönetici
+    -->
+    <record id="group_atlas_accountant" model="res.groups">
+        <field name="name">Muhasebeci</field>
+        <field name="sequence">30</field>
+        <field name="comment">Yevmiye fişleri, cari/banka hareketleri ve muhasebe raporları. Ayarlara erişemez.</field>
+        <field name="privilege_id" ref="account.res_groups_privilege_accounting"/>
+        <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+    </record>
+
+    <record id="account.group_account_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_atlas_accountant'))]"/>
+    </record>
+</odoo>
