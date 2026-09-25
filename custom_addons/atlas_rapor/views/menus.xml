@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_atlas_rapor_mizan" model="ir.actions.act_window">
+        <field name="name">Mizan</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'mizan'}</field>
+    </record>
+    <record id="action_atlas_rapor_muavin" model="ir.actions.act_window">
+        <field name="name">Büyük Defter (Muavin)</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'muavin'}</field>
+    </record>
+    <record id="action_atlas_rapor_yevmiye" model="ir.actions.act_window">
+        <field name="name">Yevmiye Defteri</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'yevmiye'}</field>
+    </record>
+    <record id="action_atlas_rapor_bilanco" model="ir.actions.act_window">
+        <field name="name">Bilanço</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'bilanco', 'default_seviye': '2'}</field>
+    </record>
+    <record id="action_atlas_rapor_gelir" model="ir.actions.act_window">
+        <field name="name">Gelir Tablosu</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'gelir'}</field>
+    </record>
+    <record id="action_atlas_rapor_yaslandirma" model="ir.actions.act_window">
+        <field name="name">Cari Yaşlandırma</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'yaslandirma'}</field>
+    </record>
+    <record id="action_atlas_rapor_kdv" model="ir.actions.act_window">
+        <field name="name">KDV Özeti</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'kdv'}</field>
+    </record>
+
+    <menuitem id="menu_atlas_rapor_root" name="Muhasebe Raporları" parent="account.menu_finance_reports" sequence="1"
+              groups="account.group_account_readonly,account.group_account_invoice">
+        <menuitem id="menu_atlas_rapor_mizan" name="Mizan" action="action_atlas_rapor_mizan" sequence="10"/>
+        <menuitem id="menu_atlas_rapor_muavin" name="Büyük Defter (Muavin)" action="action_atlas_rapor_muavin" sequence="20"/>
+        <menuitem id="menu_atlas_rapor_yevmiye" name="Yevmiye Defteri" action="action_atlas_rapor_yevmiye" sequence="30"/>
+        <menuitem id="menu_atlas_rapor_bilanco" name="Bilanço" action="action_atlas_rapor_bilanco" sequence="40"/>
+        <menuitem id="menu_atlas_rapor_gelir" name="Gelir Tablosu" action="action_atlas_rapor_gelir" sequence="50"/>
+        <menuitem id="menu_atlas_rapor_yaslandirma" name="Cari Yaşlandırma" action="action_atlas_rapor_yaslandirma" sequence="60"/>
+        <menuitem id="menu_atlas_rapor_kdv" name="KDV Özeti" action="action_atlas_rapor_kdv" sequence="70"/>
+    </menuitem>
+</odoo>

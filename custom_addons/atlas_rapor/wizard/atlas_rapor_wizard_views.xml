@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_rapor_wizard_form" model="ir.ui.view">
+        <field name="name">atlas.rapor.wizard.form</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Muhasebe Raporu">
+                <group>
+                    <group>
+                        <field name="rapor_turu" invisible="context.get('default_rapor_turu')"/>
+                        <field name="date_from" invisible="rapor_turu in ('bilanco', 'yaslandirma')"
+                               required="rapor_turu not in ('bilanco', 'yaslandirma')"/>
+                        <field name="date_to" string="Bitiş / Tarih"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="seviye" invisible="rapor_turu not in ('mizan', 'bilanco')"/>
+                        <field name="hesap_baslangic" invisible="rapor_turu not in ('mizan', 'muavin')"/>
+                        <field name="hesap_bitis" invisible="rapor_turu not in ('mizan', 'muavin')"/>
+                        <field name="cari_tipi" invisible="rapor_turu != 'yaslandirma'" widget="radio"/>
+                        <field name="partner_ids" widget="many2many_tags" invisible="rapor_turu not in ('muavin', 'yaslandirma')"
+                               options="{'no_create': True}"/>
+                        <field name="yansitma_dahil" invisible="rapor_turu != 'gelir'"/>
+                        <field name="sadece_hareketli"/>
+                        <field name="taslak_dahil" invisible="rapor_turu == 'yaslandirma'"/>
+                        <field name="kapanis_haric" invisible="rapor_turu not in ('mizan', 'bilanco', 'gelir')"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_html" type="object" string="Ekranda Göster" class="btn-primary" icon="fa-eye"/>
+                    <button name="action_pdf" type="object" string="PDF" icon="fa-file-pdf-o"/>
+                    <button name="action_xlsx" type="object" string="Excel" icon="fa-file-excel-o"/>
+                    <button string="Kapat" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_atlas_a4_landscape" model="report.paperformat">
+        <field name="name">A4 Yatay (Atlas)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">25</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_spacing">20</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_atlas_rapor_html" model="ir.actions.report">
+        <field name="name">Muhasebe Raporu (Ekran)</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">atlas_rapor.report_atlas_rapor</field>
+    </record>
+    <record id="action_report_atlas_rapor_pdf" model="ir.actions.report">
+        <field name="name">Muhasebe Raporu</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_rapor.report_atlas_rapor</field>
+        <field name="print_report_name">'Muhasebe Raporu'</field>
+    </record>
+    <record id="action_report_atlas_rapor_pdf_landscape" model="ir.actions.report">
+        <field name="name">Muhasebe Raporu (Yatay)</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_rapor.report_atlas_rapor</field>
+        <field name="paperformat_id" ref="paperformat_atlas_a4_landscape"/>
+        <field name="print_report_name">'Muhasebe Raporu'</field>
+    </record>
+
+    <template id="report_atlas_rapor">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="data" t-value="doc._get_report()"/>
+                <t t-set="company" t-value="data['company']"/>
+                <t t-set="currency" t-value="data['currency']"/>
+                <t t-set="ncols" t-value="len(data['columns'])"/>
+                <t t-call="web.internal_layout">
+                    <div class="page" style="font-size: 10px;">
+                        <h4 class="mb-0" t-out="data['title']"/>
+                        <div class="mb-2 text-muted" t-out="data['subtitle']"/>
+                        <table class="table table-sm o_main_table" style="font-size: 10px;">
+                            <thead>
+                                <tr>
+                                    <th t-foreach="data['columns']" t-as="column"
+                                        t-att-class="'text-end' if column['type'] in ('money', 'number') else ''"
+                                        t-out="column['label']"/>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['rows']" t-as="row">
+                                    <tr t-if="row['style'] == 'section'" style="background-color: #e9eef6;">
+                                        <td t-att-colspan="ncols" class="fw-bold" t-out="'    '.join(d for d in row['display'] if d)"/>
+                                    </tr>
+                                    <tr t-else=""
+                                        t-att-class="'fw-bold' if row['style'] in ('group', 'total') else ''"
+                                        t-att-style="'border-top: 1px solid #333;' if row['style'] == 'total' else None">
+                                        <t t-foreach="data['columns']" t-as="column">
+                                            <td t-att-class="'text-end text-nowrap' if column['type'] in ('money', 'number') else ''"
+                                                t-att-style="('padding-left: %spx;' % (4 + 14 * row['level'])) if column_index == data.get('indent_col') else None"
+                                                t-out="row['display'][column_index] if column_index &lt; len(row['display']) else ''"/>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
