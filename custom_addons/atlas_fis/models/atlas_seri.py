@@ -141,23 +141,42 @@ class AtlasSeri(models.Model):
             raise UserError(self.env._('"%s" serisinin sıra numarası %s haneyi aştı.', self.name, self.hane))
         return f'{prefix}{number:0{self.hane}d}'
 
+    @api.model
+    def _number_sources(self):
+        """Seri numarası taşıyan tablolar: [(model, numara alanı)]. Her tabloda atlas_seri_id bulunur.
+        Alt modüller (ör. irsaliye) genişletir."""
+        return [('account.move', 'name')]
+
     def _get_last_number(self, prefix):
-        """Seride bu ön ekle verilmiş en büyük sıra no (tüm durumlardaki belgeler)."""
+        """Seride bu ön ekle verilmiş en büyük sıra no (tüm kaynaklarda, tüm durumlardaki belgeler)."""
         self.ensure_one()
-        self.env['account.move'].flush_model(['name', 'atlas_seri_id'])
         like = prefix.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_') + '%'
-        result = self.env.execute_query(SQL(
-            """
-            SELECT MAX(CAST(SUBSTRING(name FROM %(start)s) AS BIGINT))
-              FROM account_move
-             WHERE atlas_seri_id = %(seri)s
-               AND name LIKE %(like)s
-               AND LENGTH(name) = %(length)s
-               AND SUBSTRING(name FROM %(start)s) ~ '^[0-9]+$'
-            """,
-            start=len(prefix) + 1, seri=self.id, like=like, length=len(prefix) + self.hane,
-        ))
-        return result[0][0] or 0
+        last = 0
+        for model_name, field_name in self._number_sources():
+            Model = self.env[model_name]
+            Model.flush_model([field_name, 'atlas_seri_id'])
+            column = SQL.identifier(field_name)
+            result = self.env.execute_query(SQL(
+                """
+                SELECT MAX(CAST(SUBSTRING(%(column)s FROM %(start)s) AS BIGINT))
+                  FROM %(table)s
+                 WHERE atlas_seri_id = %(seri)s
+                   AND %(column)s LIKE %(like)s
+                   AND LENGTH(%(column)s) = %(length)s
+                   AND SUBSTRING(%(column)s FROM %(start)s) ~ '^[0-9]+$'
+                """,
+                column=column, table=SQL.identifier(Model._table),
+                start=len(prefix) + 1, seri=self.id, like=like, length=len(prefix) + self.hane,
+            ))
+            last = max(last, result[0][0] or 0)
+        return last
+
+    def _next_number(self, date):
+        """Seriden sıradaki numarayı verir (fatura dışı belgeler için; seri satırı kilitlenir)."""
+        self.ensure_one()
+        self.env.execute_query(SQL('SELECT id FROM atlas_seri WHERE id = %s FOR UPDATE', self.id))
+        prefix = self._get_prefix(date)
+        return self._format_number(prefix, max(self._get_last_number(prefix), self.baslangic_no - 1) + 1)
 
     def _get_next_sequence_format(self, date):
         """sequence.mixin._locked_increment için biçim: ({prefix}{seq:0Nd}, {'seq': son no})."""
