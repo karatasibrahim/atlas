@@ -1,0 +1,7 @@
+# Odoo core (upstream 20.0, cloned separately)
+/odoo/
+.venv/
+data/
+__pycache__/
+*.pyc
+.DS_Store
