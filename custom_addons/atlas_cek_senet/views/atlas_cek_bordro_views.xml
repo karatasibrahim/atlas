@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_cek_bordro_list" model="ir.ui.view">
+        <field name="name">atlas.cek.bordro.list</field>
+        <field name="model">atlas.cek.bordro</field>
+        <field name="arch" type="xml">
+            <list string="Çek / Senet Bordroları" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="islem"/>
+                <field name="evrak_tipi"/>
+                <field name="partner_id" optional="show"/>
+                <field name="journal_id" optional="show"/>
+                <field name="adet"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="toplam" sum="Toplam"/>
+                <field name="ortalama_vade" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_cek_bordro_form" model="ir.ui.view">
+        <field name="name">atlas.cek.bordro.form</field>
+        <field name="model">atlas.cek.bordro</field>
+        <field name="arch" type="xml">
+            <form string="Çek / Senet Bordrosu">
+                <header>
+                    <button name="action_post" type="object" string="Onayla" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_print" type="object" string="Yazdır" invisible="state != 'posted'"/>
+                    <button name="action_cancel" type="object" string="İptal Et" invisible="state == 'cancel'"
+                            confirm="Bordro iptal edilecek ve muhasebe fişi iptal edilecek. Devam edilsin mi?"/>
+                    <button name="action_draft" type="object" string="Taslağa Al" invisible="state != 'cancel' or move_id"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_move" type="object" class="oe_stat_button" icon="fa-book" invisible="not move_id"
+                                string="Muhasebe Fişi"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="islem" readonly="state != 'draft'"/>
+                            <field name="evrak_tipi" widget="radio" options="{'horizontal': True}" readonly="state != 'draft' or line_ids"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="partner_id" invisible="not partner_gerekli" required="partner_gerekli"
+                                   readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="journal_id" invisible="not journal_turu" required="journal_turu"
+                                   readonly="state != 'draft'" options="{'no_create': True}"
+                                   domain="[('type', 'in', ('bank',) if journal_turu == 'bank' else ('bank', 'cash'))]"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" readonly="state != 'draft' or line_ids" groups="base.group_multi_currency"/>
+                            <field name="aciklama" readonly="state != 'draft'"/>
+                            <field name="adet"/>
+                            <field name="toplam"/>
+                            <field name="ortalama_vade"/>
+                            <field name="move_id" readonly="1" invisible="not move_id"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="taraf" invisible="1"/>
+                            <field name="yeni_evrak" invisible="1"/>
+                            <field name="partner_gerekli" invisible="1"/>
+                            <field name="journal_turu" invisible="1"/>
+                            <field name="evrak_turu" invisible="1"/>
+                            <field name="uygun_cek_ids" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state != 'draft'">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="cek_id" column_invisible="parent.yeni_evrak" required="not parent.yeni_evrak"
+                                   domain="[('id', 'in', parent.uygun_cek_ids)]" options="{'no_create': True}"/>
+                            <field name="seri_no" readonly="not parent.yeni_evrak"/>
+                            <field name="banka_id" readonly="not parent.yeni_evrak" options="{'no_create': True}"/>
+                            <field name="sube" column_invisible="not parent.yeni_evrak" optional="show"/>
+                            <field name="hesap_no" column_invisible="not parent.yeni_evrak" optional="hide"/>
+                            <field name="kesideci" readonly="not parent.yeni_evrak"/>
+                            <field name="kesideci_vkn" column_invisible="not parent.yeni_evrak" optional="hide"/>
+                            <field name="vade" readonly="not parent.yeni_evrak"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="tutar" sum="Toplam" readonly="not parent.yeni_evrak"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_cek_bordro_search" model="ir.ui.view">
+        <field name="name">atlas.cek.bordro.search</field>
+        <field name="model">atlas.cek.bordro</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="line_ids" string="Evrak No" filter_domain="[('line_ids.seri_no', 'ilike', self)]"/>
+                <filter name="taslak" string="Taslak" domain="[('state', '=', 'draft')]"/>
+                <filter name="onayli" string="Onaylı" domain="[('state', '=', 'posted')]"/>
+                <filter name="date" string="Tarih" date="date"/>
+                <group>
+                    <filter name="group_by_islem" string="İşlem" context="{'group_by': 'islem'}"/>
+                    <filter name="group_by_partner" string="Cari" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_cek_bordro" model="ir.actions.act_window">
+        <field name="name">Çek / Senet Bordroları</field>
+        <field name="res_model">atlas.cek.bordro</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_atlas_cek_giris" model="ir.actions.act_window">
+        <field name="name">Müşteri Çek / Senet Girişi</field>
+        <field name="res_model">atlas.cek.bordro</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_islem': 'giris'}</field>
+    </record>
+    <record id="action_atlas_cek_firma_cikis" model="ir.actions.act_window">
+        <field name="name">Firma Çek / Senet Çıkışı</field>
+        <field name="res_model">atlas.cek.bordro</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'default_islem': 'firma_cikis'}</field>
+    </record>
+</odoo>

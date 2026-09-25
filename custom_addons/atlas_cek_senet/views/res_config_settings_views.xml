@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_atlas_cek" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.atlas.cek</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="default_accounts" position="after">
+                <block title="Çek / Senet Hesapları" id="atlas_cek_accounts">
+                    <setting string="Müşteri Çekleri" company_dependent="1">
+                        <div class="content-group">
+                            <div class="row"><label for="atlas_cek_portfoy_account_id" string="Portföy" class="col-lg-4 o_light_label"/><field name="atlas_cek_portfoy_account_id"/></div>
+                            <div class="row"><label for="atlas_cek_tahsil_account_id" string="Tahsilde" class="col-lg-4 o_light_label"/><field name="atlas_cek_tahsil_account_id"/></div>
+                            <div class="row"><label for="atlas_cek_teminat_account_id" string="Teminatta" class="col-lg-4 o_light_label"/><field name="atlas_cek_teminat_account_id"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Müşteri Senetleri" company_dependent="1">
+                        <div class="content-group">
+                            <div class="row"><label for="atlas_senet_portfoy_account_id" string="Portföy" class="col-lg-4 o_light_label"/><field name="atlas_senet_portfoy_account_id"/></div>
+                            <div class="row"><label for="atlas_senet_tahsil_account_id" string="Tahsilde" class="col-lg-4 o_light_label"/><field name="atlas_senet_tahsil_account_id"/></div>
+                            <div class="row"><label for="atlas_senet_teminat_account_id" string="Teminatta" class="col-lg-4 o_light_label"/><field name="atlas_senet_teminat_account_id"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Firma Çek / Senetleri" company_dependent="1">
+                        <div class="content-group">
+                            <div class="row"><label for="atlas_firma_cek_account_id" string="Verilen Çekler" class="col-lg-4 o_light_label"/><field name="atlas_firma_cek_account_id"/></div>
+                            <div class="row"><label for="atlas_firma_senet_account_id" string="Borç Senetleri" class="col-lg-4 o_light_label"/><field name="atlas_firma_senet_account_id"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_cek_list" model="ir.ui.view">
+        <field name="name">atlas.cek.list</field>
+        <field name="model">atlas.cek</field>
+        <field name="arch" type="xml">
+            <list string="Çek / Senet Portföyü" create="0" decoration-danger="kalan_gun &lt; 0 and durum in ('portfoy', 'tahsilde', 'verildi')"
+                  decoration-muted="durum in ('tahsil', 'odendi', 'iade', 'iptal', 'ciro')">
+                <header>
+                    <button name="action_ciro" type="object" string="Ciro Et" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_tahsile_ver" type="object" string="Tahsile Ver" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_teminata_ver" type="object" string="Teminata Ver" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_tahsil" type="object" string="Tahsil Et" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_karsiliksiz" type="object" string="Karşılıksız" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_musteriye_iade" type="object" string="Müşteriye İade" invisible="context.get('taraf') == 'firma'"/>
+                    <button name="action_firma_odeme" type="object" string="Ödendi" invisible="context.get('taraf') != 'firma'"/>
+                </header>
+                <field name="name"/>
+                <field name="evrak_turu" optional="show"/>
+                <field name="seri_no"/>
+                <field name="banka_id" optional="show"/>
+                <field name="kesideci" optional="show"/>
+                <field name="partner_id"/>
+                <field name="vade"/>
+                <field name="kalan_gun" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="tutar" sum="Toplam"/>
+                <field name="durum" widget="badge" decoration-info="durum in ('portfoy', 'verildi')"
+                       decoration-warning="durum in ('tahsilde', 'teminatta')" decoration-success="durum in ('tahsil', 'odendi')"
+                       decoration-danger="durum == 'karsiliksiz'"/>
+                <field name="konum_journal_id" optional="show"/>
+                <field name="ciro_partner_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_cek_form" model="ir.ui.view">
+        <field name="name">atlas.cek.form</field>
+        <field name="model">atlas.cek</field>
+        <field name="arch" type="xml">
+            <form string="Çek / Senet" create="0">
+                <header>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_bordrolar" type="object" class="oe_stat_button" icon="fa-list" string="Bordrolar"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <field name="evrak_turu" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="seri_no"/>
+                            <field name="vade"/>
+                            <field name="tutar"/>
+                            <field name="currency_id" readonly="1" groups="base.group_multi_currency"/>
+                            <field name="partner_id"/>
+                            <field name="kalan_gun"/>
+                        </group>
+                        <group>
+                            <field name="banka_id" options="{'no_create': True}"/>
+                            <field name="sube"/>
+                            <field name="hesap_no"/>
+                            <field name="kesideci"/>
+                            <field name="kesideci_vkn"/>
+                            <field name="kesideci_yeri"/>
+                        </group>
+                        <group>
+                            <field name="konum_journal_id" invisible="not konum_journal_id"/>
+                            <field name="ciro_partner_id" invisible="not ciro_partner_id"/>
+                            <field name="son_islem_tarihi"/>
+                            <field name="aciklama"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="bordro_line_ids" readonly="1">
+                        <list>
+                            <field name="bordro_id"/>
+                            <field name="tutar"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_cek_search" model="ir.ui.view">
+        <field name="name">atlas.cek.search</field>
+        <field name="model">atlas.cek</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="seri_no"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="kesideci"/>
+                <field name="banka_id"/>
+                <filter name="cek" string="Çekler" domain="[('evrak_turu', 'in', ('musteri_cek', 'firma_cek'))]"/>
+                <filter name="senet" string="Senetler" domain="[('evrak_turu', 'in', ('musteri_senet', 'firma_senet'))]"/>
+                <separator/>
+                <filter name="elde" string="Elde / Açık" domain="[('durum', 'in', ('portfoy', 'tahsilde', 'teminatta', 'verildi'))]"/>
+                <filter name="portfoy" string="Portföyde" domain="[('durum', '=', 'portfoy')]"/>
+                <filter name="bankada" string="Bankada" domain="[('durum', 'in', ('tahsilde', 'teminatta'))]"/>
+                <filter name="karsiliksiz" string="Karşılıksız" domain="[('durum', '=', 'karsiliksiz')]"/>
+                <separator/>
+                <filter name="vadesi_gecmis" string="Vadesi Geçmiş" domain="[('vade', '&lt;', context_today().strftime('%Y-%m-%d')), ('durum', 'in', ('portfoy', 'tahsilde', 'verildi'))]"/>
+                <filter name="vade" string="Vade" date="vade"/>
+                <group>
+                    <filter name="group_by_durum" string="Durum" context="{'group_by': 'durum'}"/>
+                    <filter name="group_by_vade" string="Vade (Ay)" context="{'group_by': 'vade:month'}"/>
+                    <filter name="group_by_partner" string="Cari" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_banka" string="Banka" context="{'group_by': 'banka_id'}"/>
+                    <filter name="group_by_konum" string="Bulunduğu Banka" context="{'group_by': 'konum_journal_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_cek_pivot" model="ir.ui.view">
+        <field name="name">atlas.cek.pivot</field>
+        <field name="model">atlas.cek</field>
+        <field name="arch" type="xml">
+            <pivot string="Vade Analizi">
+                <field name="vade" interval="month" type="row"/>
+                <field name="durum" type="col"/>
+                <field name="tutar" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_atlas_cek_musteri" model="ir.actions.act_window">
+        <field name="name">Müşteri Çek / Senetleri</field>
+        <field name="res_model">atlas.cek</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="domain">[('taraf', '=', 'musteri')]</field>
+        <field name="context">{'taraf': 'musteri', 'search_default_elde': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Portföyde evrak yok</p>
+            <p>Müşteriden alınan çek ve senetler "Müşteri Çek/Senet Girişi" bordrosuyla portföye girer.</p>
+        </field>
+    </record>
+    <record id="action_atlas_cek_firma" model="ir.actions.act_window">
+        <field name="name">Firma Çek / Senetleri</field>
+        <field name="res_model">atlas.cek</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="domain">[('taraf', '=', 'firma')]</field>
+        <field name="context">{'taraf': 'firma', 'search_default_elde': 1}</field>
+    </record>
+</odoo>

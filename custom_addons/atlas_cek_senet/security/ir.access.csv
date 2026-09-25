@@ -1,0 +1,9 @@
+id,name,model_id,group_id/id,operation,domain
+access_atlas_cek_readonly,atlas.cek readonly,atlas.cek,account.group_account_readonly,r,
+access_atlas_cek_user,atlas.cek user,atlas.cek,account.group_account_user,crud,
+access_atlas_cek_bordro_readonly,atlas.cek.bordro readonly,atlas.cek.bordro,account.group_account_readonly,r,
+access_atlas_cek_bordro_user,atlas.cek.bordro user,atlas.cek.bordro,account.group_account_user,crud,
+access_atlas_cek_bordro_line_readonly,atlas.cek.bordro.line readonly,atlas.cek.bordro.line,account.group_account_readonly,r,
+access_atlas_cek_bordro_line_user,atlas.cek.bordro.line user,atlas.cek.bordro.line,account.group_account_user,crud,
+atlas_cek_comp_rule,Çek şirket kuralı,atlas.cek,,crud,"[('company_id', 'in', company_ids)]"
+atlas_cek_bordro_comp_rule,Bordro şirket kuralı,atlas.cek.bordro,,crud,"[('company_id', 'in', company_ids)]"

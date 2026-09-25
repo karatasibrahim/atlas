@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_atlas_cek_bordro" model="ir.actions.report">
+        <field name="name">Çek / Senet Bordrosu</field>
+        <field name="model">atlas.cek.bordro</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_cek_senet.report_cek_bordro</field>
+        <field name="print_report_name">'Bordro %s' % object.name</field>
+        <field name="binding_model_id" ref="model_atlas_cek_bordro"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_cek_bordro">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 11px;">
+                        <h4 class="mb-1"><t t-out="dict(o._fields['islem'].selection)[o.islem]"/> Bordrosu</h4>
+                        <div class="row mb-3">
+                            <div class="col-7">
+                                <div>Bordro No: <strong t-out="o.name"/></div>
+                                <div t-if="o.partner_id">Cari: <strong t-out="o.partner_id.ref"/> - <span t-out="o.partner_id.name"/></div>
+                                <div t-if="o.journal_id">Kasa / Banka: <span t-out="o.journal_id.name"/></div>
+                                <div t-if="o.aciklama">Açıklama: <span t-out="o.aciklama"/></div>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div>Tarih: <span t-out="o.date" t-options="{'widget': 'date'}"/></div>
+                                <div>Ortalama Vade: <span t-out="o.ortalama_vade" t-options="{'widget': 'date'}"/></div>
+                            </div>
+                        </div>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>#</th><th>Portföy No</th><th>Evrak No</th><th>Banka / Şube</th>
+                                    <th>Keşideci / Borçlu</th><th>Vade</th><th class="text-end">Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td t-out="line_index + 1"/>
+                                    <td t-out="line.cek_id.name"/>
+                                    <td t-out="line.seri_no"/>
+                                    <td><t t-out="line.banka_id.name"/> <t t-out="line.sube"/></td>
+                                    <td t-out="line.kesideci"/>
+                                    <td t-out="line.vade" t-options="{'widget': 'date'}"/>
+                                    <td class="text-end" t-out="line.tutar" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </tr>
+                                <tr class="fw-bold border-top border-dark">
+                                    <td colspan="6">TOPLAM (<t t-out="o.adet"/> adet)</td>
+                                    <td class="text-end" t-out="o.toplam" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">Teslim Eden<br/><br/>İmza</div>
+                            <div class="col-6 text-center">Teslim Alan<br/><br/>İmza</div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

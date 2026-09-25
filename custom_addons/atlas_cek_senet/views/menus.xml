@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_cek_root" name="Çek / Senet" parent="account.menu_finance" sequence="6"
+              groups="account.group_account_user">
+        <menuitem id="menu_atlas_cek_musteri" name="Müşteri Çek / Senetleri" action="action_atlas_cek_musteri" sequence="10"/>
+        <menuitem id="menu_atlas_cek_firma" name="Firma Çek / Senetleri" action="action_atlas_cek_firma" sequence="20"/>
+        <menuitem id="menu_atlas_cek_giris" name="Müşteri Çek / Senet Girişi" action="action_atlas_cek_giris" sequence="30"/>
+        <menuitem id="menu_atlas_cek_firma_cikis" name="Firma Çek / Senet Çıkışı" action="action_atlas_cek_firma_cikis" sequence="40"/>
+        <menuitem id="menu_atlas_cek_bordro" name="Bordrolar" action="action_atlas_cek_bordro" sequence="50"/>
+    </menuitem>
+</odoo>
