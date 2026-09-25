@@ -5,8 +5,8 @@ from ..models.tools import YANSITMA_7A, account_balances, account_by_code, creat
 
 
 class AtlasYansitmaWizard(models.TransientModel):
-    """7/A gider yansıtma: 750/760/770/780 gruplarının yansıtılmamış bakiyeleri
-    630/631/632/660'a aktarılır, karşılığı 751/761/771/781 yansıtma hesaplarına yazılır."""
+    """7/A gider yansıtma: yansıtılmamış bakiyeler aktarılır, karşılığı yansıtma hesaplarına yazılır.
+    Üretim: 710/720/730 → 151 (711/721/731), faaliyet: 750/760/770/780 → 630/631/632/660 (751/761/771/781)."""
     _name = 'atlas.yansitma.wizard'
     _description = '7/A Gider Yansıtma'
 
@@ -42,15 +42,20 @@ class AtlasYansitmaWizard(models.TransientModel):
 
     def action_yansit(self):
         self.ensure_one()
+        move = self._create_move()
+        if not move:
+            raise UserError(self.env._('Yansıtılacak gider yok.'))
+        return move._get_records_action()
+
+    def _create_move(self, groups=None):
+        """Yansıtma fişini oluşturur; groups verilirse yalnızca o (gider, yansıtma, hedef) grupları."""
+        self.ensure_one()
         currency = self.company_id.currency_id
         lines = []
         label = f'7/A gider yansıtma {self.date:%d.%m.%Y}'
         for (gider, yansitma, hedef), amount in self._unreflected().items():
-            if currency.is_zero(amount):
+            if currency.is_zero(amount) or (groups is not None and (gider, yansitma, hedef) not in groups):
                 continue
             lines.append({'account_id': account_by_code(self.env, self.company_id, hedef).id, 'balance': amount, 'name': label})
             lines.append({'account_id': account_by_code(self.env, self.company_id, yansitma).id, 'balance': -amount, 'name': label})
-        move = create_entry(self.env, self.company_id, self.date, label, lines)
-        if not move:
-            raise UserError(self.env._('Yansıtılacak gider yok.'))
-        return move._get_records_action()
+        return create_entry(self.env, self.company_id, self.date, label, lines)

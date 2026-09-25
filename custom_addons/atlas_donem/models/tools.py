@@ -2,8 +2,12 @@
 from odoo.exceptions import UserError
 from odoo.fields import Command
 
-# 7/A gider grubu: (gider öneki, yansıtma hesabı öneki, gelir tablosu hesabı öneki)
+# 7/A gider grubu: (gider öneki, yansıtma hesabı öneki, aktarılacak hesap öneki)
+# Üretim giderleri (710/720/730) yarı mamule (151), faaliyet giderleri gelir tablosuna aktarılır.
 YANSITMA_7A = [
+    ('710', '711', '151'),
+    ('720', '721', '151'),
+    ('730', '731', '151'),
     ('750', '751', '630'),
     ('760', '761', '631'),
     ('770', '771', '632'),

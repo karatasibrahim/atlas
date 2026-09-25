@@ -11,8 +11,9 @@
                 </group>
                 <field name="ozet"/>
                 <p class="text-muted">
-                    Yıl başından seçilen tarihe kadar 750/760/770/780 gruplarında oluşan ve henüz yansıtılmamış giderler
-                    630/631/632/660 hesaplarına aktarılır; karşılığı 751/761/771/781 yansıtma hesaplarına yazılır.
+                    Yıl başından seçilen tarihe kadar oluşan ve henüz yansıtılmamış giderler aktarılır:
+                    üretim giderleri (710/720/730) 151 Yarı Mamuller'e, faaliyet giderleri (750/760/770/780) 630/631/632/660'a.
+                    Karşılıkları ilgili yansıtma hesaplarına (711/721/731, 751/761/771/781) yazılır.
                 </p>
                 <footer>
                     <button name="action_yansit" type="object" string="Yansıtma Fişini Oluştur" class="btn-primary"/>
