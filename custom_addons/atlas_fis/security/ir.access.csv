@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_atlas_belge_turu_user,atlas.belge.turu user,atlas.belge.turu,base.group_user,r,
+access_atlas_seri_user,atlas.seri user,atlas.seri,base.group_user,r,
+access_atlas_seri_manager,atlas.seri manager,atlas.seri,account.group_account_manager,crud,
+atlas_seri_comp_rule,Seri şirket kuralı,atlas.seri,,crud,"[('company_id', 'in', company_ids)]"

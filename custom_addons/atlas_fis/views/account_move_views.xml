@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_atlas_fis" model="ir.ui.view">
+        <field name="name">account.move.form.atlas.fis</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@id='header_right_group']/label[@for='journal_id']" position="before">
+                <field name="atlas_belge_turu" invisible="1"/>
+                <field name="atlas_fis_turu" invisible="move_type != 'entry'" readonly="state != 'draft'"/>
+                <field name="atlas_seri_id" invisible="not atlas_belge_turu"
+                       readonly="state != 'draft' or name not in (False, '', '/')"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="atlas_kasa_account_id" invisible="not atlas_kasa_account_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_move_tree_atlas_fis" model="ir.ui.view">
+        <field name="name">account.move.list.atlas.fis</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="atlas_fis_turu" optional="show"/>
+                <field name="atlas_seri_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_move_filter_atlas_fis" model="ir.ui.view">
+        <field name="name">account.move.search.atlas.fis</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="atlas_seri_id"/>
+                <separator/>
+                <filter name="fis_mahsup" string="Mahsup" domain="[('atlas_fis_turu', '=', 'mahsup')]"/>
+                <filter name="fis_tahsil" string="Tahsil" domain="[('atlas_fis_turu', '=', 'tahsil')]"/>
+                <filter name="fis_tediye" string="Tediye" domain="[('atlas_fis_turu', '=', 'tediye')]"/>
+                <filter name="fis_acilis" string="Açılış" domain="[('atlas_fis_turu', '=', 'acilis')]"/>
+                <filter name="fis_kapanis" string="Kapanış" domain="[('atlas_fis_turu', '=', 'kapanis')]"/>
+                <filter name="fis_dekont" string="Dekont" domain="[('atlas_fis_turu', '=', 'dekont')]"/>
+                <group>
+                    <filter name="group_by_fis_turu" string="Fiş Türü" context="{'group_by': 'atlas_fis_turu'}"/>
+                    <filter name="group_by_seri" string="Seri" context="{'group_by': 'atlas_seri_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Fiş türü menüleri -->
+    <record id="action_atlas_fis_all" model="ir.actions.act_window">
+        <field name="name">Tüm Fişler</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '!=', False)]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'mahsup', 'search_default_group_by_fis_turu': 1}</field>
+    </record>
+    <record id="action_atlas_fis_mahsup" model="ir.actions.act_window">
+        <field name="name">Mahsup Fişleri</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'mahsup')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'mahsup'}</field>
+    </record>
+    <record id="action_atlas_fis_tahsil" model="ir.actions.act_window">
+        <field name="name">Tahsil Fişleri</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'tahsil')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'tahsil'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Tahsil fişi (kasaya para girişi)</p>
+            <p>Yalnızca karşı hesap satırlarını (alacak) girin; kasa borç satırı otomatik oluşur.</p>
+        </field>
+    </record>
+    <record id="action_atlas_fis_tediye" model="ir.actions.act_window">
+        <field name="name">Tediye Fişleri</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'tediye')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'tediye'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Tediye fişi (kasadan para çıkışı)</p>
+            <p>Yalnızca karşı hesap satırlarını (borç) girin; kasa alacak satırı otomatik oluşur.</p>
+        </field>
+    </record>
+    <record id="action_atlas_fis_acilis" model="ir.actions.act_window">
+        <field name="name">Açılış Fişleri</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'acilis')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'acilis'}</field>
+    </record>
+    <record id="action_atlas_fis_kapanis" model="ir.actions.act_window">
+        <field name="name">Kapanış Fişleri</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'kapanis')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'kapanis'}</field>
+    </record>
+    <record id="action_atlas_fis_dekont" model="ir.actions.act_window">
+        <field name="name">Dekontlar</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_move_tree"/>
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="domain">[('move_type', '=', 'entry'), ('atlas_fis_turu', '=', 'dekont')]</field>
+        <field name="context">{'default_move_type': 'entry', 'default_atlas_fis_turu': 'dekont'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Dekont</p>
+            <p>Cariler arası virman ve düzeltme kayıtları. Cari alt hesabı seçildiğinde cari otomatik gelir.</p>
+        </field>
+    </record>
+</odoo>

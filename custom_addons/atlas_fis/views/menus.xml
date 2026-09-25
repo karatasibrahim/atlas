@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_fis_root" name="Fişler" parent="account.menu_finance" sequence="4"
+              groups="account.group_account_user">
+        <menuitem id="menu_atlas_fis_mahsup" name="Mahsup Fişleri" action="action_atlas_fis_mahsup" sequence="10"/>
+        <menuitem id="menu_atlas_fis_tahsil" name="Tahsil Fişleri" action="action_atlas_fis_tahsil" sequence="20"/>
+        <menuitem id="menu_atlas_fis_tediye" name="Tediye Fişleri" action="action_atlas_fis_tediye" sequence="30"/>
+        <menuitem id="menu_atlas_fis_dekont" name="Dekontlar" action="action_atlas_fis_dekont" sequence="40"/>
+        <menuitem id="menu_atlas_fis_acilis" name="Açılış Fişleri" action="action_atlas_fis_acilis" sequence="50"/>
+        <menuitem id="menu_atlas_fis_kapanis" name="Kapanış Fişleri" action="action_atlas_fis_kapanis" sequence="60"/>
+        <menuitem id="menu_atlas_fis_all" name="Tüm Fişler" action="action_atlas_fis_all" sequence="90"/>
+    </menuitem>
+
+    <menuitem id="menu_atlas_seri" name="Seri / Sayaç Tanımları" parent="account.account_account_menu"
+              action="action_atlas_seri" groups="account.group_account_manager" sequence="30"/>
+</odoo>
