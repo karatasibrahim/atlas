@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_sabit_kiymet_list" model="ir.ui.view">
+        <field name="name">atlas.sabit.kiymet.list</field>
+        <field name="model">atlas.sabit.kiymet</field>
+        <field name="arch" type="xml">
+            <list string="Sabit Kıymetler" decoration-muted="state == 'closed'" decoration-info="state == 'draft'">
+                <field name="kod"/>
+                <field name="name"/>
+                <field name="account_id"/>
+                <field name="edinme_tarihi"/>
+                <field name="faydali_omur"/>
+                <field name="yontem" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="bedel" sum="Toplam"/>
+                <field name="birikmis" optional="show"/>
+                <field name="net_deger"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_sabit_kiymet_form" model="ir.ui.view">
+        <field name="name">atlas.sabit.kiymet.form</field>
+        <field name="model">atlas.sabit.kiymet</field>
+        <field name="arch" type="xml">
+            <form string="Sabit Kıymet">
+                <header>
+                    <button name="action_plan_olustur" type="object" string="Planı Hesapla" invisible="state != 'draft'"/>
+                    <button name="action_aktif" type="object" string="Aktifleştir" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_satis" type="object" string="Satış / Hurda" invisible="state != 'active'"/>
+                    <button name="action_taslak" type="object" string="Taslağa Al" invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <field name="kod" readonly="1"/>
+                        <h1><field name="name" placeholder="ör. Dizüstü bilgisayar" readonly="state != 'draft'"/></h1>
+                    </div>
+                    <group>
+                        <group string="Değer">
+                            <field name="edinme_tarihi" readonly="state != 'draft'"/>
+                            <field name="bedel" readonly="state != 'draft'"/>
+                            <field name="faydali_omur" readonly="state != 'draft'"/>
+                            <field name="yontem" readonly="state != 'draft'"/>
+                            <field name="oran"/>
+                            <field name="kist" readonly="state != 'draft'"/>
+                            <field name="periyot"/>
+                        </group>
+                        <group string="Hesaplar">
+                            <field name="account_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="birikmis_account_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="gider_account_id" options="{'no_create': True}"/>
+                            <field name="analytic_distribution" widget="analytic_distribution" groups="analytic.group_analytic_accounting"/>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Durum">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="birikmis"/>
+                            <field name="net_deger"/>
+                            <field name="satis_tarihi" invisible="not satis_tarihi"/>
+                            <field name="satis_move_id" invisible="not satis_move_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Amortisman Planı">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="yil"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="tutar" sum="Toplam"/>
+                                    <field name="birikmis_plan"/>
+                                    <field name="net_plan"/>
+                                    <field name="kaydedilen" sum="Kaydedilen"/>
+                                    <field name="durum" widget="badge" decoration-success="durum == 'tamam'" decoration-warning="durum == 'kismi'"/>
+                                    <field name="move_ids" widget="many2many_tags"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Açıklama">
+                            <field name="aciklama"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_atlas_sabit_kiymet_search" model="ir.ui.view">
+        <field name="name">atlas.sabit.kiymet.search</field>
+        <field name="model">atlas.sabit.kiymet</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="kod"/>
+                <field name="account_id"/>
+                <filter name="aktif" string="Aktif" domain="[('state', '=', 'active')]"/>
+                <filter name="taslak" string="Taslak" domain="[('state', '=', 'draft')]"/>
+                <filter name="cikis" string="Satılan / Hurda" domain="[('state', '=', 'closed')]"/>
+                <group>
+                    <filter name="group_by_account" string="Varlık Hesabı" context="{'group_by': 'account_id'}"/>
+                    <filter name="group_by_year" string="Edinme Yılı" context="{'group_by': 'edinme_tarihi:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_atlas_sabit_kiymet" model="ir.actions.act_window">
+        <field name="name">Sabit Kıymetler</field>
+        <field name="res_model">atlas.sabit.kiymet</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_aktif': 1}</field>
+    </record>
+
+    <record id="view_atlas_sabit_kiymet_satis_wizard_form" model="ir.ui.view">
+        <field name="name">atlas.sabit.kiymet.satis.wizard.form</field>
+        <field name="model">atlas.sabit.kiymet.satis.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Satış / Hurdaya Çıkış">
+                <group>
+                    <field name="kiymet_id" readonly="1"/>
+                    <field name="tur" widget="radio" options="{'horizontal': True}"/>
+                    <field name="date"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="satis_bedeli" invisible="tur != 'satis'"/>
+                    <field name="partner_id" invisible="tur != 'satis'" options="{'no_create': True}"/>
+                    <field name="karsi_account_id" invisible="tur != 'satis' or partner_id" options="{'no_create': True}"/>
+                </group>
+                <p class="text-muted">KDV'li satış faturasını ayrıca kesin. Kâr 679, zarar 689 hesabına yazılır.</p>
+                <footer>
+                    <button name="action_onayla" type="object" string="Onayla" class="btn-primary"/>
+                    <button string="Vazgeç" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

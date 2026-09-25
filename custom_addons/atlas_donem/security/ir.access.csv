@@ -1,0 +1,15 @@
+id,name,model_id,group_id/id,operation,domain
+access_atlas_donem_kapanis_readonly,atlas.donem.kapanis readonly,atlas.donem.kapanis,account.group_account_readonly,r,
+access_atlas_donem_kapanis_manager,atlas.donem.kapanis manager,atlas.donem.kapanis,account.group_account_manager,crud,
+atlas_donem_kapanis_comp_rule,Dönem kapanışı şirket kuralı,atlas.donem.kapanis,,crud,"[('company_id', 'in', company_ids)]"
+access_atlas_sabit_kiymet_readonly,atlas.sabit.kiymet readonly,atlas.sabit.kiymet,account.group_account_readonly,r,
+access_atlas_sabit_kiymet_user,atlas.sabit.kiymet user,atlas.sabit.kiymet,account.group_account_user,crud,
+atlas_sabit_kiymet_comp_rule,Sabit kıymet şirket kuralı,atlas.sabit.kiymet,,crud,"[('company_id', 'in', company_ids)]"
+access_atlas_amortisman_line_readonly,atlas.amortisman.line readonly,atlas.amortisman.line,account.group_account_readonly,r,
+access_atlas_amortisman_line_user,atlas.amortisman.line user,atlas.amortisman.line,account.group_account_user,crud,
+access_atlas_kur_degerleme_wizard,atlas.kur.degerleme.wizard,atlas.kur.degerleme.wizard,account.group_account_manager,crud,
+access_atlas_kur_degerleme_line,atlas.kur.degerleme.line,atlas.kur.degerleme.line,account.group_account_manager,crud,
+access_atlas_yansitma_wizard,atlas.yansitma.wizard,atlas.yansitma.wizard,account.group_account_manager,crud,
+access_atlas_yevmiye_no_wizard,atlas.yevmiye.no.wizard,atlas.yevmiye.no.wizard,account.group_account_manager,crud,
+access_atlas_amortisman_wizard,atlas.amortisman.wizard,atlas.amortisman.wizard,account.group_account_user,crud,
+access_atlas_sabit_kiymet_satis_wizard,atlas.sabit.kiymet.satis.wizard,atlas.sabit.kiymet.satis.wizard,account.group_account_user,crud,

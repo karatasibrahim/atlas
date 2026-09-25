@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_yevmiye_no_wizard_form" model="ir.ui.view">
+        <field name="name">atlas.yevmiye.no.wizard.form</field>
+        <field name="model">atlas.yevmiye.no.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Yevmiye Madde Numaralandırma">
+                <group>
+                    <field name="yil"/>
+                    <field name="kilitle"/>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                </group>
+                <p class="text-muted">
+                    Yıl içindeki onaylı fişlere tarih sırasıyla kesin yevmiye madde numarası verilir (açılış fişi 1).
+                    Yevmiye defteri raporu bu numaraları kullanır. Taslak fiş varsa işlem yapılmaz.
+                </p>
+                <footer>
+                    <button name="action_numarala" type="object" string="Numarala" class="btn-primary"/>
+                    <button string="Kapat" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_yevmiye_no" model="ir.actions.act_window">
+        <field name="name">Yevmiye Madde Numaralandırma</field>
+        <field name="res_model">atlas.yevmiye.no.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

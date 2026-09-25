@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_sabit_kiymet_root" name="Sabit Kıymetler" parent="account.menu_finance" sequence="7"
+              groups="account.group_account_user">
+        <menuitem id="menu_atlas_sabit_kiymet" name="Sabit Kıymetler" action="action_atlas_sabit_kiymet" sequence="10"/>
+        <menuitem id="menu_atlas_amortisman" name="Amortisman Kaydı" action="action_atlas_amortisman_wizard" sequence="20"/>
+    </menuitem>
+    <menuitem id="menu_atlas_donem_root" name="Dönem Sonu" parent="account.menu_finance" sequence="8"
+              groups="account.group_account_manager">
+        <menuitem id="menu_atlas_kur_degerleme" name="Kur Değerleme" action="action_atlas_kur_degerleme" sequence="10"/>
+        <menuitem id="menu_atlas_yansitma" name="7/A Gider Yansıtma" action="action_atlas_yansitma" sequence="20"/>
+        <menuitem id="menu_atlas_donem_kapanis" name="Dönem Kapanışı" action="action_atlas_donem_kapanis" sequence="30"/>
+        <menuitem id="menu_atlas_yevmiye_no" name="Yevmiye Madde Numaralandırma" action="action_atlas_yevmiye_no" sequence="40"/>
+    </menuitem>
+</odoo>

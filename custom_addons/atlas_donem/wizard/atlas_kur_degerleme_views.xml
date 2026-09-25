@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_kur_degerleme_wizard_form" model="ir.ui.view">
+        <field name="name">atlas.kur.degerleme.wizard.form</field>
+        <field name="model">atlas.kur.degerleme.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Dönem Sonu Kur Değerlemesi">
+                <group>
+                    <group>
+                        <field name="date"/>
+                        <field name="ters_kayit"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="company_currency_id" invisible="1"/>
+                        <field name="toplam_kar"/>
+                        <field name="toplam_zarar"/>
+                    </group>
+                </group>
+                <field name="line_ids" readonly="1">
+                    <list>
+                        <field name="account_id"/>
+                        <field name="partner_id"/>
+                        <field name="currency_id"/>
+                        <field name="company_currency_id" column_invisible="1"/>
+                        <field name="doviz_bakiye"/>
+                        <field name="kur"/>
+                        <field name="kur_tarihi"/>
+                        <field name="tl_bakiye"/>
+                        <field name="yeni_tl"/>
+                        <field name="fark" decoration-success="fark &gt; 0" decoration-danger="fark &lt; 0"/>
+                    </list>
+                </field>
+                <p class="text-muted">
+                    Dövizli kasa, banka ve diğer döviz hesapları ile dövizli cari bakiyeler, değerleme günü kuruyla (TCMB) TL'ye çevrilir.
+                    Farklar 646 Kambiyo Kârları / 656 Kambiyo Zararları hesaplarına yazılır.
+                </p>
+                <footer>
+                    <button name="action_hesapla" type="object" string="Hesapla" class="btn-primary"/>
+                    <button name="action_olustur" type="object" string="Değerleme Fişini Oluştur" invisible="not line_ids"/>
+                    <button string="Kapat" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_kur_degerleme" model="ir.actions.act_window">
+        <field name="name">Kur Değerleme</field>
+        <field name="res_model">atlas.kur.degerleme.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
