@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_cari_root" name="Cari" parent="account.menu_finance" sequence="3"
+              groups="account.group_account_invoice,account.group_account_readonly">
+        <menuitem id="menu_atlas_cari_kart" name="Cari Kartları" action="action_atlas_cari" sequence="10"/>
+        <menuitem id="menu_atlas_cari_hareket" name="Cari Hareketleri" action="action_atlas_cari_hareket" sequence="20"/>
+        <menuitem id="menu_atlas_cari_ekstre" name="Cari Ekstre" action="action_atlas_cari_ekstre_wizard" sequence="30"/>
+    </menuitem>
+
+    <menuitem id="menu_atlas_cari_config" name="Cari" parent="account.menu_finance_configuration" sequence="15"
+              groups="account.group_account_manager">
+        <menuitem id="menu_atlas_cari_grup" name="Cari Grupları" action="action_atlas_cari_grup" sequence="10"/>
+        <menuitem id="menu_atlas_cari_bolge" name="Bölgeler" action="action_atlas_cari_bolge" sequence="20"/>
+        <menuitem id="menu_atlas_cari_ozel_kod" name="Özel Kodlar" action="action_atlas_cari_ozel_kod" sequence="30"/>
+    </menuitem>
+</odoo>

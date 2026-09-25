@@ -1,0 +1,12 @@
+id,name,model_id,group_id/id,operation,domain
+access_atlas_cari_grup_user,atlas.cari.grup user,atlas.cari.grup,base.group_user,r,
+access_atlas_cari_grup_manager,atlas.cari.grup manager,atlas.cari.grup,account.group_account_manager,crud,
+access_atlas_cari_bolge_user,atlas.cari.bolge user,atlas.cari.bolge,base.group_user,r,
+access_atlas_cari_bolge_manager,atlas.cari.bolge manager,atlas.cari.bolge,account.group_account_manager,crud,
+access_atlas_cari_ozel_kod_user,atlas.cari.ozel.kod user,atlas.cari.ozel.kod,base.group_user,r,
+access_atlas_cari_ozel_kod_manager,atlas.cari.ozel.kod manager,atlas.cari.ozel.kod,account.group_account_manager,crud,
+access_atlas_cari_hareket_invoice,atlas.cari.hareket invoice,atlas.cari.hareket,account.group_account_invoice,r,
+access_atlas_cari_hareket_readonly,atlas.cari.hareket readonly,atlas.cari.hareket,account.group_account_readonly,r,
+access_atlas_cari_ekstre_wizard_invoice,atlas.cari.ekstre.wizard invoice,atlas.cari.ekstre.wizard,account.group_account_invoice,crud,
+access_atlas_cari_ekstre_wizard_readonly,atlas.cari.ekstre.wizard readonly,atlas.cari.ekstre.wizard,account.group_account_readonly,crud,
+atlas_cari_hareket_comp_rule,Cari Hareketleri şirket kuralı,atlas.cari.hareket,,r,"[('company_id', 'in', company_ids)]"

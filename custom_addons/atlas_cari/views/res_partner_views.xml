@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cari kartı: standart kişi formuna cari bilgileri ve bakiye -->
+    <record id="view_partner_form_atlas_cari" model="ir.ui.view">
+        <field name="name">res.partner.form.atlas.cari</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_atlas_cari_hareket" type="object" class="oe_stat_button" icon="fa-list-alt"
+                        invisible="not atlas_cari_tipi" groups="account.group_account_invoice,account.group_account_readonly">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="atlas_bakiye" widget="monetary" options="{'currency_field': 'atlas_company_currency_id'}"/>
+                        </span>
+                        <span class="o_stat_text">Cari Bakiye</span>
+                    </div>
+                </button>
+                <button name="action_atlas_cari_ekstre" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                        string="Ekstre" invisible="not atlas_cari_tipi"
+                        groups="account.group_account_invoice,account.group_account_readonly"/>
+            </div>
+            <xpath expr="//notebook" position="before">
+                <group name="atlas_cari" string="Cari Bilgileri" invisible="parent_id">
+                    <group>
+                        <field name="atlas_cari_tipi"/>
+                        <field name="ref" string="Cari Kodu" placeholder="Boş bırakılırsa otomatik verilir"
+                               readonly="atlas_account_ids"/>
+                        <field name="atlas_cari_grup_id" options="{'no_create': True}"
+                               readonly="atlas_account_ids"/>
+                        <field name="atlas_account_ids" widget="many2many_tags" readonly="1"
+                               invisible="not atlas_account_ids" string="Muhasebe Hesapları"
+                               groups="account.group_account_readonly"/>
+                    </group>
+                    <group>
+                        <field name="atlas_bolge_id" options="{'no_create': True}"/>
+                        <field name="atlas_ozel_kod1_id" options="{'no_create': True}"/>
+                        <field name="atlas_ozel_kod2_id" options="{'no_create': True}"/>
+                        <field name="atlas_company_currency_id" invisible="1"/>
+                    </group>
+                </group>
+            </xpath>
+            <!-- Cari kodu üstte gösterildiği için "Referans" alanını gizle -->
+            <xpath expr="//group[@name='misc']/field[@name='ref']" position="attributes">
+                <attribute name="invisible">not parent_id</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_atlas_cari_list" model="ir.ui.view">
+        <field name="name">res.partner.list.atlas.cari</field>
+        <field name="model">res.partner</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Cari Kartları" default_order="ref">
+                <field name="ref" string="Cari Kodu"/>
+                <field name="name" string="Cari Adı"/>
+                <field name="atlas_cari_tipi"/>
+                <field name="vat" string="VKN/TCKN" optional="show"/>
+                <field name="l10n_tr_tax_office_id" optional="show"/>
+                <field name="atlas_cari_grup_id" optional="hide"/>
+                <field name="atlas_bolge_id" optional="hide"/>
+                <field name="atlas_ozel_kod1_id" optional="hide"/>
+                <field name="atlas_ozel_kod2_id" optional="hide"/>
+                <field name="user_id" string="Temsilci" optional="hide" widget="many2one_avatar_user"/>
+                <field name="state_id" string="İl" optional="show"/>
+                <field name="city" string="İlçe" optional="hide"/>
+                <field name="phone" optional="show"/>
+                <field name="email" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="atlas_company_currency_id" column_invisible="1"/>
+                <field name="atlas_borc" optional="show"/>
+                <field name="atlas_alacak" optional="show"/>
+                <field name="atlas_bakiye" decoration-danger="atlas_bakiye &lt; 0"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_cari_search" model="ir.ui.view">
+        <field name="name">res.partner.search.atlas.cari</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="ref" string="Cari Kodu"/>
+                <field name="vat" string="VKN/TCKN"/>
+                <field name="atlas_cari_grup_id"/>
+                <field name="atlas_bolge_id"/>
+            </field>
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="atlas_alici" string="Alıcılar" domain="[('atlas_cari_tipi', 'in', ('alici', 'alici_satici'))]"/>
+                <filter name="atlas_satici" string="Satıcılar" domain="[('atlas_cari_tipi', 'in', ('satici', 'alici_satici'))]"/>
+                <group>
+                    <filter name="atlas_group_by_tipi" string="Cari Tipi" context="{'group_by': 'atlas_cari_tipi'}"/>
+                    <filter name="atlas_group_by_grup" string="Cari Grubu" context="{'group_by': 'atlas_cari_grup_id'}"/>
+                    <filter name="atlas_group_by_bolge" string="Bölge" context="{'group_by': 'atlas_bolge_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_atlas_cari" model="ir.actions.act_window">
+        <field name="name">Cari Kartları</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain">[('atlas_cari_tipi', '!=', False), ('parent_id', '=', False)]</field>
+        <field name="context">{'default_atlas_cari_tipi': 'alici', 'default_is_company': True}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'list', 'view_id': ref('view_atlas_cari_list')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('base.view_partner_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Yeni cari kartı oluşturun</p>
+            <p>Cari tipine göre 120 veya 320 altında muhasebe hesabı otomatik açılır (ör. 120-00-0001).</p>
+        </field>
+    </record>
+
+    <record id="action_atlas_cari_hesap_tamamla" model="ir.actions.server">
+        <field name="name">Cari Hesaplarını Tamamla</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">records.action_atlas_ensure_cari_accounts()</field>
+    </record>
+</odoo>

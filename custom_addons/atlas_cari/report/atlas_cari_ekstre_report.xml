@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_atlas_cari_ekstre" model="ir.actions.report">
+        <field name="name">Cari Ekstre</field>
+        <field name="model">atlas.cari.ekstre.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_cari.report_cari_ekstre</field>
+        <field name="print_report_name">'Cari Ekstre'</field>
+    </record>
+    <record id="action_report_atlas_cari_ekstre_html" model="ir.actions.report">
+        <field name="name">Cari Ekstre (Ekran)</field>
+        <field name="model">atlas.cari.ekstre.wizard</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">atlas_cari.report_cari_ekstre</field>
+    </record>
+
+    <template id="report_cari_ekstre">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="company" t-value="doc.company_id"/>
+                <t t-set="currency" t-value="doc.company_id.currency_id"/>
+                <t t-foreach="doc._get_ekstre_data()" t-as="data">
+                    <t t-call="web.external_layout">
+                        <t t-set="o" t-value="doc"/>
+                        <t t-set="partner" t-value="data['partner']"/>
+                        <div class="page" style="font-size: 11px;">
+                            <h4 class="mb-1">CARİ HESAP EKSTRESİ</h4>
+                            <div class="row mb-3">
+                                <div class="col-7">
+                                    <strong t-out="partner.ref"/> - <strong t-out="partner.name"/><br/>
+                                    <span t-if="partner.vat">VKN/TCKN: <span t-out="partner.vat"/></span>
+                                    <span t-if="partner.l10n_tr_tax_office_id"> / V.D.: <span t-out="partner.l10n_tr_tax_office_id.name"/></span><br/>
+                                    <span t-out="partner.contact_address_inline"/>
+                                </div>
+                                <div class="col-5 text-end">
+                                    Dönem: <span t-out="doc.date_from" t-options="{'widget': 'date'}"/>
+                                    - <span t-out="doc.date_to" t-options="{'widget': 'date'}"/><br/>
+                                    Düzenleme: <span t-out="context_timestamp(datetime.datetime.now())" t-options="{'widget': 'date'}"/>
+                                </div>
+                            </div>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Fiş No</th>
+                                        <th>Evrak No</th>
+                                        <th>Hareket Türü</th>
+                                        <th>Açıklama</th>
+                                        <th>Vade</th>
+                                        <th t-if="doc.show_currency" class="text-end">Döviz Tutarı</th>
+                                        <th class="text-end">Borç</th>
+                                        <th class="text-end">Alacak</th>
+                                        <th class="text-end">Bakiye</th>
+                                        <th>B/A</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="fw-bold">
+                                        <td colspan="5">DEVİR</td>
+                                        <td/>
+                                        <td t-if="doc.show_currency"/>
+                                        <td/>
+                                        <td/>
+                                        <td class="text-end" t-out="abs(data['devir'])" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                        <td t-out="doc._ba(data['devir'])"/>
+                                    </tr>
+                                    <tr t-foreach="data['lines']" t-as="line">
+                                        <td t-out="line['date']" t-options="{'widget': 'date'}"/>
+                                        <td t-out="line['move_name']"/>
+                                        <td t-out="line['evrak_no']"/>
+                                        <td t-out="line['hareket_turu']"/>
+                                        <td t-out="line['aciklama']"/>
+                                        <td><span t-if="line['date_maturity']" t-out="line['date_maturity']" t-options="{'widget': 'date'}"/></td>
+                                        <td t-if="doc.show_currency" class="text-end">
+                                            <span t-if="line['currency']" t-out="line['amount_currency']"
+                                                  t-options="{'widget': 'monetary', 'display_currency': line['currency']}"/>
+                                        </td>
+                                        <td class="text-end"><span t-if="line['debit']" t-out="line['debit']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-if="line['credit']" t-out="line['credit']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end" t-out="abs(line['bakiye'])" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                        <td t-out="doc._ba(line['bakiye'])"/>
+                                    </tr>
+                                    <tr class="fw-bold border-top border-dark">
+                                        <td colspan="5">TOPLAM</td>
+                                        <td/>
+                                        <td t-if="doc.show_currency"/>
+                                        <td class="text-end" t-out="data['total_debit']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                        <td class="text-end" t-out="data['total_credit']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                        <td class="text-end" t-out="abs(data['kapanis'])" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                        <td t-out="doc._ba(data['kapanis'])"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="mt-4">
+                                <t t-if="data['kapanis'] &gt; 0">
+                                    <t t-out="doc.date_to" t-options="{'widget': 'date'}"/> tarihi itibarıyla
+                                    <strong t-out="data['kapanis']" t-options="{'widget': 'monetary', 'display_currency': currency}"/> borç bakiyeniz bulunmaktadır.
+                                </t>
+                                <t t-elif="data['kapanis'] &lt; 0">
+                                    <t t-out="doc.date_to" t-options="{'widget': 'date'}"/> tarihi itibarıyla
+                                    <strong t-out="abs(data['kapanis'])" t-options="{'widget': 'monetary', 'display_currency': currency}"/> alacak bakiyeniz bulunmaktadır.
+                                </t>
+                                <t t-else="">Bakiyeniz bulunmamaktadır.</t>
+                            </p>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_cari_grup_list" model="ir.ui.view">
+        <field name="name">atlas.cari.grup.list</field>
+        <field name="model">atlas.cari.grup</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_cari_grup" model="ir.actions.act_window">
+        <field name="name">Cari Grupları</field>
+        <field name="res_model">atlas.cari.grup</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record id="view_atlas_cari_bolge_list" model="ir.ui.view">
+        <field name="name">atlas.cari.bolge.list</field>
+        <field name="model">atlas.cari.bolge</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_cari_bolge" model="ir.actions.act_window">
+        <field name="name">Bölgeler</field>
+        <field name="res_model">atlas.cari.bolge</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record id="view_atlas_cari_ozel_kod_list" model="ir.ui.view">
+        <field name="name">atlas.cari.ozel.kod.list</field>
+        <field name="model">atlas.cari.ozel.kod</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_cari_ozel_kod_search" model="ir.ui.view">
+        <field name="name">atlas.cari.ozel.kod.search</field>
+        <field name="model">atlas.cari.ozel.kod</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <filter name="kod1" string="Özel Kod 1" domain="[('sira', '=', '1')]"/>
+                <filter name="kod2" string="Özel Kod 2" domain="[('sira', '=', '2')]"/>
+                <group>
+                    <filter name="group_by_sira" string="Özel Kod" context="{'group_by': 'sira'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_atlas_cari_ozel_kod" model="ir.actions.act_window">
+        <field name="name">Cari Özel Kodları</field>
+        <field name="res_model">atlas.cari.ozel.kod</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'active_test': False, 'search_default_group_by_sira': 1}</field>
+    </record>
+</odoo>
