@@ -12,4 +12,10 @@
               action="action_atlas_tcmb_rate_wizard"
               groups="account.group_account_manager"
               sequence="21"/>
+    <menuitem id="menu_atlas_gib_kod"
+              name="GİB İstisna / Tevkifat Kodları"
+              parent="account.account_account_menu"
+              action="action_atlas_gib_kod"
+              groups="account.group_account_manager"
+              sequence="22"/>
 </odoo>

@@ -19,6 +19,7 @@ Stok ve üretimin Türkiye muhasebesine uyarlanması
     'data': [
         'security/ir.access.csv',
         'data/atlas_stok_data.xml',
+        'data/atlas_stok_ayar.xml',
         'views/res_config_settings_views.xml',
         'views/stock_picking_views.xml',
         'report/report_deliveryslip.xml',

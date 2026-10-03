@@ -54,6 +54,13 @@ class ResCompany(models.Model):
                 })
             company._atlas_apply_inventory_mode()
 
+    @api.model
+    def _atlas_set_sale_accounts_all(self):
+        """Satış modülüne ait ayar: peşinat (avans) faturaları 340 Alınan Sipariş Avansları'na."""
+        for company in self.search([('chart_template', '=', 'tr')]):
+            if 'downpayment_account_id' in company._fields and not company.downpayment_account_id:
+                company.downpayment_account_id = account_by_code(self.env, company, '340')
+
     def _atlas_stock_categories(self):
         records = self.env['product.category']
         for xmlid, *_rest in STOK_KATEGORILERI:
