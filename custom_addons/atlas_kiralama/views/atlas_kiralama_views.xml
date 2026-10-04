@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_atlas_kiralama" model="ir.ui.view">
+        <field name="name">product.template.form.atlas.kiralama</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Kiralama" name="atlas_kiralama">
+                    <group>
+                        <group>
+                            <field name="atlas_kiralik"/>
+                            <field name="atlas_gecikme_ucreti" invisible="not atlas_kiralik"/>
+                            <field name="atlas_hazirlik_saat" invisible="not atlas_kiralik"/>
+                        </group>
+                    </group>
+                    <field name="atlas_kira_fiyat_ids" invisible="not atlas_kiralik">
+                        <list editable="bottom">
+                            <field name="sure"/>
+                            <field name="birim"/>
+                            <field name="fiyat"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_order_form_atlas_kiralama" model="ir.ui.view">
+        <field name="name">sale.order.form.atlas.kiralama</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_teslim_et" type="object" string="Teslim Et" class="btn-primary" invisible="atlas_kira_durum != 'rezervasyon'"/>
+                <button name="action_atlas_iade_al" type="object" string="İade Al" class="btn-primary" invisible="atlas_kira_durum != 'teslim'"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_atlas_transferler" type="object" class="oe_stat_button" icon="swap_horiz" invisible="not atlas_kira_picking_ids">
+                    <div class="o_field_widget o_stat_info"><span class="o_stat_text">Kiralama Transferleri</span></div>
+                </button>
+            </div>
+            <field name="payment_term_id" position="after">
+                <field name="atlas_kiralama" readonly="state != 'draft'"/>
+                <label for="atlas_kira_bas" string="Kiralama Dönemi" invisible="not atlas_kiralama"/>
+                <div class="o_row" invisible="not atlas_kiralama">
+                    <field name="atlas_kira_bas" required="atlas_kiralama" readonly="atlas_kira_durum in ('teslim', 'iade')"/> →
+                    <field name="atlas_kira_bit" required="atlas_kiralama" readonly="atlas_kira_durum == 'iade'"/>
+                    <field name="atlas_kira_sure" class="text-muted"/>
+                </div>
+                <field name="atlas_kira_durum" invisible="not atlas_kira_durum" widget="badge" readonly="1"/>
+                <field name="atlas_teslim_zamani" invisible="not atlas_teslim_zamani"/>
+                <field name="atlas_iade_zamani" invisible="not atlas_iade_zamani"/>
+                <field name="atlas_kira_picking_ids" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_atlas_kiralama_list" model="ir.ui.view">
+        <field name="name">sale.order.list.atlas.kiralama</field>
+        <field name="model">sale.order</field>
+        <field name="priority">91</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="atlas_gecikmis" decoration-muted="atlas_kira_durum == 'iade'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="atlas_kira_bas"/>
+                <field name="atlas_kira_bit"/>
+                <field name="atlas_kira_sure"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total" sum="Toplam"/>
+                <field name="atlas_gecikmis" column_invisible="1"/>
+                <field name="state" optional="hide"/>
+                <field name="atlas_kira_durum" widget="badge" decoration-info="atlas_kira_durum == 'rezervasyon'"
+                       decoration-warning="atlas_kira_durum == 'teslim'" decoration-success="atlas_kira_durum == 'iade'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_kiralama_calendar" model="ir.ui.view">
+        <field name="name">sale.order.calendar.atlas.kiralama</field>
+        <field name="model">sale.order</field>
+        <field name="priority">91</field>
+        <field name="arch" type="xml">
+            <calendar date_start="atlas_kira_bas" date_stop="atlas_kira_bit" color="partner_id" mode="month" quick_create="0">
+                <field name="partner_id" filters="1"/>
+                <field name="atlas_kira_durum"/>
+                <field name="amount_total"/>
+            </calendar>
+        </field>
+    </record>
+    <record id="view_atlas_kiralama_search" model="ir.ui.view">
+        <field name="name">sale.order.search.atlas.kiralama</field>
+        <field name="model">sale.order</field>
+        <field name="priority">91</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="order_line" string="Ürün" filter_domain="[('order_line.product_id', 'ilike', self)]"/>
+                <filter name="teslim_bugun" string="Bugün Teslim"
+                        domain="[('atlas_kira_durum', '=', 'rezervasyon'), ('atlas_kira_bas', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="iade_bugun" string="Bugün İade"
+                        domain="[('atlas_kira_durum', '=', 'teslim'), ('atlas_kira_bit', '&lt;', (context_today() + relativedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="gecikmis" string="Gecikmiş" domain="[('atlas_gecikmis', '=', True)]"/>
+                <separator/>
+                <filter name="rezervasyon" string="Rezerve" domain="[('atlas_kira_durum', '=', 'rezervasyon')]"/>
+                <filter name="teslim" string="Kirada" domain="[('atlas_kira_durum', '=', 'teslim')]"/>
+                <filter name="taslak" string="Teklif" domain="[('state', 'in', ('draft', 'sent'))]"/>
+                <group>
+                    <filter name="group_durum" string="Durum" context="{'group_by': 'atlas_kira_durum'}"/>
+                    <filter name="group_partner" string="Müşteri" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_kiralama" model="ir.actions.act_window">
+        <field name="name">Kiralama Siparişleri</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="domain">[('atlas_kiralama', '=', True)]</field>
+        <field name="context">{'default_atlas_kiralama': True}</field>
+        <field name="search_view_id" ref="view_atlas_kiralama_search"/>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_kiralama_list')}),
+                                      (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_atlas_kiralama_calendar')}),
+                                      (0, 0, {'view_mode': 'form', 'view_id': ref('sale.view_order_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk kiralamayı oluşturun</p>
+            <p>Kiralık ürünleri (ürün kartı → Kiralama sekmesi) seçin, teslim ve iade tarihlerini girin; fiyat süreye göre hesaplanır.</p>
+        </field>
+    </record>
+    <record id="action_atlas_kiralama_takvim" model="ir.actions.act_window">
+        <field name="name">Kiralama Takvimi</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="domain">[('atlas_kiralama', '=', True), ('state', '=', 'sale')]</field>
+        <field name="context">{'default_atlas_kiralama': True}</field>
+        <field name="search_view_id" ref="view_atlas_kiralama_search"/>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_atlas_kiralama_calendar')}),
+                                      (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_kiralama_list')})]"/>
+    </record>
+    <record id="action_atlas_kiralik_urun" model="ir.actions.act_window">
+        <field name="name">Kiralık Ürünler</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('atlas_kiralik', '=', True)]</field>
+        <field name="context">{'default_atlas_kiralik': True, 'default_invoice_policy': 'order'}</field>
+    </record>
+
+    <menuitem id="menu_atlas_kiralama_root" name="Kiralama" sequence="26" web_icon="sale_management,static/description/icon.png"
+              groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_atlas_kiralama" name="Siparişler" parent="menu_atlas_kiralama_root" action="action_atlas_kiralama" sequence="10"/>
+    <menuitem id="menu_atlas_kiralama_takvim" name="Takvim" parent="menu_atlas_kiralama_root" action="action_atlas_kiralama_takvim" sequence="20"/>
+    <menuitem id="menu_atlas_kiralik_urun" name="Kiralık Ürünler" parent="menu_atlas_kiralama_root" action="action_atlas_kiralik_urun" sequence="30"/>
+</odoo>
