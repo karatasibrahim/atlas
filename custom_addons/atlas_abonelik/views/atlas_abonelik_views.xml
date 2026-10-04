@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_atlas_abonelik" model="ir.ui.view">
+        <field name="name">sale.order.form.atlas.abonelik</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_faturala" type="object" string="Dönemi Faturala" class="btn-primary" invisible="atlas_abonelik_durum != 'devam'"/>
+                <button name="action_atlas_durdur" type="object" string="Durdur" invisible="atlas_abonelik_durum != 'devam'"/>
+                <button name="action_atlas_devam" type="object" string="Devam Ettir" invisible="atlas_abonelik_durum != 'durduruldu'"/>
+                <button name="action_atlas_yenile" type="object" string="Yenile" invisible="atlas_abonelik_durum not in ('devam', 'kapandi') or not atlas_bitis"/>
+                <button name="action_atlas_kapat" type="object" string="Aboneliği Kapat" invisible="atlas_abonelik_durum not in ('devam', 'durduruldu')"
+                        confirm="Abonelik kapatılacak; yeni dönem faturası kesilmeyecek."/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_atlas_abonelik_faturalari" type="object" class="oe_stat_button" icon="receipt_long" invisible="not atlas_abonelik_fatura_sayisi">
+                    <field name="atlas_abonelik_fatura_sayisi" widget="statinfo" string="Dönem Faturası"/>
+                </button>
+            </div>
+            <field name="payment_term_id" position="after">
+                <field name="atlas_plan_id" readonly="atlas_abonelik_durum in ('kapandi', 'yenilendi')"/>
+                <field name="atlas_abonelik_durum" invisible="not atlas_abonelik_durum" readonly="1" widget="badge"/>
+                <field name="atlas_baslangic" invisible="not atlas_plan_id" readonly="atlas_abonelik_durum"/>
+                <field name="atlas_sonraki_fatura" invisible="not atlas_abonelik_durum"/>
+                <field name="atlas_bitis" invisible="not atlas_plan_id"/>
+                <field name="atlas_mrr" invisible="not atlas_abonelik_durum"/>
+                <field name="atlas_kapanis_id" invisible="atlas_abonelik_durum not in ('devam', 'durduruldu', 'kapandi')" options="{'no_create': True}"/>
+                <field name="atlas_onceki_id" invisible="not atlas_onceki_id"/>
+                <field name="atlas_yenileme_id" invisible="not atlas_yenileme_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_atlas_abonelik_list" model="ir.ui.view">
+        <field name="name">sale.order.list.atlas.abonelik</field>
+        <field name="model">sale.order</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="atlas_abonelik_durum in ('kapandi', 'yenilendi')" decoration-warning="atlas_abonelik_durum == 'durduruldu'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="atlas_plan_id"/>
+                <field name="atlas_baslangic"/>
+                <field name="atlas_sonraki_fatura"/>
+                <field name="atlas_bitis" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_untaxed" string="Dönem Tutarı" sum="Toplam"/>
+                <field name="atlas_mrr" sum="Toplam"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="atlas_abonelik_durum" widget="badge" decoration-success="atlas_abonelik_durum == 'devam'"
+                       decoration-warning="atlas_abonelik_durum == 'durduruldu'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_abonelik_search" model="ir.ui.view">
+        <field name="name">sale.order.search.atlas.abonelik</field>
+        <field name="model">sale.order</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="atlas_plan_id"/>
+                <filter name="devam" string="Devam Eden" domain="[('atlas_abonelik_durum', '=', 'devam')]"/>
+                <filter name="durduruldu" string="Durdurulan" domain="[('atlas_abonelik_durum', '=', 'durduruldu')]"/>
+                <filter name="kapandi" string="Kapanan" domain="[('atlas_abonelik_durum', 'in', ('kapandi', 'yenilendi'))]"/>
+                <separator/>
+                <filter name="yenilenecek" string="30 Gün İçinde Bitecek"
+                        domain="[('atlas_abonelik_durum', '=', 'devam'), ('atlas_bitis', '!=', False), ('atlas_bitis', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="faturalanacak" string="Faturası Gelen" domain="[('atlas_abonelik_durum', '=', 'devam'), ('atlas_sonraki_fatura', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_plan" string="Plan" context="{'group_by': 'atlas_plan_id'}"/>
+                    <filter name="group_durum" string="Durum" context="{'group_by': 'atlas_abonelik_durum'}"/>
+                    <filter name="group_user" string="Satış Temsilcisi" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_kapanis" string="Kapanış Nedeni" context="{'group_by': 'atlas_kapanis_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="view_atlas_abonelik_pivot" model="ir.ui.view">
+        <field name="name">sale.order.pivot.atlas.abonelik</field>
+        <field name="model">sale.order</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <pivot string="MRR Analizi">
+                <field name="atlas_plan_id" type="row"/>
+                <field name="atlas_mrr" type="measure"/>
+                <field name="atlas_arr" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_atlas_abonelik_graph" model="ir.ui.view">
+        <field name="name">sale.order.graph.atlas.abonelik</field>
+        <field name="model">sale.order</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <graph string="MRR" type="bar">
+                <field name="atlas_baslangic" interval="month"/>
+                <field name="atlas_mrr" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_atlas_abonelik" model="ir.actions.act_window">
+        <field name="name">Abonelikler</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('atlas_plan_id', '!=', False)]</field>
+        <field name="context">{'search_default_devam': 1, 'default_atlas_plan_id': ref('atlas_abonelik.plan_aylik')}</field>
+        <field name="search_view_id" ref="view_atlas_abonelik_search"/>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_abonelik_list')}),
+                                      (0, 0, {'view_mode': 'form', 'view_id': ref('sale.view_order_form')}),
+                                      (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_atlas_abonelik_pivot')}),
+                                      (0, 0, {'view_mode': 'graph', 'view_id': ref('view_atlas_abonelik_graph')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk aboneliği oluşturun</p>
+            <p>Abonelik planı seçilen satış siparişi onaylanınca dönem dönem otomatik faturalanır.</p>
+        </field>
+    </record>
+    <record id="action_atlas_abonelik_yenilenecek" model="ir.actions.act_window">
+        <field name="name">Yenilenecekler</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('atlas_plan_id', '!=', False)]</field>
+        <field name="context">{'search_default_yenilenecek': 1}</field>
+        <field name="search_view_id" ref="view_atlas_abonelik_search"/>
+        <field name="view_id" ref="view_atlas_abonelik_list"/>
+    </record>
+    <record id="action_atlas_abonelik_mrr" model="ir.actions.act_window">
+        <field name="name">MRR Analizi</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="domain">[('atlas_abonelik_durum', '=', 'devam')]</field>
+        <field name="search_view_id" ref="view_atlas_abonelik_search"/>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_atlas_abonelik_pivot')}),
+                                      (0, 0, {'view_mode': 'graph', 'view_id': ref('view_atlas_abonelik_graph')})]"/>
+    </record>
+
+    <record id="view_atlas_abonelik_plan_list" model="ir.ui.view">
+        <field name="name">atlas.abonelik.plan.list</field>
+        <field name="model">atlas.abonelik.plan</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="aralik"/>
+                <field name="birim"/>
+                <field name="taahhut_aralik"/>
+                <field name="taahhut_birim"/>
+                <field name="otomatik_onay"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_abonelik_plan" model="ir.actions.act_window">
+        <field name="name">Abonelik Planları</field>
+        <field name="res_model">atlas.abonelik.plan</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="view_atlas_abonelik_kapanis_list" model="ir.ui.view">
+        <field name="name">atlas.abonelik.kapanis.list</field>
+        <field name="model">atlas.abonelik.kapanis</field>
+        <field name="arch" type="xml">
+            <list editable="bottom"><field name="sequence" widget="handle"/><field name="name"/></list>
+        </field>
+    </record>
+    <record id="action_atlas_abonelik_kapanis" model="ir.actions.act_window">
+        <field name="name">Kapanış Nedenleri</field>
+        <field name="res_model">atlas.abonelik.kapanis</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_atlas_abonelik_root" name="Abonelikler" sequence="25" web_icon="sale_management,static/description/icon.png"
+              groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_atlas_abonelik" name="Abonelikler" parent="menu_atlas_abonelik_root" action="action_atlas_abonelik" sequence="10"/>
+    <menuitem id="menu_atlas_abonelik_yenilenecek" name="Yenilenecekler" parent="menu_atlas_abonelik_root" action="action_atlas_abonelik_yenilenecek" sequence="20"/>
+    <menuitem id="menu_atlas_abonelik_rapor" name="Raporlama" parent="menu_atlas_abonelik_root" sequence="30"/>
+    <menuitem id="menu_atlas_abonelik_mrr" name="MRR Analizi" parent="menu_atlas_abonelik_rapor" action="action_atlas_abonelik_mrr" sequence="10"/>
+    <menuitem id="menu_atlas_abonelik_ayar" name="Yapılandırma" parent="menu_atlas_abonelik_root" sequence="90" groups="sales_team.group_sale_manager"/>
+    <menuitem id="menu_atlas_abonelik_plan" name="Planlar" parent="menu_atlas_abonelik_ayar" action="action_atlas_abonelik_plan" sequence="10"/>
+    <menuitem id="menu_atlas_abonelik_kapanis" name="Kapanış Nedenleri" parent="menu_atlas_abonelik_ayar" action="action_atlas_abonelik_kapanis" sequence="20"/>
+</odoo>

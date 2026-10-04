@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_plan_user,atlas.abonelik.plan user,atlas.abonelik.plan,sales_team.group_sale_salesman,r,
+access_plan_manager,atlas.abonelik.plan manager,atlas.abonelik.plan,sales_team.group_sale_manager,crud,
+access_neden_user,atlas.abonelik.kapanis user,atlas.abonelik.kapanis,sales_team.group_sale_salesman,r,
+access_neden_manager,atlas.abonelik.kapanis manager,atlas.abonelik.kapanis,sales_team.group_sale_manager,crud,
