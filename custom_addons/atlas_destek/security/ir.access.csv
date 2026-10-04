@@ -1,0 +1,18 @@
+id,name,model_id,group_id/id,operation,domain
+access_ekip_user,atlas.destek.ekip user,atlas.destek.ekip,group_destek_user,r,
+access_ekip_manager,atlas.destek.ekip manager,atlas.destek.ekip,group_destek_manager,crud,
+access_asama_user,atlas.destek.asama user,atlas.destek.asama,group_destek_user,r,
+access_asama_manager,atlas.destek.asama manager,atlas.destek.asama,group_destek_manager,crud,
+access_tip_user,atlas.destek.tip user,atlas.destek.tip,group_destek_user,r,
+access_tip_manager,atlas.destek.tip manager,atlas.destek.tip,group_destek_manager,crud,
+access_etiket_user,atlas.destek.etiket user,atlas.destek.etiket,group_destek_user,cr,
+access_etiket_manager,atlas.destek.etiket manager,atlas.destek.etiket,group_destek_manager,crud,
+access_sla_user,atlas.destek.sla user,atlas.destek.sla,group_destek_user,r,
+access_sla_manager,atlas.destek.sla manager,atlas.destek.sla,group_destek_manager,crud,
+access_talep_user,atlas.destek.talep user,atlas.destek.talep,group_destek_user,cru,
+access_talep_manager,atlas.destek.talep manager,atlas.destek.talep,group_destek_manager,crud,
+access_talep_portal,Portal talepleri,atlas.destek.talep,base.group_portal,r,"[('partner_id', 'child_of', [user.commercial_partner_id.id])]"
+access_sla_durum_user,atlas.destek.sla.durum user,atlas.destek.sla.durum,group_destek_user,crud,
+access_tip_portal,atlas.destek.tip portal,atlas.destek.tip,base.group_portal,r,
+access_asama_portal,atlas.destek.asama portal,atlas.destek.asama,base.group_portal,r,
+atlas_destek_talep_comp_rule,Destek talebi şirket kuralı,atlas.destek.talep,,crud,"[('company_id', 'in', company_ids)]"

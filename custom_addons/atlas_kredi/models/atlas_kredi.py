@@ -290,7 +290,7 @@ class AtlasKrediTaksit(models.Model):
     kkdf = fields.Monetary(string='KKDF')
     toplam = fields.Monetary(string='Taksit', compute='_compute_toplam', store=True)
     kalan_anapara = fields.Monetary(string='Kalan Anapara', compute='_compute_kalan')
-    move_id = fields.Many2one('account.move', string='Fiş', compute='_compute_durum')
+    move_id = fields.Many2one('account.move', string='Fiş', compute='_compute_move_id')
     kapandi = fields.Boolean(string='Erken Kapamayla Ödendi', copy=False)
     durum = fields.Selection([('planlandi', 'Planlandı'), ('odendi', 'Ödendi')], string='Durum', compute='_compute_durum', store=True)
 
@@ -309,12 +309,18 @@ class AtlasKrediTaksit(models.Model):
         for t in self - self.kredi_id.taksit_ids:
             t.kalan_anapara = 0.0
 
+    def _taksit_fisi(self):
+        self.ensure_one()
+        return self.kredi_id.move_ids.filtered(lambda m: m.atlas_kredi_taksit_id == self and not m.reversal_move_ids)[:1]
+
+    def _compute_move_id(self):
+        for t in self:
+            t.move_id = t._taksit_fisi()
+
     @api.depends('kapandi', 'kredi_id.move_ids.state', 'kredi_id.move_ids.atlas_kredi_taksit_id')
     def _compute_durum(self):
         for t in self:
-            move = t.kredi_id.move_ids.filtered(lambda m: m.atlas_kredi_taksit_id == t and not m.reversal_move_ids)[:1]
-            t.move_id = move
-            t.durum = 'odendi' if t.kapandi or move.state == 'posted' else 'planlandi'
+            t.durum = 'odendi' if t.kapandi or t._taksit_fisi().state == 'posted' else 'planlandi'
 
 
 class AccountMove(models.Model):

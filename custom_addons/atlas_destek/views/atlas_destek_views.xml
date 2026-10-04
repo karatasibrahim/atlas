@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Genel bakış: ekip kartları -->
+    <record id="view_atlas_destek_ekip_kanban" model="ir.ui.view">
+        <field name="name">atlas.destek.ekip.kanban</field>
+        <field name="model">atlas.destek.ekip</field>
+        <field name="arch" type="xml">
+            <kanban create="false" highlight_color="color">
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold fs-4"/>
+                        <field name="alias_email" class="small text-muted"/>
+                        <div class="row mt-2 g-2">
+                            <div class="col-6"><a name="action_talepler" type="object" role="button" class="btn btn-primary w-100"><field name="acik_sayisi"/> açık talep</a></div>
+                            <div class="col-6 small">
+                                <div><field name="atanmamis_sayisi"/> atanmamış</div>
+                                <div class="text-danger"><field name="acil_sayisi"/> acil</div>
+                                <div class="text-warning"><field name="sla_ihlal_sayisi"/> SLA ihlali</div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="view_atlas_destek_ekip_form" model="ir.ui.view">
+        <field name="name">atlas.destek.ekip.form</field>
+        <field name="model">atlas.destek.ekip</field>
+        <field name="arch" type="xml">
+            <form string="Destek Ekibi">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="user_ids" widget="many2many_avatar_user"/>
+                            <field name="atama"/>
+                            <field name="calendar_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <label for="alias_name" string="E-posta Adresi"/>
+                            <div class="o_row">
+                                <field name="alias_name" placeholder="destek"/>@<field name="alias_domain_id" placeholder="alan adı" options="{'no_create': True}"/>
+                            </div>
+                            <field name="alias_contact"/>
+                            <field name="portal_gorunur"/>
+                            <field name="memnuniyet"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_destek_genel" model="ir.actions.act_window">
+        <field name="name">Genel Bakış</field>
+        <field name="res_model">atlas.destek.ekip</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_atlas_destek_ekip_kanban"/>
+    </record>
+    <record id="action_atlas_destek_ekip" model="ir.actions.act_window">
+        <field name="name">Ekipler</field>
+        <field name="res_model">atlas.destek.ekip</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Talepler -->
+    <record id="view_atlas_destek_talep_kanban" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.kanban</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="asama_id" highlight_color="color" sample="1" quick_create="false">
+                <field name="sla_ihlal"/>
+                <templates>
+                    <t t-name="menu">
+                        <t t-if="widget.editable"><a role="menuitem" type="open" class="dropdown-item">Düzenle</a></t>
+                        <field name="color" widget="kanban_color_picker"/>
+                    </t>
+                    <t t-name="card">
+                        <field name="name" class="small text-muted"/>
+                        <field name="baslik" class="fw-bold"/>
+                        <field name="partner_id" class="small"/>
+                        <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        <div t-if="record.sla_ihlal.raw_value" class="small text-danger">SLA ihlali</div>
+                        <field name="sla_deadline" widget="remaining_days" class="small" invisible="not sla_deadline"/>
+                        <footer>
+                            <div class="d-flex">
+                                <field name="oncelik" widget="priority"/>
+                                <field name="activity_ids" widget="kanban_activity" class="ms-2"/>
+                            </div>
+                            <div class="d-flex ms-auto align-items-center">
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="view_atlas_destek_talep_list" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.list</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="sla_ihlal and not kapali" decoration-muted="kapali" sample="1">
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="partner_id"/>
+                <field name="ekip_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="oncelik" widget="priority" optional="show"/>
+                <field name="tip_id" optional="show"/>
+                <field name="sla_deadline" widget="remaining_days" optional="show"/>
+                <field name="sla_ihlal" column_invisible="1"/>
+                <field name="kapali" column_invisible="1"/>
+                <field name="create_date" string="Açılış" optional="hide"/>
+                <field name="asama_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_destek_talep_form" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.form</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <form string="Destek Talebi">
+                <header>
+                    <button name="action_ata_bana" type="object" string="Bana Ata" invisible="user_id"/>
+                    <field name="asama_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Kapalı" bg_color="text-bg-success" invisible="not kapali"/>
+                    <div class="oe_title">
+                        <field name="name" readonly="1" class="text-muted"/>
+                        <h1><field name="baslik" placeholder="Talep konusu"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="email" widget="email"/>
+                            <field name="telefon" widget="phone"/>
+                            <field name="kanal"/>
+                        </group>
+                        <group>
+                            <field name="ekip_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="oncelik" widget="priority"/>
+                            <field name="tip_id"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="kapali" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama" placeholder="Talebin ayrıntıları..."/>
+                        </page>
+                        <page string="SLA" name="sla">
+                            <group>
+                                <group>
+                                    <field name="sla_deadline"/>
+                                    <field name="sla_ihlal"/>
+                                </group>
+                                <group>
+                                    <field name="ilk_yanit"/>
+                                    <field name="kapanis_tarihi"/>
+                                    <field name="cozum_saat" widget="float_time"/>
+                                </group>
+                            </group>
+                            <field name="sla_durum_ids" readonly="1">
+                                <list decoration-danger="durum == 'ihlal'" decoration-success="durum == 'basarili'">
+                                    <field name="sla_id"/>
+                                    <field name="hedef_asama_id"/>
+                                    <field name="deadline"/>
+                                    <field name="ulasildi"/>
+                                    <field name="durum" widget="badge" decoration-danger="durum == 'ihlal'" decoration-success="durum == 'basarili'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_atlas_destek_talep_search" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.search</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="partner_id"/>
+                <field name="etiket_ids"/>
+                <filter name="benim" string="Taleplerim" domain="[('user_id', '=', uid)]"/>
+                <filter name="atanmamis" string="Atanmamış" domain="[('user_id', '=', False)]"/>
+                <separator/>
+                <filter name="acik" string="Açık" domain="[('kapali', '=', False)]"/>
+                <filter name="ihlal" string="SLA İhlali" domain="[('sla_ihlal', '=', True)]"/>
+                <filter name="acil" string="Acil" domain="[('oncelik', '=', '3')]"/>
+                <filter name="create_date" string="Açılış Tarihi" date="create_date"/>
+                <group>
+                    <filter name="group_ekip" string="Ekip" context="{'group_by': 'ekip_id'}"/>
+                    <filter name="group_user" string="Sorumlu" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_tip" string="Tip" context="{'group_by': 'tip_id'}"/>
+                    <filter name="group_asama" string="Aşama" context="{'group_by': 'asama_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="view_atlas_destek_talep_pivot" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.pivot</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <pivot string="Talep Analizi" sample="1">
+                <field name="ekip_id" type="row"/>
+                <field name="create_date" interval="month" type="col"/>
+                <field name="cozum_saat" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_atlas_destek_talep_graph" model="ir.ui.view">
+        <field name="name">atlas.destek.talep.graph</field>
+        <field name="model">atlas.destek.talep</field>
+        <field name="arch" type="xml">
+            <graph string="Talep Analizi" type="bar" sample="1">
+                <field name="create_date" interval="week"/>
+                <field name="tip_id"/>
+            </graph>
+        </field>
+    </record>
+    <record id="action_atlas_destek_talep" model="ir.actions.act_window">
+        <field name="name">Talepler</field>
+        <field name="res_model">atlas.destek.talep</field>
+        <field name="view_mode">kanban,list,form,pivot,graph,activity</field>
+        <field name="search_view_id" ref="view_atlas_destek_talep_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Destek talebi yok</p>
+            <p>Talepler; ekip e-posta adresine gelen e-postalardan, müşteri portalından veya elle oluşur.</p>
+        </field>
+    </record>
+    <record id="action_atlas_destek_talep_benim" model="ir.actions.act_window">
+        <field name="name">Taleplerim</field>
+        <field name="res_model">atlas.destek.talep</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_benim': 1, 'search_default_acik': 1}</field>
+        <field name="search_view_id" ref="view_atlas_destek_talep_search"/>
+    </record>
+    <record id="action_atlas_destek_analiz" model="ir.actions.act_window">
+        <field name="name">Talep Analizi</field>
+        <field name="res_model">atlas.destek.talep</field>
+        <field name="view_mode">pivot,graph,list</field>
+    </record>
+
+    <record id="view_atlas_destek_sla_durum_pivot" model="ir.ui.view">
+        <field name="name">atlas.destek.sla.durum.pivot</field>
+        <field name="model">atlas.destek.sla.durum</field>
+        <field name="arch" type="xml">
+            <pivot string="SLA Analizi">
+                <field name="sla_id" type="row"/>
+                <field name="durum" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="action_atlas_destek_sla_analiz" model="ir.actions.act_window">
+        <field name="name">SLA Analizi</field>
+        <field name="res_model">atlas.destek.sla.durum</field>
+        <field name="view_mode">pivot,list</field>
+    </record>
+
+    <!-- Yapılandırma -->
+    <record id="view_atlas_destek_sla_list" model="ir.ui.view">
+        <field name="name">atlas.destek.sla.list</field>
+        <field name="model">atlas.destek.sla</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="ekip_id"/>
+                <field name="tip_ids" widget="many2many_tags"/>
+                <field name="oncelik"/>
+                <field name="hedef_asama_id"/>
+                <field name="sure_saat" widget="float_time"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_destek_sla" model="ir.actions.act_window">
+        <field name="name">SLA Politikaları</field>
+        <field name="res_model">atlas.destek.sla</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="view_atlas_destek_asama_list" model="ir.ui.view">
+        <field name="name">atlas.destek.asama.list</field>
+        <field name="model">atlas.destek.asama</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="ekip_ids" widget="many2many_tags"/>
+                <field name="kapali"/>
+                <field name="fold"/>
+                <field name="template_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_destek_asama" model="ir.actions.act_window">
+        <field name="name">Aşamalar</field>
+        <field name="res_model">atlas.destek.asama</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_atlas_destek_tip" model="ir.actions.act_window">
+        <field name="name">Talep Tipleri</field>
+        <field name="res_model">atlas.destek.tip</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_atlas_destek_etiket" model="ir.actions.act_window">
+        <field name="name">Etiketler</field>
+        <field name="res_model">atlas.destek.etiket</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_atlas_destek_hazir_cevap" model="ir.actions.act_window">
+        <field name="name">Hazır Cevaplar</field>
+        <field name="res_model">mail.canned.response</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_atlas_destek_root" name="Yardım Masası" sequence="27" web_icon="atlas_destek,static/description/icon.png"
+              groups="group_destek_user"/>
+    <menuitem id="menu_atlas_destek_genel" name="Genel Bakış" parent="menu_atlas_destek_root" action="action_atlas_destek_genel" sequence="5"/>
+    <menuitem id="menu_atlas_destek_talepler_ust" name="Talepler" parent="menu_atlas_destek_root" sequence="10"/>
+    <menuitem id="menu_atlas_destek_benim" name="Taleplerim" parent="menu_atlas_destek_talepler_ust" action="action_atlas_destek_talep_benim" sequence="10"/>
+    <menuitem id="menu_atlas_destek_tum" name="Tüm Talepler" parent="menu_atlas_destek_talepler_ust" action="action_atlas_destek_talep" sequence="20"/>
+    <menuitem id="menu_atlas_destek_rapor" name="Raporlama" parent="menu_atlas_destek_root" sequence="30"/>
+    <menuitem id="menu_atlas_destek_analiz" name="Talep Analizi" parent="menu_atlas_destek_rapor" action="action_atlas_destek_analiz" sequence="10"/>
+    <menuitem id="menu_atlas_destek_sla_analiz" name="SLA Analizi" parent="menu_atlas_destek_rapor" action="action_atlas_destek_sla_analiz" sequence="20"/>
+    <menuitem id="menu_atlas_destek_ayar" name="Yapılandırma" parent="menu_atlas_destek_root" sequence="90" groups="group_destek_manager"/>
+    <menuitem id="menu_atlas_destek_ekip" name="Ekipler" parent="menu_atlas_destek_ayar" action="action_atlas_destek_ekip" sequence="10"/>
+    <menuitem id="menu_atlas_destek_sla" name="SLA Politikaları" parent="menu_atlas_destek_ayar" action="action_atlas_destek_sla" sequence="20"/>
+    <menuitem id="menu_atlas_destek_asama" name="Aşamalar" parent="menu_atlas_destek_ayar" action="action_atlas_destek_asama" sequence="30"/>
+    <menuitem id="menu_atlas_destek_tip" name="Talep Tipleri" parent="menu_atlas_destek_ayar" action="action_atlas_destek_tip" sequence="40"/>
+    <menuitem id="menu_atlas_destek_etiket" name="Etiketler" parent="menu_atlas_destek_ayar" action="action_atlas_destek_etiket" sequence="50"/>
+    <menuitem id="menu_atlas_destek_hazir" name="Hazır Cevaplar" parent="menu_atlas_destek_ayar" action="action_atlas_destek_hazir_cevap" sequence="60"/>
+</odoo>

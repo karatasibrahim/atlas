@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="portal_entry_destek" model="portal.entry">
+        <field name="name">Destek Talepleri</field>
+        <field name="description">Destek taleplerinizi izleyin, yeni talep açın</field>
+        <field name="url">/my/destek</field>
+        <field name="image" type="bytes" file="web/static/img/folder.svg"/>
+        <field name="placeholder_count">destek_count</field>
+        <field name="category">service_category</field>
+        <field name="sequence" eval="95"/>
+    </record>
+
+    <template id="portal_my_destek" name="Destek Taleplerim">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <div class="d-flex align-items-center justify-content-between mt-3 mb-2">
+                <h3 class="m-0">Destek Taleplerim</h3>
+                <div class="d-flex gap-2">
+                    <a t-attf-href="/my/destek?filtre={{ 'tum' if filtre == 'acik' else 'acik' }}" class="btn btn-outline-secondary btn-sm">
+                        <t t-if="filtre == 'acik'">Tümünü göster</t><t t-else="">Yalnızca açık</t>
+                    </a>
+                    <a href="/my/destek/yeni" class="btn btn-primary btn-sm">Yeni Talep</a>
+                </div>
+            </div>
+            <p t-if="not talepler" class="text-muted">Görüntülenecek talep yok.</p>
+            <t t-if="talepler" t-call="portal.portal_table">
+                <thead>
+                    <tr><th>No</th><th>Konu</th><th>Tarih</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="talepler" t-as="t">
+                        <td><a t-att-href="t.get_portal_url()" t-out="t.name"/></td>
+                        <td t-out="t.baslik"/>
+                        <td><span t-field="t.create_date" t-options="{'widget': 'date'}"/></td>
+                        <td><span t-attf-class="badge {{ 'text-bg-success' if t.kapali else 'text-bg-primary' }}" t-out="t.asama_id.name"/></td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_destek_detay" name="Destek Talebi">
+        <t t-call="portal.portal_layout">
+            <div class="mt-3">
+                <a href="/my/destek" class="small">← Destek Taleplerim</a>
+                <div class="d-flex justify-content-between align-items-start mt-2">
+                    <h3><t t-out="talep.name"/> — <t t-out="talep.baslik"/></h3>
+                    <span t-attf-class="badge fs-6 {{ 'text-bg-success' if talep.kapali else 'text-bg-primary' }}" t-out="talep.asama_id.name"/>
+                </div>
+                <div class="row small text-muted mb-3">
+                    <div class="col-md-4">Açılış: <span t-field="talep.create_date"/></div>
+                    <div class="col-md-4" t-if="talep.tip_id">Tip: <span t-out="talep.tip_id.name"/></div>
+                    <div class="col-md-4" t-if="talep.user_id">Sorumlu: <span t-out="talep.user_id.name"/></div>
+                </div>
+                <div class="card mb-3" t-if="talep.aciklama"><div class="card-body" t-field="talep.aciklama"/></div>
+                <h5>Mesajlar</h5>
+                <t t-call="portal.message_thread" token="talep.access_token" object="talep"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_destek_yeni" name="Yeni Destek Talebi">
+        <t t-call="portal.portal_layout">
+            <div class="mt-3" style="max-width: 44rem;">
+                <a href="/my/destek" class="small">← Destek Taleplerim</a>
+                <h3 class="mt-2">Yeni Destek Talebi</h3>
+                <div t-if="hata" class="alert alert-danger" t-out="hata"/>
+                <form method="post" action="/my/destek/yeni">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label class="form-label">Konu</label>
+                        <input type="text" name="baslik" class="form-control" required="1" t-att-value="post.get('baslik', '')"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3" t-if="len(ekipler) &gt; 1">
+                            <label class="form-label">Birim</label>
+                            <select name="ekip_id" class="form-select">
+                                <option t-foreach="ekipler" t-as="e" t-att-value="e.id" t-out="e.name"/>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tip</label>
+                            <select name="tip_id" class="form-select">
+                                <option value="">—</option>
+                                <option t-foreach="tipler" t-as="tp" t-att-value="tp.id" t-out="tp.name"/>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea name="aciklama" rows="6" class="form-control" t-out="post.get('aciklama', '')"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Talebi Gönder</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>
