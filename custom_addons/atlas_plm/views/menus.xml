@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_plm_root" name="PLM" sequence="43"
+              web_icon="atlas_plm,static/description/icon.png" groups="group_plm_user"/>
+
+    <menuitem id="menu_atlas_plm_genel" name="Genel Bakış" parent="menu_atlas_plm_root"
+              action="action_atlas_plm_genel" sequence="5"/>
+    <menuitem id="menu_atlas_plm_eco" name="Değişiklikler" parent="menu_atlas_plm_root"
+              action="action_atlas_plm_eco" sequence="10"/>
+
+    <menuitem id="menu_atlas_plm_ana_veri" name="Ana Veri" parent="menu_atlas_plm_root" sequence="20"/>
+    <menuitem id="menu_atlas_plm_urun" name="Ürünler" parent="menu_atlas_plm_ana_veri"
+              action="mrp.product_template_action" sequence="10"/>
+    <menuitem id="menu_atlas_plm_bom" name="Ürün Reçeteleri" parent="menu_atlas_plm_ana_veri"
+              action="mrp.mrp_bom_form_action" sequence="20"/>
+    <menuitem id="menu_atlas_plm_workcenter" name="İş Merkezleri" parent="menu_atlas_plm_ana_veri"
+              action="mrp.mrp_workcenter_action" sequence="30"/>
+
+    <menuitem id="menu_atlas_plm_rapor" name="Raporlama" parent="menu_atlas_plm_root" sequence="30"/>
+    <menuitem id="menu_atlas_plm_analiz" name="ECO Analizi" parent="menu_atlas_plm_rapor"
+              action="action_atlas_plm_eco_analiz" sequence="10"/>
+
+    <menuitem id="menu_atlas_plm_ayar" name="Yapılandırma" parent="menu_atlas_plm_root" sequence="90"
+              groups="group_plm_manager"/>
+    <menuitem id="menu_atlas_plm_tip" name="ECO Tipleri" parent="menu_atlas_plm_ayar" action="action_atlas_plm_tip" sequence="10"/>
+    <menuitem id="menu_atlas_plm_asama" name="Aşamalar ve Onaylar" parent="menu_atlas_plm_ayar" action="action_atlas_plm_asama" sequence="20"/>
+    <menuitem id="menu_atlas_plm_etiket" name="Etiketler" parent="menu_atlas_plm_ayar" action="action_atlas_plm_etiket" sequence="30"/>
+</odoo>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_plm_eco_kanban" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.kanban</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="asama_id" highlight_color="color" sample="1" quick_create="false">
+                <field name="durum"/>
+                <templates>
+                    <t t-name="menu">
+                        <t t-if="widget.editable"><a role="menuitem" type="open" class="dropdown-item">Düzenle</a></t>
+                        <field name="color" widget="kanban_color_picker"/>
+                    </t>
+                    <t t-name="card">
+                        <main t-att-class="record.durum.raw_value == 'iptal' ? 'opacity-50' : ''">
+                            <field name="name" class="small text-muted"/>
+                            <field name="baslik" class="fw-bold fs-6"/>
+                            <field name="product_tmpl_id" class="small"/>
+                            <div class="small">
+                                Sürüm <field name="mevcut_versiyon"/> → <field name="yeni_versiyon"/>
+                            </div>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <footer>
+                                <div class="d-flex">
+                                    <field name="oncelik" widget="priority"/>
+                                    <field name="activity_ids" widget="kanban_activity" class="ms-2"/>
+                                </div>
+                                <div class="d-flex ms-auto align-items-center gap-1">
+                                    <field name="onay_durumu" widget="badge" invisible="onay_durumu == 'yok'"
+                                           decoration-warning="onay_durumu == 'bekliyor'" decoration-success="onay_durumu == 'onaylandi'"
+                                           decoration-danger="onay_durumu == 'reddedildi'"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                </div>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_plm_eco_list" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.list</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum in ('bitti', 'iptal')" sample="1">
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="tip_id" optional="show"/>
+                <field name="product_tmpl_id"/>
+                <field name="mevcut_versiyon" string="Sürüm"/>
+                <field name="yeni_versiyon" string="Yeni"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="asama_id"/>
+                <field name="onay_durumu" widget="badge" optional="show" decoration-warning="onay_durumu == 'bekliyor'"
+                       decoration-success="onay_durumu == 'onaylandi'" decoration-danger="onay_durumu == 'reddedildi'"/>
+                <field name="yururluk_tarihi" optional="hide"/>
+                <field name="uygulama_tarihi" optional="show"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'islemde'" decoration-success="durum == 'bitti'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_plm_eco_form" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.form</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <form string="Mühendislik Değişiklik Emri">
+                <header>
+                    <button name="action_revizyon_baslat" type="object" string="Revizyonu Başlat" class="btn-primary"
+                            invisible="durum != 'taslak' or uygulama != 'bom' or not id"/>
+                    <button name="action_revizyon_baslat" type="object" string="Başlat" class="btn-primary"
+                            invisible="durum != 'taslak' or uygulama != 'urun' or not id"/>
+                    <button name="action_revizyon_ac" type="object" string="Revizyonu Düzenle" class="btn-primary"
+                            invisible="durum != 'islemde' or not yeni_bom_id"/>
+                    <button name="action_onayla" type="object" string="Onayla" class="btn-success" invisible="not onayimi_bekliyor"/>
+                    <button name="action_reddet" type="object" string="Reddet" class="btn-danger" invisible="not onayimi_bekliyor"/>
+                    <button name="action_sonraki_asama" type="object" string="Sonraki Aşama"
+                            invisible="durum not in ('taslak', 'islemde') or zamanlandi or not id"/>
+                    <button name="action_simdi_uygula" type="object" string="Şimdi Uygula" invisible="not zamanlandi"
+                            groups="atlas_plm.group_plm_manager" confirm="Değişiklik yürürlük tarihini beklemeden uygulanacak."/>
+                    <button name="action_yazdir" type="object" string="Yazdır" invisible="not id"/>
+                    <button name="action_iptal" type="object" string="İptal" invisible="durum in ('bitti', 'iptal') or not id"
+                            confirm="Değişiklik iptal edilecek; hazırlanan taslak revizyon silinecek."/>
+                    <button name="action_taslaga_al" type="object" string="Taslağa Al" invisible="durum != 'iptal'"/>
+                    <field name="asama_id" widget="statusbar" options="{'clickable': '1'}" invisible="durum == 'iptal'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_revizyon_ac" type="object" class="oe_stat_button" icon="account_tree" invisible="not yeni_bom_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">Sürüm <field name="yeni_versiyon"/></span>
+                                <span class="o_stat_text">Revizyon</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Uygulandı" bg_color="text-bg-success" invisible="durum != 'bitti'"/>
+                    <widget name="web_ribbon" title="İptal" bg_color="text-bg-danger" invisible="durum != 'iptal'"/>
+                    <widget name="web_ribbon" title="Yürürlük Bekliyor" bg_color="text-bg-info" invisible="not zamanlandi"/>
+                    <div class="oe_title">
+                        <field name="name" readonly="1" class="text-muted"/>
+                        <h1><field name="baslik" placeholder="ör. Fan motoru tedarikçi değişikliği" readonly="durum in ('bitti', 'iptal')"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="tip_id" readonly="durum != 'taslak'" options="{'no_create': True}"/>
+                            <field name="uygulama" widget="radio" readonly="durum != 'taslak'"/>
+                            <field name="product_tmpl_id" readonly="durum != 'taslak'"/>
+                            <field name="bom_id" invisible="uygulama != 'bom'" readonly="durum != 'taslak'"
+                                   placeholder="Boşsa yeni reçete oluşturulur"/>
+                            <label for="mevcut_versiyon" string="Sürüm"/>
+                            <div class="o_row">
+                                <field name="mevcut_versiyon"/> → <field name="yeni_versiyon"/>
+                            </div>
+                            <field name="yeni_bom_id" invisible="not yeni_bom_id" context="{'active_test': False}"/>
+                        </group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="oncelik" widget="priority"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="yururluk" widget="radio" readonly="durum in ('bitti', 'iptal')"/>
+                            <field name="yururluk_tarihi" invisible="yururluk != 'tarih'" required="yururluk == 'tarih'"
+                                   readonly="durum in ('bitti', 'iptal')"/>
+                            <field name="uygulama_tarihi" invisible="not uygulama_tarihi"/>
+                            <field name="durum" readonly="1"/>
+                            <field name="zamanlandi" invisible="1"/>
+                            <field name="onayimi_bekliyor" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama" placeholder="Neden ve ne değişiyor? Etkilenen müşteri/tedarikçi, stok ve açık üretim emirleri için karar..."/>
+                        </page>
+                        <page string="Değişiklikler" name="degisiklikler" invisible="uygulama != 'bom' or durum == 'taslak'">
+                            <div class="d-flex justify-content-end mb-2" invisible="durum != 'islemde'">
+                                <button name="action_degisiklik_hesapla" type="object" string="Yeniden Hesapla" class="btn-link" icon="refresh"/>
+                            </div>
+                            <separator string="Bileşenler"/>
+                            <field name="bom_degisiklik_ids" readonly="1" nolabel="1">
+                                <list decoration-success="tip == 'ekle'" decoration-danger="tip == 'sil'" decoration-warning="tip == 'guncelle'">
+                                    <field name="tip"/>
+                                    <field name="product_id"/>
+                                    <field name="eski_miktar"/>
+                                    <field name="yeni_miktar"/>
+                                    <field name="fark"/>
+                                    <field name="uom_id"/>
+                                </list>
+                            </field>
+                            <separator string="Operasyonlar"/>
+                            <field name="rota_degisiklik_ids" readonly="1" nolabel="1">
+                                <list decoration-success="tip == 'ekle'" decoration-danger="tip == 'sil'" decoration-warning="tip == 'guncelle'">
+                                    <field name="tip"/>
+                                    <field name="operasyon"/>
+                                    <field name="eski_workcenter_id"/>
+                                    <field name="yeni_workcenter_id"/>
+                                    <field name="eski_sure"/>
+                                    <field name="yeni_sure"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Onaylar" name="onaylar">
+                            <field name="onay_durumu" invisible="1"/>
+                            <field name="onay_ids" readonly="1" nolabel="1">
+                                <list decoration-success="durum == 'onaylandi'" decoration-danger="durum == 'reddedildi'">
+                                    <field name="asama_id"/>
+                                    <field name="name"/>
+                                    <field name="onay_tipi"/>
+                                    <field name="durum" widget="badge" decoration-success="durum == 'onaylandi'"
+                                           decoration-danger="durum == 'reddedildi'" decoration-warning="durum == 'bekliyor'"/>
+                                    <field name="user_id"/>
+                                    <field name="tarih"/>
+                                    <field name="onaylayabilir" column_invisible="1"/>
+                                    <button name="action_onayla" type="object" icon="thumb_up" title="Onayla" class="text-success"
+                                            invisible="not onaylayabilir or durum == 'onaylandi'"/>
+                                    <button name="action_reddet" type="object" icon="thumb_down" title="Reddet" class="text-danger"
+                                            invisible="not onaylayabilir or durum == 'reddedildi'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Teknik Dokümanlar" name="dokumanlar">
+                            <field name="dokuman_ids" widget="many2many_binary" readonly="durum in ('bitti', 'iptal')"/>
+                            <div class="text-muted small">Değişiklik uygulandığında bu dokümanlar ürünün dokümanlarına eklenir.</div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_plm_eco_search" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.search</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="product_tmpl_id"/>
+                <field name="bom_id"/>
+                <field name="etiket_ids"/>
+                <filter name="acik" string="Açık" domain="[('durum', 'in', ('taslak', 'islemde'))]"/>
+                <filter name="onayimi_bekleyen" string="Onayımı Bekleyen" domain="[('onayimi_bekliyor', '=', True)]"/>
+                <filter name="benim" string="Benim" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="uygulandi" string="Uygulanan" domain="[('durum', '=', 'bitti')]"/>
+                <filter name="zamanlandi" string="Yürürlük Bekleyen" domain="[('zamanlandi', '=', True)]"/>
+                <filter name="iptal" string="İptal" domain="[('durum', '=', 'iptal')]"/>
+                <filter name="uygulama_tarihi" string="Uygulama Tarihi" date="uygulama_tarihi"/>
+                <group>
+                    <filter name="group_asama" string="Aşama" context="{'group_by': 'asama_id'}"/>
+                    <filter name="group_tip" string="Tip" context="{'group_by': 'tip_id'}"/>
+                    <filter name="group_urun" string="Ürün" context="{'group_by': 'product_tmpl_id'}"/>
+                    <filter name="group_user" string="Sorumlu" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_plm_eco_pivot" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.pivot</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <pivot string="ECO Analizi" sample="1">
+                <field name="tip_id" type="row"/>
+                <field name="asama_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_atlas_plm_eco_graph" model="ir.ui.view">
+        <field name="name">atlas.plm.eco.graph</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="arch" type="xml">
+            <graph string="ECO Analizi" type="bar" sample="1">
+                <field name="create_date" interval="month"/>
+                <field name="tip_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_atlas_plm_eco" model="ir.actions.act_window">
+        <field name="name">Mühendislik Değişiklikleri</field>
+        <field name="res_model">atlas.plm.eco</field>
+        <field name="view_mode">kanban,list,form,pivot,graph,activity</field>
+        <field name="search_view_id" ref="view_atlas_plm_eco_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk mühendislik değişikliğini açın</p>
+            <p>Bir değişiklik emri (ECO) reçete revizyonunu taslak olarak hazırlar, onaylardan geçirir ve
+               uygulandığında eski sürümü arşivleyerek yeni sürümü devreye alır.</p>
+        </field>
+    </record>
+    <record id="action_atlas_plm_eco_analiz" model="ir.actions.act_window">
+        <field name="name">ECO Analizi</field>
+        <field name="res_model">atlas.plm.eco</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_bom_form_atlas_plm" model="ir.ui.view">
+        <field name="name">mrp.bom.form.atlas.plm</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header invisible="context.get('parent_production_id')" groups="atlas_plm.group_plm_user">
+                    <button name="action_atlas_eco_baslat" type="object" string="Değişiklik Başlat (ECO)"
+                            invisible="not active or not id"/>
+                </header>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_atlas_ecolar" type="object" class="oe_stat_button" icon="edit_square"
+                        invisible="not atlas_eco_sayisi" groups="atlas_plm.group_plm_user">
+                    <field name="atlas_eco_sayisi" widget="statinfo" string="Değişiklik"/>
+                </button>
+                <button name="action_atlas_surumler" type="object" class="oe_stat_button" icon="history"
+                        invisible="atlas_surum_sayisi &lt; 2">
+                    <field name="atlas_surum_sayisi" widget="statinfo" string="Sürüm"/>
+                </button>
+            </div>
+            <xpath expr="//sheet" position="inside">
+                <field name="active" invisible="1"/>
+                <field name="atlas_revizyon_eco_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="alert alert-info mb-2" role="alert" invisible="active or not atlas_revizyon_eco_id">
+                    Bu reçete <field name="atlas_revizyon_eco_id" readonly="1" class="fw-bold"/> değişikliğinin taslak revizyonudur.
+                    Değişiklik uygulanınca devreye girer.
+                </div>
+            </xpath>
+            <field name="code" position="after">
+                <field name="atlas_versiyon" readonly="1"/>
+                <field name="atlas_onceki_bom_id" invisible="not atlas_onceki_bom_id" context="{'active_test': False}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="mrp_bom_list_atlas_plm" model="ir.ui.view">
+        <field name="name">mrp.bom.list.atlas.plm</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="code" position="after">
+                <field name="atlas_versiyon" string="Sürüm" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_form_atlas_plm" model="ir.ui.view">
+        <field name="name">product.template.form.atlas.plm</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_atlas_ecolar" type="object" class="oe_stat_button" icon="edit_square"
+                        invisible="not atlas_eco_sayisi" groups="atlas_plm.group_plm_user">
+                    <field name="atlas_eco_sayisi" widget="statinfo" string="Değişiklik"/>
+                </button>
+            </div>
+            <field name="categ_id" position="after">
+                <field name="atlas_versiyon" readonly="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>

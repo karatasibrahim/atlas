@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Genel bakış: ECO tipleri -->
+    <record id="view_atlas_plm_tip_kanban" model="ir.ui.view">
+        <field name="name">atlas.plm.tip.kanban</field>
+        <field name="model">atlas.plm.tip</field>
+        <field name="arch" type="xml">
+            <kanban create="false" highlight_color="color">
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold fs-4 mb-2"/>
+                        <div class="row">
+                            <div class="col-6">
+                                <button name="action_yeni_eco" type="object" class="btn btn-primary">Yeni Değişiklik</button>
+                            </div>
+                            <div class="col-6 text-end">
+                                <a name="action_ecolar" type="object" class="d-block">
+                                    <field name="eco_acik_sayisi"/> açık değişiklik
+                                </a>
+                                <a name="action_ecolar" type="object" class="d-block text-warning" t-if="record.eco_onay_bekleyen.raw_value">
+                                    <field name="eco_onay_bekleyen"/> onayımı bekliyor
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="action_atlas_plm_genel" model="ir.actions.act_window">
+        <field name="name">Genel Bakış</field>
+        <field name="res_model">atlas.plm.tip</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_atlas_plm_tip_kanban"/>
+    </record>
+
+    <record id="view_atlas_plm_tip_list" model="ir.ui.view">
+        <field name="name">atlas.plm.tip.list</field>
+        <field name="model">atlas.plm.tip</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_plm_tip" model="ir.actions.act_window">
+        <field name="name">ECO Tipleri</field>
+        <field name="res_model">atlas.plm.tip</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_atlas_plm_tip_list"/>
+    </record>
+
+    <record id="view_atlas_plm_asama_list" model="ir.ui.view">
+        <field name="name">atlas.plm.asama.list</field>
+        <field name="model">atlas.plm.asama</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="tip_ids" widget="many2many_tags"/>
+                <field name="son_asama"/>
+                <field name="fold"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_plm_asama_form" model="ir.ui.view">
+        <field name="name">atlas.plm.asama.form</field>
+        <field name="model">atlas.plm.asama</field>
+        <field name="arch" type="xml">
+            <form string="ECO Aşaması">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="tip_ids" widget="many2many_tags" placeholder="Tüm tipler"/>
+                        </group>
+                        <group>
+                            <field name="son_asama"/>
+                            <field name="fold"/>
+                        </group>
+                    </group>
+                    <separator string="Bu aşamadan çıkmadan alınacak onaylar"/>
+                    <field name="onay_sablon_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="onay_tipi"/>
+                            <field name="user_ids" widget="many2many_avatar_user" placeholder="PLM yöneticileri"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_plm_asama" model="ir.actions.act_window">
+        <field name="name">ECO Aşamaları</field>
+        <field name="res_model">atlas.plm.asama</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_atlas_plm_etiket_list" model="ir.ui.view">
+        <field name="name">atlas.plm.etiket.list</field>
+        <field name="model">atlas.plm.etiket</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_plm_etiket" model="ir.actions.act_window">
+        <field name="name">ECO Etiketleri</field>
+        <field name="res_model">atlas.plm.etiket</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

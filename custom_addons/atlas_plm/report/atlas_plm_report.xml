@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_eco" model="ir.actions.report">
+        <field name="name">Değişiklik Özeti (ECO)</field>
+        <field name="model">atlas.plm.eco</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_plm.report_eco</field>
+        <field name="print_report_name">'ECO %s' % object.name</field>
+        <field name="binding_model_id" ref="model_atlas_plm_eco"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_eco">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Mühendislik Değişiklik Emri <span t-field="o.name"/></h2>
+                        <h4 t-field="o.baslik"/>
+                        <table class="table table-sm table-borderless mt-3">
+                            <tr>
+                                <td style="width: 18%;"><strong>Tip</strong></td><td><span t-field="o.tip_id"/></td>
+                                <td style="width: 18%;"><strong>Aşama / Durum</strong></td>
+                                <td><span t-field="o.asama_id"/> / <span t-field="o.durum"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ürün</strong></td><td><span t-field="o.product_tmpl_id"/></td>
+                                <td><strong>Sürüm</strong></td><td><span t-out="o.mevcut_versiyon"/> → <span t-out="o.yeni_versiyon"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sorumlu</strong></td><td><span t-field="o.user_id"/></td>
+                                <td><strong>Yürürlük</strong></td>
+                                <td>
+                                    <span t-if="o.uygulama_tarihi">Uygulandı: <span t-field="o.uygulama_tarihi"/></span>
+                                    <span t-elif="o.yururluk == 'tarih'" t-field="o.yururluk_tarihi"/>
+                                    <span t-else="">Onaylanınca</span>
+                                </td>
+                            </tr>
+                        </table>
+                        <div t-if="o.aciklama" class="mb-3">
+                            <h5>Açıklama</h5>
+                            <div t-field="o.aciklama"/>
+                        </div>
+                        <t t-if="o.bom_degisiklik_ids">
+                            <h5>Bileşen Değişiklikleri</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Değişiklik</th><th>Bileşen</th><th class="text-end">Eski</th><th class="text-end">Yeni</th><th>Birim</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="o.bom_degisiklik_ids" t-as="d">
+                                        <td><span t-field="d.tip"/></td><td t-out="d.product_id.display_name"/>
+                                        <td class="text-end" t-out="d.eski_miktar"/><td class="text-end" t-out="d.yeni_miktar"/>
+                                        <td t-out="d.uom_id.name"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-if="o.rota_degisiklik_ids">
+                            <h5>Operasyon Değişiklikleri</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Değişiklik</th><th>Operasyon</th><th>İş Merkezi</th><th class="text-end">Süre (dk)</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="o.rota_degisiklik_ids" t-as="d">
+                                        <td><span t-field="d.tip"/></td><td t-out="d.operasyon"/>
+                                        <td><span t-out="d.eski_workcenter_id.name or '-'"/> → <span t-out="d.yeni_workcenter_id.name or '-'"/></td>
+                                        <td class="text-end"><span t-out="d.eski_sure"/> → <span t-out="d.yeni_sure"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-if="o.onay_ids">
+                            <h5>Onaylar</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Aşama</th><th>Onay</th><th>Karar</th><th>Karar Veren</th><th>Tarih</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="o.onay_ids" t-as="a">
+                                        <td t-out="a.asama_id.name"/><td t-out="a.name"/><td><span t-field="a.durum"/></td>
+                                        <td t-out="a.user_id.name or ''"/><td><span t-field="a.tarih"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
