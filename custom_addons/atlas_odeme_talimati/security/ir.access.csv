@@ -1,0 +1,7 @@
+id,name,model_id,group_id/id,operation,domain
+access_talimat_user,atlas.odeme.talimat user,atlas.odeme.talimat,account.group_account_readonly,r,
+access_talimat_invoice,atlas.odeme.talimat invoice,atlas.odeme.talimat,account.group_account_invoice,crud,
+access_talimat_satir_user,atlas.odeme.talimat.satir user,atlas.odeme.talimat.satir,account.group_account_readonly,r,
+access_talimat_satir_invoice,atlas.odeme.talimat.satir invoice,atlas.odeme.talimat.satir,account.group_account_invoice,crud,
+access_talimat_ekle,atlas.odeme.talimat.ekle,atlas.odeme.talimat.ekle,account.group_account_invoice,crud,
+atlas_odeme_talimat_comp_rule,Ödeme talimatı şirket kuralı,atlas.odeme.talimat,,crud,"[('company_id', 'in', company_ids)]"

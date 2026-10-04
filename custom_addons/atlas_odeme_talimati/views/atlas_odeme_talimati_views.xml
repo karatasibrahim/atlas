@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_odeme_talimat_list" model="ir.ui.view">
+        <field name="name">atlas.odeme.talimat.list</field>
+        <field name="model">atlas.odeme.talimat</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum in ('tamamlandi', 'iptal')" sample="1">
+                <field name="name"/>
+                <field name="tarih"/>
+                <field name="journal_id"/>
+                <field name="satir_sayisi"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="toplam" sum="Toplam"/>
+                <field name="eslesen_sayisi" optional="show"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'onaylandi'" decoration-warning="durum == 'gonderildi'"
+                       decoration-success="durum == 'tamamlandi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_odeme_talimat_form" model="ir.ui.view">
+        <field name="name">atlas.odeme.talimat.form</field>
+        <field name="model">atlas.odeme.talimat</field>
+        <field name="arch" type="xml">
+            <form string="Ödeme Talimatı">
+                <header>
+                    <button name="action_onayla" type="object" string="Onayla ve Ödemeleri Kaydet" class="btn-primary" invisible="durum != 'taslak'"
+                            confirm="Her satır için ödeme kaydı oluşturulacak ve faturalar kapanacak."/>
+                    <button name="action_xlsx" type="object" string="Banka Dosyası (Excel)" class="btn-primary" invisible="durum not in ('onaylandi', 'gonderildi')"/>
+                    <button name="action_csv" type="object" string="Banka Dosyası (CSV)" invisible="durum not in ('onaylandi', 'gonderildi')"/>
+                    <button name="action_iptal" type="object" string="İptal" invisible="durum in ('taslak', 'iptal', 'tamamlandi')"
+                            confirm="Ödeme kayıtları iptal edilecek, faturalar yeniden açılacak."/>
+                    <button name="action_taslaga_al" type="object" string="Taslağa Al" invisible="durum != 'iptal'"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="taslak,onaylandi,gonderildi,tamamlandi"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_odemeler" type="object" class="oe_stat_button" icon="payments" invisible="not payment_ids">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="eslesen_sayisi"/> / <field name="satir_sayisi"/></span>
+                                <span class="o_stat_text">Bankada</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="journal_id" readonly="durum != 'taslak'" options="{'no_create': True}"/>
+                            <field name="tarih" readonly="durum != 'taslak'"/>
+                            <field name="aciklama" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="toplam"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="durum != 'taslak'"/>
+                            <field name="payment_ids" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="satir_ids" readonly="durum != 'taslak'">
+                        <list editable="bottom" decoration-success="eslesti">
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="commercial_partner_id" column_invisible="1"/>
+                            <field name="partner_bank_id" options="{'no_create': True}"/>
+                            <field name="move_ids" widget="many2many_tags" optional="show"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="acik_bakiye" optional="show"/>
+                            <field name="tutar" sum="Toplam"/>
+                            <field name="aciklama"/>
+                            <field name="payment_id" optional="show"/>
+                            <field name="eslesti" optional="show"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_atlas_odeme_talimat" model="ir.actions.act_window">
+        <field name="name">Ödeme Talimatları</field>
+        <field name="res_model">atlas.odeme.talimat</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Toplu ödeme talimatı oluşturun</p>
+            <p>Alış faturaları listesinde faturaları seçip İşlem → "Ödeme Talimatına Ekle" ile talimat hazırlayın;
+               onaylayınca ödemeler kaydedilir ve bankaya yüklenecek dosya alınır.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_odeme_talimat" name="Ödeme Talimatları" parent="account.menu_finance_payables"
+              action="action_atlas_odeme_talimat" sequence="25"/>
+    <menuitem id="menu_atlas_odeme_talimat_kb" name="Ödeme Talimatları" parent="atlas_kasa_banka.menu_atlas_kasa_banka_root"
+              action="action_atlas_odeme_talimat" sequence="50"/>
+</odoo>
