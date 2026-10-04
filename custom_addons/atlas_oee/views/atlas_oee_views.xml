@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_rapor_wizard_form_oee" model="ir.ui.view">
+        <field name="name">atlas.rapor.wizard.form.oee</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="inherit_id" ref="atlas_rapor.view_atlas_rapor_wizard_form"/>
+        <field name="arch" type="xml">
+            <field name="rapor_turu" position="after">
+                <field name="workcenter_ids" widget="many2many_tags" invisible="rapor_turu != 'oee'" placeholder="Tüm iş merkezleri"/>
+            </field>
+            <field name="taslak_dahil" position="attributes">
+                <attribute name="invisible">rapor_turu in ('yaslandirma', 'butce', 'oee')</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_atlas_rapor_oee" model="ir.actions.act_window">
+        <field name="name">OEE Raporu</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'oee'}</field>
+    </record>
+
+    <menuitem id="menu_atlas_rapor_oee" name="OEE Raporu" parent="mrp.menu_mrp_reporting"
+              action="action_atlas_rapor_oee" sequence="5" groups="mrp.group_mrp_user"/>
+</odoo>
