@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_planlama_rol_list" model="ir.ui.view">
+        <field name="name">atlas.planlama.rol.list</field>
+        <field name="model">atlas.planlama.rol</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+                <field name="employee_ids" widget="many2many_avatar_employee"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_planlama_rol" model="ir.actions.act_window">
+        <field name="name">Roller</field>
+        <field name="res_model">atlas.planlama.rol</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_planlama_sablon_list" model="ir.ui.view">
+        <field name="name">atlas.planlama.sablon.list</field>
+        <field name="model">atlas.planlama.sablon</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="ad"/>
+                <field name="baslangic_saat" widget="float_time"/>
+                <field name="sure_saat" widget="float_time"/>
+                <field name="mola_dk"/>
+                <field name="rol_id"/>
+                <field name="workcenter_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_planlama_sablon" model="ir.actions.act_window">
+        <field name="name">Vardiya Şablonları</field>
+        <field name="res_model">atlas.planlama.sablon</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_planlama_vardiya_list" model="ir.ui.view">
+        <field name="name">atlas.planlama.vardiya.list</field>
+        <field name="model">atlas.planlama.vardiya</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum == 'taslak'" sample="1">
+                <header>
+                    <button name="action_yayinla" type="object" string="Yayınla" groups="atlas_planlama.group_planlama_manager"/>
+                    <button name="action_tekrarla" type="object" string="Tekrarla" groups="atlas_planlama.group_planlama_manager"/>
+                </header>
+                <field name="employee_id" widget="many2one_avatar_employee"/>
+                <field name="rol_id"/>
+                <field name="baslangic"/>
+                <field name="bitis"/>
+                <field name="planlanan_saat" widget="float_time" sum="Toplam"/>
+                <field name="workcenter_id" optional="show"/>
+                <field name="uyari" optional="show" class="text-danger"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'yayinlandi'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_planlama_vardiya_form" model="ir.ui.view">
+        <field name="name">atlas.planlama.vardiya.form</field>
+        <field name="model">atlas.planlama.vardiya</field>
+        <field name="arch" type="xml">
+            <form string="Vardiya">
+                <header>
+                    <button name="action_yayinla" type="object" string="Yayınla" class="btn-primary" invisible="durum != 'taslak' or not employee_id"
+                            groups="atlas_planlama.group_planlama_manager"/>
+                    <button name="action_taslaga_al" type="object" string="Taslağa Al" invisible="durum != 'yayinlandi'"
+                            groups="atlas_planlama.group_planlama_manager"/>
+                    <button name="action_tekrarla" type="object" string="Tekrarla" invisible="not id"
+                            groups="atlas_planlama.group_planlama_manager"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning mb-2" role="alert" invisible="not uyari">
+                        <field name="uyari" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" widget="many2one_avatar_employee" placeholder="Açık vardiya"/>
+                            <field name="rol_id"/>
+                            <field name="workcenter_id"/>
+                            <field name="sablon_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="baslangic"/>
+                            <field name="bitis"/>
+                            <field name="mola_dk"/>
+                            <field name="planlanan_saat" widget="float_time"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="notlar" placeholder="Vardiya notu (görev, ekipman, talimat...)"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_planlama_vardiya_calendar" model="ir.ui.view">
+        <field name="name">atlas.planlama.vardiya.calendar</field>
+        <field name="model">atlas.planlama.vardiya</field>
+        <field name="arch" type="xml">
+            <calendar date_start="baslangic" date_stop="bitis" color="rol_id" mode="week" quick_create="0" event_open_popup="1">
+                <field name="employee_id" filters="1" avatar_field="avatar_128"/>
+                <field name="rol_id" filters="1"/>
+                <field name="workcenter_id"/>
+                <field name="durum"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_atlas_planlama_vardiya_pivot" model="ir.ui.view">
+        <field name="name">atlas.planlama.vardiya.pivot</field>
+        <field name="model">atlas.planlama.vardiya</field>
+        <field name="arch" type="xml">
+            <pivot string="Planlama Analizi" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="baslangic" interval="week" type="col"/>
+                <field name="planlanan_saat" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_atlas_planlama_vardiya_search" model="ir.ui.view">
+        <field name="name">atlas.planlama.vardiya.search</field>
+        <field name="model">atlas.planlama.vardiya</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="rol_id"/>
+                <field name="workcenter_id"/>
+                <filter name="benim" string="Benim Vardiyalarım" domain="[('user_id', '=', uid)]"/>
+                <filter name="acik" string="Açık Vardiyalar" domain="[('employee_id', '=', False)]"/>
+                <separator/>
+                <filter name="taslak" string="Taslak" domain="[('durum', '=', 'taslak')]"/>
+                <filter name="yayinlandi" string="Yayınlandı" domain="[('durum', '=', 'yayinlandi')]"/>
+                <filter name="baslangic" string="Tarih" date="baslangic"/>
+                <group>
+                    <filter name="group_employee" string="Çalışan" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_rol" string="Rol" context="{'group_by': 'rol_id'}"/>
+                    <filter name="group_workcenter" string="İş Merkezi" context="{'group_by': 'workcenter_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_planlama_vardiya" model="ir.actions.act_window">
+        <field name="name">Vardiyalar</field>
+        <field name="res_model">atlas.planlama.vardiya</field>
+        <field name="view_mode">calendar,list,form,pivot</field>
+    </record>
+    <record id="action_atlas_planlama_benim" model="ir.actions.act_window">
+        <field name="name">Vardiyalarım</field>
+        <field name="res_model">atlas.planlama.vardiya</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="domain">[('user_id', '=', uid), ('durum', '=', 'yayinlandi')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Yayınlanmış vardiyanız yok</p>
+        </field>
+    </record>
+    <record id="action_atlas_planlama_analiz" model="ir.actions.act_window">
+        <field name="name">Planlama Analizi</field>
+        <field name="res_model">atlas.planlama.vardiya</field>
+        <field name="view_mode">pivot,list</field>
+    </record>
+
+    <record id="action_atlas_planlama_hafta" model="ir.actions.client">
+        <field name="name">Haftalık Plan</field>
+        <field name="tag">atlas_planlama.hafta</field>
+    </record>
+    <record id="action_atlas_planlama_doluluk" model="ir.actions.client">
+        <field name="name">İş Merkezi Doluluğu</field>
+        <field name="tag">atlas_planlama.hafta</field>
+        <field name="context">{'mod': 'doluluk'}</field>
+    </record>
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_planlama_root" name="Planlama" sequence="44"
+              web_icon="atlas_planlama,static/description/icon.png"/>
+    <menuitem id="menu_atlas_planlama_hafta" name="Haftalık Plan" parent="menu_atlas_planlama_root"
+              action="action_atlas_planlama_hafta" sequence="10"/>
+    <menuitem id="menu_atlas_planlama_vardiya" name="Vardiyalar" parent="menu_atlas_planlama_root"
+              action="action_atlas_planlama_vardiya" sequence="20" groups="group_planlama_manager"/>
+    <menuitem id="menu_atlas_planlama_benim" name="Vardiyalarım" parent="menu_atlas_planlama_root"
+              action="action_atlas_planlama_benim" sequence="30"/>
+    <menuitem id="menu_atlas_planlama_rapor" name="Raporlama" parent="menu_atlas_planlama_root" sequence="40"
+              groups="group_planlama_manager"/>
+    <menuitem id="menu_atlas_planlama_doluluk" name="İş Merkezi Doluluğu" parent="menu_atlas_planlama_rapor"
+              action="action_atlas_planlama_doluluk" sequence="10"/>
+    <menuitem id="menu_atlas_planlama_analiz" name="Planlama Analizi" parent="menu_atlas_planlama_rapor"
+              action="action_atlas_planlama_analiz" sequence="20"/>
+    <menuitem id="menu_atlas_planlama_ayar" name="Yapılandırma" parent="menu_atlas_planlama_root" sequence="90"
+              groups="group_planlama_manager"/>
+    <menuitem id="menu_atlas_planlama_rol" name="Roller" parent="menu_atlas_planlama_ayar" action="action_atlas_planlama_rol" sequence="10"/>
+    <menuitem id="menu_atlas_planlama_sablon" name="Vardiya Şablonları" parent="menu_atlas_planlama_ayar" action="action_atlas_planlama_sablon" sequence="20"/>
+    <menuitem id="menu_atlas_planlama_calisan" name="Çalışanlar" parent="menu_atlas_planlama_ayar" action="hr.open_view_employee_list_my" sequence="30"/>
+</odoo>

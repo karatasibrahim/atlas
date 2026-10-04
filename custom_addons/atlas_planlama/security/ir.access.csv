@@ -1,0 +1,9 @@
+id,name,model_id,group_id/id,operation,domain
+access_rol_user,atlas.planlama.rol user,atlas.planlama.rol,base.group_user,r,
+access_rol_manager,atlas.planlama.rol manager,atlas.planlama.rol,group_planlama_manager,crud,
+access_sablon_user,atlas.planlama.sablon user,atlas.planlama.sablon,base.group_user,r,
+access_sablon_manager,atlas.planlama.sablon manager,atlas.planlama.sablon,group_planlama_manager,crud,
+access_vardiya_user,Yayınlanan vardiyalar,atlas.planlama.vardiya,base.group_user,r,"[('durum', '=', 'yayinlandi')]"
+access_vardiya_manager,Tüm vardiyalar,atlas.planlama.vardiya,group_planlama_manager,crud,
+access_tekrar_manager,atlas.planlama.tekrar.wizard manager,atlas.planlama.tekrar.wizard,group_planlama_manager,crud,
+atlas_planlama_vardiya_comp_rule,Vardiya şirket kuralı,atlas.planlama.vardiya,,crud,"[('company_id', 'in', company_ids)]"

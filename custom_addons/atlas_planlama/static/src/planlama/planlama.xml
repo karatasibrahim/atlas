@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="atlas_planlama.Hafta">
+        <div class="o_action o_atlas_planlama d-flex flex-column h-100">
+            <div class="o_control_panel d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+                <div class="btn-group">
+                    <button t-attf-class="btn {{ this.state.mod === 'plan' ? 'btn-primary' : 'btn-secondary' }}" t-on-click="() => this.modDegistir('plan')">Vardiya Planı</button>
+                    <button t-if="this.state.veri and this.state.veri.yonetici" t-attf-class="btn {{ this.state.mod === 'doluluk' ? 'btn-primary' : 'btn-secondary' }}"
+                            t-on-click="() => this.modDegistir('doluluk')">İş Merkezi Doluluğu</button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" title="Önceki hafta" t-on-click="() => this.haftaKaydir(-7)"><i class="oi" data-icon="chevron_left"/></button>
+                    <button class="btn btn-secondary" t-on-click="() => this.buHafta()">Bu Hafta</button>
+                    <button class="btn btn-secondary" title="Sonraki hafta" t-on-click="() => this.haftaKaydir(7)"><i class="oi" data-icon="chevron_right"/></button>
+                </div>
+                <strong t-if="this.state.veri" t-out="this.state.veri.baslik"/>
+                <select t-if="this.state.veri and this.state.mod === 'plan'" class="form-select w-auto" t-on-change="(ev) => this.rolDegisti(ev)">
+                    <option value="">Tüm roller</option>
+                    <t t-foreach="this.state.veri.roller" t-as="r" t-key="r.id">
+                        <option t-att-value="r.id" t-att-selected="r.id === this.state.rolId" t-out="r.ad"/>
+                    </t>
+                </select>
+                <t t-if="this.state.veri and this.state.veri.yonetici and this.state.mod === 'plan'">
+                    <button class="btn btn-secondary" t-on-click="() => this.yeniVardiya()">Yeni Vardiya</button>
+                    <button class="btn btn-secondary" t-on-click="() => this.oncekiHafta()">Önceki Haftayı Kopyala</button>
+                    <button class="btn btn-primary" t-att-disabled="!this.state.veri.taslak_sayisi" t-on-click="() => this.yayinla()">
+                        Yayınla<t t-if="this.state.veri.taslak_sayisi"> (<t t-out="this.state.veri.taslak_sayisi"/>)</t>
+                    </button>
+                </t>
+                <span t-if="this.state.veri and this.state.mod === 'plan'" class="ms-auto small text-muted">
+                    Toplam <t t-out="this.saat(this.state.veri.toplam_saat)"/> saat
+                </span>
+                <span t-if="this.state.yukleniyor" class="spinner-border spinner-border-sm"/>
+            </div>
+
+            <div class="flex-grow-1 overflow-auto p-2">
+                <!-- Vardiya planı -->
+                <table t-if="this.state.veri and this.state.mod === 'plan'" class="table table-bordered table-sm o_atlas_plan_tablo mb-0">
+                    <thead>
+                        <tr>
+                            <th class="o_atlas_ilk">Çalışan</th>
+                            <th t-foreach="this.state.veri.gunler" t-as="g" t-key="g.tarih" t-attf-class="text-center {{ g.bugun ? 'o_atlas_bugun' : '' }}" t-out="g.ad"/>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.veri.satirlar" t-as="satir" t-key="satir.id or 0">
+                            <td class="o_atlas_ilk">
+                                <div t-attf-class="fw-bold {{ satir.id ? '' : 'text-muted fst-italic' }}" t-out="satir.ad"/>
+                                <div class="small text-muted"><t t-out="satir.is_unvani"/> <t t-if="satir.toplam_saat">· <t t-out="this.saat(satir.toplam_saat)"/> sa</t></div>
+                            </td>
+                            <t t-foreach="this.state.veri.gunler" t-as="g" t-key="g.tarih">
+                                <td t-attf-class="o_atlas_hucre {{ this.gunIzinli(satir, g_index) ? 'o_atlas_izinli' : '' }} {{ g.bugun ? 'o_atlas_bugun' : '' }}"
+                                    t-on-dragover.prevent="() => {}" t-on-drop="(ev) => this.birak(satir, g, ev)">
+                                    <div t-if="this.gunIzinli(satir, g_index)" class="small text-muted fst-italic">İzinli</div>
+                                    <t t-foreach="satir.gunler[g_index]" t-as="kart" t-key="kart.id">
+                                        <div t-att-class="this.kartSinif(kart)" t-att-draggable="this.state.veri.yonetici ? 'true' : 'false'"
+                                             t-on-dragstart="() => this.dragStart(kart)" t-on-click="() => this.vardiyaAc(kart)"
+                                             t-att-title="kart.uyari or (kart.durum === 'taslak' ? 'Taslak' : 'Yayınlandı')">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="fw-bold" t-out="kart.saat"/>
+                                                <i t-if="kart.uyari" class="oi text-danger" data-icon="warning"/>
+                                            </div>
+                                            <div class="small text-truncate" t-out="kart.rol"/>
+                                            <div t-if="kart.is_merkezi" class="small text-truncate opacity-75" t-out="kart.is_merkezi"/>
+                                        </div>
+                                    </t>
+                                    <select t-if="this.state.veri.yonetici and this.state.veri.sablonlar.length" class="form-select form-select-sm o_atlas_ekle"
+                                            t-on-change="(ev) => this.sablonSecildi(satir, g, ev)" title="Şablondan vardiya ekle">
+                                        <option value="">+</option>
+                                        <t t-foreach="this.state.veri.sablonlar" t-as="s" t-key="s.id">
+                                            <option t-att-value="s.id" t-out="s.ad"/>
+                                        </t>
+                                    </select>
+                                </td>
+                            </t>
+                        </tr>
+                    </tbody>
+                </table>
+                <div t-if="this.state.veri and this.state.mod === 'plan' and !this.state.veri.satirlar.length" class="text-muted text-center py-5">
+                    Çalışan kaydı yok. Çalışanlar uygulamasından çalışan ekleyin.
+                </div>
+
+                <!-- İş merkezi doluluğu -->
+                <t t-if="this.state.mod === 'doluluk' and this.state.doluluk">
+                    <p class="small text-muted mb-2">Kapasite: iş merkezine atanmış vardiyaların çalışma saatleri (molalar düşülmüş). Yük: o gün başlayan iş emirlerinin beklenen süresi.</p>
+                    <div t-if="!this.state.doluluk.satirlar.length" class="text-muted text-center py-5">
+                        Tanımlı iş merkezi yok. Üretim → Ayarlar → İş Merkezleri'nden ekleyin; vardiyalara iş merkezi atayınca kapasite oluşur.
+                    </div>
+                    <table t-else="" class="table table-bordered table-sm o_atlas_plan_tablo mb-0">
+                        <thead>
+                            <tr>
+                                <th class="o_atlas_ilk">İş Merkezi</th>
+                                <th t-foreach="this.state.doluluk.gunler" t-as="g" t-key="g.tarih" class="text-center" t-out="g.ad"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="this.state.doluluk.satirlar" t-as="satir" t-key="satir.id">
+                                <td class="o_atlas_ilk fw-bold" t-out="satir.ad"/>
+                                <td t-foreach="satir.gunler" t-as="h" t-key="h_index" t-attf-class="text-center {{ this.dolulukSinif(h) }}">
+                                    <div class="fw-bold"><t t-out="h.oran"/>%</div>
+                                    <div class="small text-muted"><t t-out="this.saat(h.yuk)"/> / <t t-out="this.saat(h.kapasite)"/> sa</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>
