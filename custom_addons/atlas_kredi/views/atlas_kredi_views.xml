@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_kredi_list" model="ir.ui.view">
+        <field name="name">atlas.kredi.list</field>
+        <field name="model">atlas.kredi</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum == 'kapandi'" sample="1">
+                <field name="name"/>
+                <field name="aciklama"/>
+                <field name="banka_journal_id"/>
+                <field name="kullanim_tarihi"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="tutar" sum="Toplam"/>
+                <field name="faiz_orani"/>
+                <field name="faiz_donemi" optional="show"/>
+                <field name="taksit_sayisi"/>
+                <field name="kalan_anapara" sum="Toplam"/>
+                <field name="sonraki_taksit_id" optional="show"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'aktif'" decoration-info="durum == 'taslak'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_kredi_form" model="ir.ui.view">
+        <field name="name">atlas.kredi.form</field>
+        <field name="model">atlas.kredi</field>
+        <field name="arch" type="xml">
+            <form string="Banka Kredisi">
+                <header>
+                    <button name="action_plan_olustur" type="object" string="Ödeme Planını Hesapla" invisible="durum != 'taslak'"/>
+                    <button name="action_kullan" type="object" string="Kullandır ve Fişleri Oluştur" class="btn-primary" invisible="durum != 'taslak' or not id"
+                            confirm="Kullanım, taksit ve vade virmanı fişleri oluşturulacak."/>
+                    <button name="action_erken_kapat" type="object" string="Erken Kapat" invisible="durum != 'aktif'"
+                            confirm="Kalan anapara kapama tarihinde ödenmiş sayılacak; gelecek taksit fişleri silinecek."/>
+                    <button name="action_iptal" type="object" string="Geri Al" invisible="durum == 'taslak'"
+                            confirm="Taslak fişler silinecek, onaylı fişler ters kayıtla iptal edilecek."/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_fisler" type="object" class="oe_stat_button" icon="list_alt" invisible="not move_ids">
+                            <div class="o_field_widget o_stat_info"><span class="o_stat_text">Fişler</span></div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <field name="name" readonly="1" class="text-muted"/>
+                        <h1><field name="aciklama" placeholder="ör. İşletme kredisi - Garanti" readonly="durum != 'taslak'"/></h1>
+                    </div>
+                    <group>
+                        <group string="Kredi">
+                            <field name="banka_journal_id" readonly="durum != 'taslak'" options="{'no_create': True}"/>
+                            <field name="partner_id" readonly="durum != 'taslak'"/>
+                            <field name="kullanim_tarihi" readonly="durum != 'taslak'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="tutar" readonly="durum != 'taslak'"/>
+                            <field name="masraf" readonly="durum != 'taslak'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group string="Geri Ödeme">
+                            <label for="faiz_orani"/>
+                            <div class="o_row">
+                                <field name="faiz_orani" readonly="durum != 'taslak'"/> % <field name="faiz_donemi" readonly="durum != 'taslak'"/>
+                            </div>
+                            <field name="bsmv_orani" readonly="durum != 'taslak'"/>
+                            <field name="kkdf_orani" readonly="durum != 'taslak'"/>
+                            <field name="odeme_tipi" readonly="durum != 'taslak'"/>
+                            <field name="taksit_sayisi" readonly="durum != 'taslak'"/>
+                            <field name="ilk_taksit_tarihi" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group string="Özet">
+                            <field name="toplam_faiz"/>
+                            <field name="toplam_odeme"/>
+                            <field name="kalan_anapara"/>
+                            <field name="sonraki_taksit_id"/>
+                        </group>
+                        <group string="Erken Kapama" invisible="durum == 'taslak'">
+                            <field name="kapama_tarihi" readonly="durum != 'aktif'"/>
+                            <field name="kapama_faiz" readonly="durum != 'aktif'"/>
+                        </group>
+                    </group>
+                    <field name="taksit_ids" readonly="1">
+                        <list decoration-success="durum == 'odendi'">
+                            <field name="no"/>
+                            <field name="vade"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="anapara" sum="Toplam"/>
+                            <field name="faiz" sum="Toplam"/>
+                            <field name="bsmv" sum="Toplam"/>
+                            <field name="kkdf" sum="Toplam" optional="hide"/>
+                            <field name="toplam" sum="Toplam"/>
+                            <field name="kalan_anapara"/>
+                            <field name="move_id"/>
+                            <field name="durum" widget="badge" decoration-success="durum == 'odendi'"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_kredi_taksit_list" model="ir.ui.view">
+        <field name="name">atlas.kredi.taksit.list</field>
+        <field name="model">atlas.kredi.taksit</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-success="durum == 'odendi'" decoration-danger="durum == 'planlandi' and vade &lt; current_date">
+                <field name="vade"/>
+                <field name="kredi_id"/>
+                <field name="banka_journal_id"/>
+                <field name="no"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="anapara" sum="Toplam"/>
+                <field name="faiz" sum="Toplam"/>
+                <field name="bsmv" sum="Toplam"/>
+                <field name="toplam" sum="Toplam"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'odendi'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_kredi_taksit_search" model="ir.ui.view">
+        <field name="name">atlas.kredi.taksit.search</field>
+        <field name="model">atlas.kredi.taksit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="kredi_id"/>
+                <field name="banka_journal_id"/>
+                <filter name="planlandi" string="Ödenecek" domain="[('durum', '=', 'planlandi')]"/>
+                <filter name="vade" string="Vade" date="vade"/>
+                <group>
+                    <filter name="group_ay" string="Ay" context="{'group_by': 'vade:month'}"/>
+                    <filter name="group_banka" string="Banka" context="{'group_by': 'banka_journal_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_kredi" model="ir.actions.act_window">
+        <field name="name">Banka Kredileri</field>
+        <field name="res_model">atlas.kredi</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Kredi kaydı yok</p>
+            <p>Kredi tutarı, faiz ve taksit sayısını girin; ödeme planı ve muhasebe fişleri otomatik oluşur.</p>
+        </field>
+    </record>
+    <record id="action_atlas_kredi_taksit" model="ir.actions.act_window">
+        <field name="name">Kredi Vade Takvimi</field>
+        <field name="res_model">atlas.kredi.taksit</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_planlandi': 1, 'search_default_group_ay': 1}</field>
+    </record>
+
+    <menuitem id="menu_atlas_kredi" name="Banka Kredileri" parent="atlas_kasa_banka.menu_atlas_kasa_banka_root"
+              action="action_atlas_kredi" sequence="60"/>
+    <menuitem id="menu_atlas_kredi_taksit" name="Kredi Vade Takvimi" parent="atlas_kasa_banka.menu_atlas_kasa_banka_root"
+              action="action_atlas_kredi_taksit" sequence="61"/>
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_kredi_user,atlas.kredi user,atlas.kredi,account.group_account_readonly,r,
+access_kredi_manager,atlas.kredi manager,atlas.kredi,account.group_account_manager,crud,
+access_kredi_taksit_user,atlas.kredi.taksit user,atlas.kredi.taksit,account.group_account_readonly,r,
+access_kredi_taksit_manager,atlas.kredi.taksit manager,atlas.kredi.taksit,account.group_account_manager,crud,
+atlas_kredi_comp_rule,Kredi şirket kuralı,atlas.kredi,,crud,"[('company_id', 'in', company_ids)]"

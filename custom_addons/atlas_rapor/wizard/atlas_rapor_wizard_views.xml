@@ -22,7 +22,7 @@
                                options="{'no_create': True}"/>
                         <field name="yansitma_dahil" invisible="rapor_turu != 'gelir'"/>
                         <field name="sadece_hareketli"/>
-                        <field name="taslak_dahil" invisible="rapor_turu == 'yaslandirma'"/>
+                        <field name="taslak_dahil" invisible="rapor_turu in ('yaslandirma', 'butce')"/>
                         <field name="kapanis_haric" invisible="rapor_turu not in ('mizan', 'bilanco', 'gelir')"/>
                     </group>
                 </group>
