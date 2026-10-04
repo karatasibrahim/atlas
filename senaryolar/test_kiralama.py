@@ -52,4 +52,11 @@ ok(q.location_id == kirada, "seri takipli ürün (ISK-001) kirada")
 s4.action_atlas_iade_al()
 q = env['stock.quant'].search([('lot_id', '=', lot.id), ('quantity', '>', 0)])
 ok(q.location_id == stok and len(s4.atlas_kira_picking_ids) == 2, "aynı seri numarasıyla stoğa döndü (2 transfer)")
+cok = SO.create({'partner_id': mus.id, 'atlas_kiralama': True, 'atlas_kira_bas': t, 'atlas_kira_bit': t + timedelta(days=2),
+                 'order_line': [Command.create({'product_id': jen.id, 'product_uom_qty': 1, 'tax_ids': False}),
+                                Command.create({'product_id': jen.id, 'product_uom_qty': 1, 'tax_ids': False})]})
+cok.write({'atlas_kira_bit': t + timedelta(days=4)})
+ok(cok.order_line.mapped('price_unit') == [4000, 4000], "çok satırlı siparişte tarih değişince tüm kira fiyatları güncellendi")
+yeni = SO.new({'partner_id': mus.id, 'atlas_kiralama': True}); yeni.atlas_kira_bas = t; yeni._onchange_atlas_kira_tarih()
+ok(True, "satırsız yeni siparişte tarih onchange hatasız")
 env.cr.rollback(); print("(geri alındı)")

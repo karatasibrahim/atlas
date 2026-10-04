@@ -118,15 +118,20 @@ class SaleOrder(models.Model):
             return 0.0
         return (self.atlas_kira_bit - self.atlas_kira_bas).total_seconds() / 3600
 
+    def _atlas_kira_fiyat_guncelle(self):
+        # _reset_price_unit tekil kayıt ister
+        for line in self.order_line.filtered(lambda l: l.product_id.atlas_kiralik):
+            line._reset_price_unit()
+
     @api.onchange('atlas_kira_bas', 'atlas_kira_bit')
     def _onchange_atlas_kira_tarih(self):
-        self.order_line.filtered(lambda l: l.product_id.atlas_kiralik)._reset_price_unit()
+        self._atlas_kira_fiyat_guncelle()
 
     def write(self, vals):
         res = super().write(vals)
         if vals.keys() & {'atlas_kira_bas', 'atlas_kira_bit'}:
             for order in self.filtered(lambda o: o.atlas_kiralama and o.state in ('draft', 'sent')):
-                order.order_line.filtered(lambda l: l.product_id.atlas_kiralik)._reset_price_unit()
+                order._atlas_kira_fiyat_guncelle()
         return res
 
     # -------------------------------------------------------------------------
