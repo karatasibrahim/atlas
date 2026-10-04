@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_servis" model="ir.actions.report">
+        <field name="name">Servis Raporu</field>
+        <field name="model">project.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_saha.report_servis</field>
+        <field name="print_report_name">'Servis Raporu - %s' % object.name</field>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_servis_belge">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang or o.env.lang)"/>
+            <div class="page">
+                <h2>Servis Raporu <small class="text-muted" t-out="o.name"/></h2>
+                <div class="row mt-3 mb-3">
+                    <div class="col-6">
+                        <strong>Müşteri</strong>
+                        <div t-out="o.partner_id" t-options="{'widget': 'contact', 'fields': ['name', 'address', 'phone'], 'no_marker': True}"/>
+                    </div>
+                    <div class="col-6">
+                        <table class="table table-sm table-borderless">
+                            <tr><td>Teknisyen</td><td t-out="', '.join(o.user_ids.mapped('name')) or '-'"/></tr>
+                            <tr t-if="o.atlas_plan_baslangic"><td>Planlanan</td><td t-out="o.atlas_plan_baslangic" t-options="{'widget': 'datetime'}"/></tr>
+                            <tr t-if="o.atlas_tamamlanma"><td>Tamamlanma</td><td t-out="o.atlas_tamamlanma" t-options="{'widget': 'datetime'}"/></tr>
+                            <tr><td>Harcanan süre</td><td><t t-out="o.effective_hours" t-options="{'widget': 'float_time'}"/> saat</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <t t-if="o.timesheet_ids">
+                    <h5>Çalışma</h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Tarih</th><th>Çalışan</th><th>Açıklama</th><th class="text-end">Süre</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.timesheet_ids.sorted('date')" t-as="ts">
+                                <td t-out="ts.date" t-options="{'widget': 'date'}"/>
+                                <td t-out="ts.employee_id.name"/>
+                                <td t-out="ts.name if ts.name != '/' else ''"/>
+                                <td class="text-end" t-out="ts.unit_amount" t-options="{'widget': 'float_time'}"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-if="o.atlas_kontrol_ids">
+                    <h5>Kontrol Listesi</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr t-foreach="o.atlas_kontrol_ids" t-as="k">
+                                <td style="width: 2em;" t-out="'☑' if k.yapildi else '☐'"/>
+                                <td t-out="k.name"/>
+                                <td class="text-muted" t-out="k.aciklama or ''"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-if="o.atlas_malzeme_ids">
+                    <h5>Kullanılan Malzemeler</h5>
+                    <table class="table table-sm">
+                        <thead><tr><th>Ürün</th><th class="text-end">Miktar</th><th>Birim</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.atlas_malzeme_ids" t-as="m">
+                                <td t-out="m.product_id.display_name"/>
+                                <td class="text-end" t-out="m.miktar"/>
+                                <td t-out="m.uom_id.name"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-if="not is_html_empty(o.atlas_is_raporu)">
+                    <h5>Yapılan İşler</h5>
+                    <div t-out="o.atlas_is_raporu"/>
+                </t>
+
+                <div class="row mt-4" style="page-break-inside: avoid;">
+                    <div class="col-6 offset-6 text-center">
+                        <strong>Müşteri Onayı</strong>
+                        <div t-if="o.atlas_imza">
+                            <img t-att-src="image_data_uri(o.atlas_imza)" style="max-height: 3cm; max-width: 7cm;"/>
+                        </div>
+                        <div t-else="" style="height: 3cm;"/>
+                        <div t-out="o.atlas_imzalayan or ''"/>
+                        <div t-if="o.atlas_imza_tarihi" class="text-muted small" t-out="o.atlas_imza_tarihi" t-options="{'widget': 'datetime'}"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_servis">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="atlas_saha.report_servis_belge"/>
+            </t>
+        </t>
+    </template>
+</odoo>

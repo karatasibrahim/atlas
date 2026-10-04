@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Proje ayarları -->
+    <record id="edit_project_atlas_saha" model="ir.ui.view">
+        <field name="name">project.project.form.atlas.saha</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='settings']" position="after">
+                <page name="atlas_saha" string="Saha Servisi">
+                    <group>
+                        <group>
+                            <field name="atlas_saha"/>
+                            <field name="atlas_hizmet_urun_id" invisible="not atlas_saha" context="{'default_type': 'service'}"/>
+                        </group>
+                        <group invisible="not atlas_saha">
+                            <field name="atlas_faturala"/>
+                            <field name="atlas_imza_zorunlu"/>
+                        </group>
+                    </group>
+                    <separator string="Kontrol Listesi Şablonu" invisible="not atlas_saha"/>
+                    <field name="atlas_kontrol_sablon_ids" invisible="not atlas_saha">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="zorunlu"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Görev formu -->
+    <record id="view_task_form2_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.form.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_saha" invisible="1"/>
+                <field name="atlas_tamamlanma" invisible="1"/>
+                <button name="action_atlas_tamamla" type="object" string="Servisi Tamamla" class="btn-primary"
+                        invisible="not atlas_saha or atlas_tamamlanma"
+                        confirm="Servis tamamlanacak: süre ve malzemeler faturalanacak, malzeme çıkışı yapılacak. Devam edilsin mi?"/>
+                <button name="action_atlas_yol_tarifi" type="object" string="Yol Tarifi" icon="near_me" invisible="not atlas_saha or not partner_id"/>
+                <button name="action_atlas_rapor_gonder" type="object" string="Raporu Gönder" icon="mail"
+                        invisible="not atlas_saha or not atlas_tamamlanma"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_atlas_siparis" type="object" class="oe_stat_button" icon="receipt_long" invisible="not atlas_siparis_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Servis Siparişi</span>
+                        <field name="atlas_fatura_durumu" readonly="1"/>
+                    </div>
+                </button>
+                <field name="atlas_siparis_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='description_page']" position="before">
+                <page name="atlas_saha_kontrol" string="Kontrol Listesi" invisible="not atlas_saha">
+                    <field name="atlas_kontrol_ids" readonly="atlas_tamamlanma">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="yapildi" widget="boolean_toggle" nolabel="1"/>
+                            <field name="name"/>
+                            <field name="aciklama"/>
+                            <field name="zorunlu" optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+                <page name="atlas_saha_malzeme" string="Malzemeler" invisible="not atlas_saha">
+                    <field name="atlas_malzeme_ids" readonly="atlas_tamamlanma">
+                        <list editable="bottom">
+                            <field name="product_id"/>
+                            <field name="miktar"/>
+                            <field name="uom_id"/>
+                            <field name="fiyat"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="tutar" sum="Toplam"/>
+                        </list>
+                    </field>
+                </page>
+                <page name="atlas_saha_rapor" string="İş Raporu ve İmza" invisible="not atlas_saha">
+                    <field name="atlas_is_raporu" placeholder="Yapılan işleri, tespitleri ve önerileri yazın…" readonly="atlas_tamamlanma"/>
+                    <group>
+                        <group string="Müşteri Onayı">
+                            <field name="atlas_imzalayan" readonly="atlas_tamamlanma"/>
+                            <field name="atlas_imza" widget="signature" readonly="atlas_tamamlanma"
+                                   options="{'full_name': 'atlas_imzalayan', 'size': [360, 140]}"/>
+                            <field name="atlas_imza_tarihi" invisible="not atlas_imza_tarihi"/>
+                        </group>
+                        <group string="Durum" invisible="not atlas_tamamlanma">
+                            <field name="atlas_tamamlanma"/>
+                            <field name="atlas_siparis_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Saha görev görünümleri -->
+    <record id="project_task_kanban_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.kanban.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" quick_create="false" class="o_kanban_small_column">
+                <field name="atlas_tamamlanma"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="name" class="fw-bold"/>
+                            <field name="priority" widget="priority"/>
+                        </div>
+                        <field name="partner_id" class="fw-semibold"/>
+                        <field name="atlas_adres" class="small text-muted"/>
+                        <div class="small mt-1">
+                            <field name="atlas_plan_baslangic" widget="datetime"/>
+                        </div>
+                        <footer class="pt-1">
+                            <field name="atlas_kontrol_ozet" class="small text-muted"/>
+                            <span t-if="record.atlas_tamamlanma.raw_value" class="badge text-bg-success ms-1">Tamamlandı</span>
+                            <div class="d-flex ms-auto gap-1">
+                                <field name="activity_ids" widget="kanban_activity"/>
+                                <field name="user_ids" widget="many2many_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="project_task_list_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.list.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="atlas_adres" optional="show"/>
+                <field name="atlas_plan_baslangic"/>
+                <field name="user_ids" widget="many2many_avatar_user"/>
+                <field name="effective_hours" widget="float_time" sum="Toplam" optional="show"/>
+                <field name="atlas_kontrol_ozet" optional="show"/>
+                <field name="atlas_fatura_durumu" optional="show"/>
+                <field name="stage_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="project_task_gantt_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.gantt.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="atlas_plan_baslangic" date_stop="date_deadline" default_group_by="user_ids" color="stage_id"
+                         default_scale="hafta"/>
+        </field>
+    </record>
+
+    <record id="project_task_harita_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.harita.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <atlas_harita partner="partner_id">
+                <field name="atlas_plan_baslangic"/>
+                <field name="user_ids" string="Teknisyen"/>
+                <field name="stage_id"/>
+            </atlas_harita>
+        </field>
+    </record>
+
+    <record id="project_task_search_atlas_saha" model="ir.ui.view">
+        <field name="name">project.task.search.atlas.saha</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="atlas_bugun" string="Bugün" domain="[('atlas_plan_baslangic', '&gt;=', 'today'), ('atlas_plan_baslangic', '&lt;', 'today +1d')]"/>
+                <filter name="atlas_acik" string="Tamamlanmamış" domain="[('atlas_tamamlanma', '=', False)]"/>
+                <filter name="atlas_faturalanacak" string="Faturalanacak" domain="[('atlas_fatura_durumu', '=', 'to invoice')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_atlas_saha_gorevlerim" model="ir.actions.act_window">
+        <field name="name">Görevlerim</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">kanban,list,form,atlas_harita,atlas_gantt,calendar</field>
+        <field name="domain">[('atlas_saha', '=', True), ('is_template', '=', False)]</field>
+        <field name="context" eval="{'search_default_my_tasks': 1, 'search_default_atlas_acik': 1, 'default_project_id': ref('proje_saha')}"/>
+        <field name="search_view_id" ref="project_task_search_atlas_saha"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_task_kanban_atlas_saha')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_list_atlas_saha')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project.view_task_form2')}),
+            (0, 0, {'view_mode': 'atlas_harita', 'view_id': ref('project_task_harita_atlas_saha')}),
+            (0, 0, {'view_mode': 'atlas_gantt', 'view_id': ref('project_task_gantt_atlas_saha')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Size atanmış açık saha görevi yok</p>
+        </field>
+    </record>
+
+    <record id="action_atlas_saha_tum" model="ir.actions.act_window">
+        <field name="name">Tüm Görevler</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">list,kanban,form,atlas_harita,atlas_gantt,calendar,pivot</field>
+        <field name="domain">[('atlas_saha', '=', True), ('is_template', '=', False)]</field>
+        <field name="context" eval="{'default_project_id': ref('proje_saha')}"/>
+        <field name="search_view_id" ref="project_task_search_atlas_saha"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_list_atlas_saha')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_task_kanban_atlas_saha')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project.view_task_form2')}),
+            (0, 0, {'view_mode': 'atlas_harita', 'view_id': ref('project_task_harita_atlas_saha')}),
+            (0, 0, {'view_mode': 'atlas_gantt', 'view_id': ref('project_task_gantt_atlas_saha')})]"/>
+    </record>
+
+    <record id="action_atlas_saha_planlama" model="ir.actions.act_window">
+        <field name="name">Planlama</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">atlas_gantt,list,form</field>
+        <field name="domain">[('atlas_saha', '=', True), ('is_template', '=', False)]</field>
+        <field name="context" eval="{'default_project_id': ref('proje_saha')}"/>
+        <field name="search_view_id" ref="project_task_search_atlas_saha"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'atlas_gantt', 'view_id': ref('project_task_gantt_atlas_saha')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_list_atlas_saha')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project.view_task_form2')})]"/>
+    </record>
+
+    <record id="action_atlas_saha_harita" model="ir.actions.act_window">
+        <field name="name">Harita</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">atlas_harita,list,form</field>
+        <field name="domain">[('atlas_saha', '=', True), ('is_template', '=', False)]</field>
+        <field name="context">{'search_default_atlas_acik': 1}</field>
+        <field name="search_view_id" ref="project_task_search_atlas_saha"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'atlas_harita', 'view_id': ref('project_task_harita_atlas_saha')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_list_atlas_saha')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project.view_task_form2')})]"/>
+    </record>
+
+    <record id="action_atlas_saha_faturalanacak" model="ir.actions.act_window">
+        <field name="name">Faturalanacak</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('atlas_saha', '=', True)]</field>
+        <field name="context">{'search_default_atlas_faturalanacak': 1}</field>
+        <field name="search_view_id" ref="project_task_search_atlas_saha"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_list_atlas_saha')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project.view_task_form2')})]"/>
+    </record>
+
+    <record id="action_atlas_saha_projeler" model="ir.actions.act_window">
+        <field name="name">Saha Projeleri</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('atlas_saha', '=', True)]</field>
+        <field name="context">{'default_atlas_saha': True, 'default_allow_timesheets': True}</field>
+    </record>
+
+    <menuitem id="menu_atlas_saha_root" name="Saha Servisi" sequence="33" web_icon="atlas_saha,static/description/icon.png"
+              groups="project.group_project_user"/>
+    <menuitem id="menu_atlas_saha_gorevlerim" name="Görevlerim" parent="menu_atlas_saha_root" action="action_atlas_saha_gorevlerim" sequence="10"/>
+    <menuitem id="menu_atlas_saha_tum" name="Tüm Görevler" parent="menu_atlas_saha_root" action="action_atlas_saha_tum" sequence="20"/>
+    <menuitem id="menu_atlas_saha_planlama" name="Planlama" parent="menu_atlas_saha_root" action="action_atlas_saha_planlama" sequence="30"/>
+    <menuitem id="menu_atlas_saha_harita" name="Harita" parent="menu_atlas_saha_root" action="action_atlas_saha_harita" sequence="40"/>
+    <menuitem id="menu_atlas_saha_faturalanacak" name="Faturalanacak" parent="menu_atlas_saha_root" action="action_atlas_saha_faturalanacak"
+              sequence="50" groups="project.group_project_manager"/>
+    <menuitem id="menu_atlas_saha_ayar" name="Yapılandırma" parent="menu_atlas_saha_root" sequence="90" groups="project.group_project_manager"/>
+    <menuitem id="menu_atlas_saha_projeler" name="Saha Projeleri" parent="menu_atlas_saha_ayar" action="action_atlas_saha_projeler" sequence="10"/>
+</odoo>

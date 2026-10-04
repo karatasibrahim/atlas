@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_kontrol_sablon_user,atlas.saha.kontrol.sablon user,atlas.saha.kontrol.sablon,project.group_project_user,r,
+access_kontrol_sablon_manager,atlas.saha.kontrol.sablon manager,atlas.saha.kontrol.sablon,project.group_project_manager,crud,
+access_kontrol_user,atlas.saha.kontrol user,atlas.saha.kontrol,project.group_project_user,crud,
+access_malzeme_user,atlas.saha.malzeme user,atlas.saha.malzeme,project.group_project_user,crud,
