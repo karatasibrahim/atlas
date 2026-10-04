@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Kategoriler -->
+    <record id="view_atlas_onay_kategori_kanban" model="ir.ui.view">
+        <field name="name">atlas.onay.kategori.kanban</field>
+        <field name="model">atlas.onay.kategori</field>
+        <field name="arch" type="xml">
+            <kanban create="false" class="o_kanban_dashboard" highlight_color="renk">
+                <field name="bekleyen_sayisi"/>
+                <field name="talep_sayisi"/>
+                <templates>
+                    <t t-name="card" class="p-3">
+                        <field name="name" class="fw-bold fs-5"/>
+                        <field name="aciklama" class="text-muted small"/>
+                        <div class="d-flex align-items-center gap-2 mt-3">
+                            <button name="action_yeni_talep" type="object" class="btn btn-primary btn-sm">Yeni Talep</button>
+                            <a t-if="record.bekleyen_sayisi.raw_value" name="action_bekleyenler" type="object" role="button"
+                               class="btn btn-link btn-sm text-warning">
+                                <t t-out="record.bekleyen_sayisi.raw_value"/> onayınızı bekliyor
+                            </a>
+                            <span t-if="record.talep_sayisi.raw_value" class="small text-muted ms-auto">
+                                <t t-out="record.talep_sayisi.raw_value"/> açık talebiniz
+                            </span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_kategori_list" model="ir.ui.view">
+        <field name="name">atlas.onay.kategori.list</field>
+        <field name="model">atlas.onay.kategori</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="onaylayici_ids" string="Onaylayıcı" widget="many2many_tags"/>
+                <field name="yonetici_onayi"/>
+                <field name="min_onay"/>
+                <field name="sirali"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_kategori_form" model="ir.ui.view">
+        <field name="name">atlas.onay.kategori.form</field>
+        <field name="model">atlas.onay.kategori</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. Satın Alma Talebi"/></h1>
+                    </div>
+                    <group>
+                        <group string="Onay Kuralları">
+                            <field name="yonetici_onayi"/>
+                            <field name="min_onay"/>
+                            <field name="sirali"/>
+                        </group>
+                        <group>
+                            <field name="aciklama"/>
+                            <field name="renk" widget="color_picker"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Onaylayıcılar" name="onaylayicilar">
+                            <field name="onaylayici_ids">
+                                <list editable="bottom">
+                                    <field name="sira" widget="handle"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="zorunlu"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Form Alanları" name="alanlar">
+                            <group>
+                                <group>
+                                    <field name="alan_tarih" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_donem" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_tutar" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_partner" widget="radio" options="{'horizontal': true}"/>
+                                </group>
+                                <group>
+                                    <field name="alan_urun" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_miktar" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_referans" widget="radio" options="{'horizontal': true}"/>
+                                    <field name="alan_ek" widget="radio" options="{'horizontal': true}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Talepler -->
+    <record id="view_atlas_onay_talep_list" model="ir.ui.view">
+        <field name="name">atlas.onay.talep.list</field>
+        <field name="model">atlas.onay.talep</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="konu"/>
+                <field name="kategori_id"/>
+                <field name="talep_eden_id" widget="many2one_avatar_user"/>
+                <field name="tutar" optional="show" sum="Toplam"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="create_date" string="Tarih" optional="show"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'beklemede'" decoration-success="durum == 'onaylandi'"
+                       decoration-danger="durum == 'reddedildi'" decoration-muted="durum == 'iptal'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_talep_kanban" model="ir.ui.view">
+        <field name="name">atlas.onay.talep.kanban</field>
+        <field name="model">atlas.onay.talep</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="durum" quick_create="false" group_create="false" records_draggable="false">
+                <field name="onaylayan_sayisi"/>
+                <field name="gereken_onay"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="konu" class="fw-bold"/>
+                            <field name="name" class="text-muted small"/>
+                        </div>
+                        <field name="kategori_id" class="text-muted small"/>
+                        <field name="tutar" widget="monetary"/>
+                        <field name="currency_id" invisible="1"/>
+                        <footer class="pt-1">
+                            <span class="small text-muted"><t t-out="record.onaylayan_sayisi.raw_value"/> / <t t-out="record.gereken_onay.raw_value"/> onay</span>
+                            <div class="d-flex ms-auto gap-1">
+                                <field name="activity_ids" widget="kanban_activity"/>
+                                <field name="talep_eden_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_talep_form" model="ir.ui.view">
+        <field name="name">atlas.onay.talep.form</field>
+        <field name="model">atlas.onay.talep</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_gonder" type="object" string="Onaya Gönder" class="btn-primary" invisible="durum != 'taslak'"/>
+                    <button name="action_onayla" type="object" string="Onayla" class="btn-success" invisible="benim_durumum != 'bekliyor' or durum != 'beklemede'"/>
+                    <button name="action_reddet_sihirbaz" type="object" string="Reddet" class="btn-danger" invisible="benim_durumum != 'bekliyor' or durum != 'beklemede'"/>
+                    <button name="action_geri_cek" type="object" string="Taslağa Geri Çek" invisible="durum not in ('beklemede', 'reddedildi', 'iptal') or res_model or not benim_talebim"/>
+                    <button name="action_iptal" type="object" string="İptal Et" invisible="durum not in ('taslak', 'beklemede') or not benim_talebim"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="taslak,beklemede,onaylandi"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_ilgili_kayit" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not res_model">
+                            <span class="o_stat_text">İlgili Kayıt</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Onaylandı" bg_color="text-bg-success" invisible="durum != 'onaylandi'"/>
+                    <widget name="web_ribbon" title="Reddedildi" bg_color="text-bg-danger" invisible="durum != 'reddedildi'"/>
+                    <field name="benim_durumum" invisible="1"/>
+                    <field name="benim_talebim" invisible="1"/>
+                    <field name="res_model" invisible="1"/>
+                    <div class="oe_title">
+                        <div class="text-muted"><field name="name" readonly="1"/></div>
+                        <h1><field name="konu" placeholder="Ne için onay istiyorsunuz?" readonly="durum != 'taslak'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="kategori_id" readonly="durum != 'taslak'" options="{'no_create': True}"/>
+                            <field name="talep_eden_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="tarih" invisible="alan_tarih == 'yok'" required="alan_tarih == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            <label for="tarih_bas" string="Dönem" invisible="alan_donem == 'yok'"/>
+                            <div class="o_row" invisible="alan_donem == 'yok'">
+                                <field name="tarih_bas" required="alan_donem == 'zorunlu'" readonly="durum != 'taslak'"/>
+                                <span>-</span>
+                                <field name="tarih_bit" required="alan_donem == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            </div>
+                            <field name="partner_id" invisible="alan_partner == 'yok' and not partner_id" required="alan_partner == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            <field name="referans" invisible="alan_referans == 'yok' and not referans" required="alan_referans == 'zorunlu'" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group>
+                            <field name="tutar" invisible="alan_tutar == 'yok' and not tutar" required="alan_tutar == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            <field name="currency_id" invisible="alan_tutar == 'yok' and not tutar" readonly="durum != 'taslak'" groups="base.group_multi_currency"/>
+                            <field name="urun_id" invisible="alan_urun == 'yok'" required="alan_urun == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            <field name="miktar" invisible="alan_miktar == 'yok'" required="alan_miktar == 'zorunlu'" readonly="durum != 'taslak'"/>
+                            <field name="onay_tarihi" invisible="not onay_tarihi"/>
+                            <field name="kural_id" invisible="not kural_id"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="durum != 'taslak'"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info py-2" role="status" invisible="alan_ek != 'zorunlu' or durum != 'taslak'">
+                        Bu kategori belge eki gerektiriyor: sağdaki ataş simgesiyle dosya ekleyin.
+                    </div>
+                    <notebook>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama" placeholder="Gerekçe, ayrıntılar…" readonly="durum != 'taslak'"/>
+                        </page>
+                        <page string="Onaylayıcılar" name="onaylar" invisible="durum == 'taslak'">
+                            <field name="onay_ids" readonly="1">
+                                <list>
+                                    <field name="sira" optional="hide"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="zorunlu"/>
+                                    <field name="durum" widget="badge" decoration-info="durum == 'bekliyor'" decoration-success="durum == 'onayladi'"
+                                           decoration-danger="durum == 'reddetti'" decoration-muted="durum in ('yeni', 'iptal')"/>
+                                    <field name="tarih"/>
+                                    <field name="aciklama"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <field name="alan_tarih" invisible="1"/>
+                    <field name="alan_donem" invisible="1"/>
+                    <field name="alan_tutar" invisible="1"/>
+                    <field name="alan_partner" invisible="1"/>
+                    <field name="alan_urun" invisible="1"/>
+                    <field name="alan_miktar" invisible="1"/>
+                    <field name="alan_referans" invisible="1"/>
+                    <field name="alan_ek" invisible="1"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_talep_search" model="ir.ui.view">
+        <field name="name">atlas.onay.talep.search</field>
+        <field name="model">atlas.onay.talep</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="konu"/>
+                <field name="name"/>
+                <field name="talep_eden_id"/>
+                <field name="kategori_id"/>
+                <field name="partner_id"/>
+                <filter name="benim" string="Taleplerim" domain="[('talep_eden_id', '=', uid)]"/>
+                <filter name="onayimi_bekleyen" string="Onayımı Bekleyen"
+                        domain="[('onay_ids', 'any', [('user_id', '=', uid), ('durum', '=', 'bekliyor')])]"/>
+                <separator/>
+                <filter name="beklemede" string="Onay Bekleyen" domain="[('durum', '=', 'beklemede')]"/>
+                <filter name="onaylandi" string="Onaylanan" domain="[('durum', '=', 'onaylandi')]"/>
+                <filter name="reddedildi" string="Reddedilen" domain="[('durum', '=', 'reddedildi')]"/>
+                <separator/>
+                <filter name="kayit" string="Kayıt Onayları" domain="[('res_model', '!=', False)]"/>
+                <group>
+                    <filter name="grp_kategori" string="Kategori" context="{'group_by': 'kategori_id'}"/>
+                    <filter name="grp_durum" string="Durum" context="{'group_by': 'durum'}"/>
+                    <filter name="grp_talep_eden" string="Talep Eden" context="{'group_by': 'talep_eden_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Kayıt onay kuralları -->
+    <record id="view_atlas_onay_kural_list" model="ir.ui.view">
+        <field name="name">atlas.onay.kural.list</field>
+        <field name="model">atlas.onay.kural</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model"/>
+                <field name="kategori_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_onay_kural_form" model="ir.ui.view">
+        <field name="name">atlas.onay.kural.form</field>
+        <field name="model">atlas.onay.kural</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. 50.000 TL üzeri satın almalar"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model"/>
+                            <field name="kategori_id"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <label for="domain"/>
+                    <field name="domain" widget="domain" options="{'model': 'model', 'in_dialog': True}"/>
+                    <div class="text-muted small mt-2">
+                        Koşula uyan kayıt; satın almada "Siparişi Onayla", satışta "Onayla", faturada "Onayla (işle)" düğmesine
+                        basılmadan önce bu kategorinin onaylayıcılarından onay almalıdır. Onaydan sonra tutar artarsa yeniden onay istenir.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Eylemler -->
+    <record id="action_atlas_onay_panel" model="ir.actions.act_window">
+        <field name="name">Yeni Talep</field>
+        <field name="res_model">atlas.onay.kategori</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_atlas_onay_kategori_kanban"/>
+    </record>
+
+    <record id="action_atlas_onay_taleplerim" model="ir.actions.act_window">
+        <field name="name">Taleplerim</field>
+        <field name="res_model">atlas.onay.talep</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_benim': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz onay talebiniz yok</p>
+            <p>Yeni Talep menüsünden bir kategori seçerek başlayın.</p>
+        </field>
+    </record>
+
+    <record id="action_atlas_onay_bekleyen" model="ir.actions.act_window">
+        <field name="name">Onayımı Bekleyenler</field>
+        <field name="res_model">atlas.onay.talep</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_onayimi_bekleyen': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Onayınızı bekleyen talep yok</p>
+        </field>
+    </record>
+
+    <record id="action_atlas_onay_tumu" model="ir.actions.act_window">
+        <field name="name">Tüm Talepler</field>
+        <field name="res_model">atlas.onay.talep</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+
+    <record id="action_atlas_onay_kategori" model="ir.actions.act_window">
+        <field name="name">Onay Kategorileri</field>
+        <field name="res_model">atlas.onay.kategori</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_onay_kategori_list')}),
+                                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_atlas_onay_kategori_form')})]"/>
+    </record>
+
+    <record id="action_atlas_onay_kural" model="ir.actions.act_window">
+        <field name="name">Kayıt Onay Kuralları</field>
+        <field name="res_model">atlas.onay.kural</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Kayıt onay kuralı ekleyin</p>
+            <p>Örneğin 50.000 TL üzerindeki satın alma siparişleri finans müdürü onaylamadan onaylanamasın.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_onay_root" name="Onaylar" sequence="30" web_icon="atlas_onay,static/description/icon.png"
+              groups="group_onay_user"/>
+    <menuitem id="menu_atlas_onay_panel" name="Yeni Talep" parent="menu_atlas_onay_root" action="action_atlas_onay_panel" sequence="10"/>
+    <menuitem id="menu_atlas_onay_taleplerim" name="Taleplerim" parent="menu_atlas_onay_root" action="action_atlas_onay_taleplerim" sequence="20"/>
+    <menuitem id="menu_atlas_onay_bekleyen" name="Onayımı Bekleyenler" parent="menu_atlas_onay_root" action="action_atlas_onay_bekleyen" sequence="30"/>
+    <menuitem id="menu_atlas_onay_tumu" name="Tüm Talepler" parent="menu_atlas_onay_root" action="action_atlas_onay_tumu" sequence="40" groups="group_onay_manager"/>
+    <menuitem id="menu_atlas_onay_ayar" name="Yapılandırma" parent="menu_atlas_onay_root" sequence="90" groups="group_onay_manager"/>
+    <menuitem id="menu_atlas_onay_kategori" name="Onay Kategorileri" parent="menu_atlas_onay_ayar" action="action_atlas_onay_kategori" sequence="10"/>
+    <menuitem id="menu_atlas_onay_kural" name="Kayıt Onay Kuralları" parent="menu_atlas_onay_ayar" action="action_atlas_onay_kural" sequence="20"/>
+</odoo>

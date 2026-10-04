@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_onay_red_form" model="ir.ui.view">
+        <field name="name">atlas.onay.red.form</field>
+        <field name="model">atlas.onay.red</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="talep_id" invisible="1"/>
+                <field name="neden" placeholder="Neden reddediyorsunuz?" nolabel="1"/>
+                <footer>
+                    <button name="action_reddet" type="object" string="Reddet" class="btn-danger"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

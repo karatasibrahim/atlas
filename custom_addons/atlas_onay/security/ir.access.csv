@@ -1,0 +1,13 @@
+id,name,model_id,group_id/id,operation,domain
+access_kategori_user,atlas.onay.kategori user,atlas.onay.kategori,group_onay_user,r,
+access_kategori_manager,atlas.onay.kategori manager,atlas.onay.kategori,group_onay_manager,crud,
+access_kat_onaylayici_user,atlas.onay.kategori.onaylayici user,atlas.onay.kategori.onaylayici,group_onay_user,r,
+access_kat_onaylayici_manager,atlas.onay.kategori.onaylayici manager,atlas.onay.kategori.onaylayici,group_onay_manager,crud,
+access_talep_user_r,Kendi ve onayladığı talepler,atlas.onay.talep,group_onay_user,r,"['|', ('talep_eden_id', '=', user.id), ('onay_ids.user_id', '=', user.id)]"
+access_talep_user_w,Kendi talepleri,atlas.onay.talep,group_onay_user,cud,"[('talep_eden_id', '=', user.id)]"
+access_talep_manager,Tüm talepler,atlas.onay.talep,group_onay_manager,crud,
+access_satir_user_r,Kendi ve onayladığı taleplerin satırları,atlas.onay.satir,group_onay_user,r,"['|', ('talep_eden_id', '=', user.id), ('talep_id.onay_ids.user_id', '=', user.id)]"
+access_satir_manager,Tüm satırlar,atlas.onay.satir,group_onay_manager,crud,
+access_kural_user,atlas.onay.kural user,atlas.onay.kural,group_onay_user,r,
+access_kural_manager,atlas.onay.kural manager,atlas.onay.kural,group_onay_manager,crud,
+access_red_user,atlas.onay.red user,atlas.onay.red,group_onay_user,crud,

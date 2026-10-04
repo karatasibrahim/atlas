@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_atlas_onay" model="ir.ui.view">
+        <field name="name">purchase.order.form.atlas.onay</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_onay_durumu" invisible="1"/>
+                <button name="action_atlas_onaya_gonder" type="object" string="Onaya Gönder" class="btn-primary"
+                        invisible="atlas_onay_durumu not in ('gerekli', 'reddedildi') or state not in ('draft', 'sent')"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_atlas_onay_talepleri" type="object" class="oe_stat_button" icon="fa-check-square-o"
+                        invisible="not atlas_onay_talep_sayisi">
+                    <field name="atlas_onay_talep_sayisi" widget="statinfo" string="Onay"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning mb-0 py-2" role="alert"
+                     invisible="atlas_onay_durumu not in ('gerekli', 'beklemede', 'reddedildi') or state not in ('draft', 'sent')">
+                    <span invisible="atlas_onay_durumu != 'gerekli'">Bu sipariş onay kuralına takılıyor; onaylamadan önce onaya gönderin.</span>
+                    <span invisible="atlas_onay_durumu != 'beklemede'">Onay bekleniyor.</span>
+                    <span invisible="atlas_onay_durumu != 'reddedildi'">Onay talebi reddedildi.</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_order_form_atlas_onay" model="ir.ui.view">
+        <field name="name">sale.order.form.atlas.onay</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_onay_durumu" invisible="1"/>
+                <button name="action_atlas_onaya_gonder" type="object" string="Onaya Gönder" class="btn-primary"
+                        invisible="atlas_onay_durumu not in ('gerekli', 'reddedildi') or state not in ('draft', 'sent')"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_atlas_onay_talepleri" type="object" class="oe_stat_button" icon="fa-check-square-o"
+                        invisible="not atlas_onay_talep_sayisi">
+                    <field name="atlas_onay_talep_sayisi" widget="statinfo" string="Onay"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning mb-0 py-2" role="alert"
+                     invisible="atlas_onay_durumu not in ('gerekli', 'beklemede', 'reddedildi') or state not in ('draft', 'sent')">
+                    <span invisible="atlas_onay_durumu != 'gerekli'">Bu sipariş onay kuralına takılıyor; onaylamadan önce onaya gönderin.</span>
+                    <span invisible="atlas_onay_durumu != 'beklemede'">Onay bekleniyor.</span>
+                    <span invisible="atlas_onay_durumu != 'reddedildi'">Onay talebi reddedildi.</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_move_form_atlas_onay" model="ir.ui.view">
+        <field name="name">account.move.form.atlas.onay</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_onay_durumu" invisible="1"/>
+                <button name="action_atlas_onaya_gonder" type="object" string="Onaya Gönder" class="btn-primary"
+                        invisible="atlas_onay_durumu not in ('gerekli', 'reddedildi') or state != 'draft'"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_atlas_onay_talepleri" type="object" class="oe_stat_button" icon="fa-check-square-o"
+                        invisible="not atlas_onay_talep_sayisi">
+                    <field name="atlas_onay_talep_sayisi" widget="statinfo" string="Onay"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-warning mb-0 py-2" role="alert"
+                     invisible="atlas_onay_durumu not in ('gerekli', 'beklemede', 'reddedildi') or state != 'draft'">
+                    <span invisible="atlas_onay_durumu != 'gerekli'">Bu belge onay kuralına takılıyor; işlemeden önce onaya gönderin.</span>
+                    <span invisible="atlas_onay_durumu != 'beklemede'">Onay bekleniyor.</span>
+                    <span invisible="atlas_onay_durumu != 'reddedildi'">Onay talebi reddedildi.</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
