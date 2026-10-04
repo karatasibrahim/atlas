@@ -1,0 +1,194 @@
+$atlas-gantt-sol: 220px;
+$atlas-gantt-renkler: (
+    0: #64748b, 1: #2563eb, 2: #ea580c, 3: #16a34a, 4: #9333ea, 5: #0891b2,
+    6: #db2777, 7: #ca8a04, 8: #4f46e5, 9: #059669, 10: #dc2626, 11: #0d9488,
+);
+
+.o_atlas_gantt_view .o_content {
+    overflow: auto;
+}
+
+.o_atlas_gantt_renderer {
+    min-width: 760px;
+    font-size: 0.85rem;
+    user-select: none;
+    background: var(--o-view-background-color, #fff);
+
+    .o_atlas_gantt_baslik_satiri,
+    .o_atlas_gantt_satir {
+        display: grid;
+        grid-template-columns: $atlas-gantt-sol minmax(0, 1fr);
+        border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    .o_atlas_gantt_baslik_satiri {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: var(--o-view-background-color, #fff);
+        font-weight: 600;
+    }
+
+    .o_atlas_gantt_sol {
+        padding: 6px 10px;
+        border-right: 1px solid var(--border-color, #e5e7eb);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: inherit;
+    }
+
+    .o_atlas_gantt_kose {
+        color: var(--body-color, #374151);
+    }
+
+    .o_atlas_gantt_satir {
+        background: var(--o-view-background-color, #fff);
+
+        &.o_hedef {
+            background: rgba(37, 99, 235, 0.08);
+        }
+    }
+
+    .o_atlas_gantt_zaman,
+    .o_atlas_gantt_hucreler {
+        display: grid;
+    }
+
+    .o_atlas_gantt_sutun_baslik {
+        text-align: center;
+        padding: 6px 0;
+        border-left: 1px solid var(--border-color, #eef0f3);
+        color: var(--gray-600, #6b7280);
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+
+        &.o_bugun {
+            color: #2563eb;
+            font-weight: 700;
+        }
+    }
+
+    .o_atlas_gantt_iz {
+        position: relative;
+        min-height: 36px;
+    }
+
+    .o_atlas_gantt_hucreler {
+        position: absolute;
+        inset: 0;
+    }
+
+    .o_atlas_gantt_hucre {
+        border-left: 1px solid var(--border-color, #f1f3f5);
+        cursor: cell;
+
+        &.o_haftasonu {
+            background: rgba(100, 116, 139, 0.06);
+        }
+
+        &.o_bugun {
+            background: rgba(37, 99, 235, 0.06);
+        }
+
+        &:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+    }
+
+    .o_atlas_gantt_simdi {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ef4444;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .o_atlas_gantt_cubuk {
+        position: absolute;
+        height: 24px;
+        border-radius: 5px;
+        color: #fff;
+        padding: 0 8px;
+        line-height: 24px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: grab;
+        z-index: 2;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        touch-action: none;
+
+        @each $i, $renk in $atlas-gantt-renkler {
+            &.o_atlas_gantt_renk_#{$i} {
+                background: $renk;
+            }
+        }
+
+        &.o_atlas_gantt_kesik_sol {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        &.o_atlas_gantt_kesik_sag {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        &.o_atlas_gantt_suruklenen {
+            opacity: 0.85;
+            cursor: grabbing;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 4;
+        }
+
+        &:hover .o_atlas_gantt_tutamak {
+            opacity: 1;
+        }
+    }
+
+    .o_atlas_gantt_cubuk_ad {
+        position: relative;
+        font-weight: 500;
+    }
+
+    .o_atlas_gantt_ilerleme {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.18);
+    }
+
+    .o_atlas_gantt_tutamak {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 8px;
+        cursor: ew-resize;
+        opacity: 0;
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    .o_atlas_gantt_bos {
+        padding: 2rem;
+        text-align: center;
+    }
+}
+
+.o_atlas_gantt_dugmeler {
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+
+    .o_atlas_gantt_olcek {
+        width: auto;
+        min-width: 6rem;
+    }
+}

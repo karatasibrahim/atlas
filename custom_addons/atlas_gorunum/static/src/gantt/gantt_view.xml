@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_gorunum.GanttButtons">
+        <div class="d-flex flex-wrap align-items-center gap-2 o_atlas_gantt_dugmeler">
+            <button t-if="this.props.archInfo.canCreate" class="btn btn-primary" type="button" t-on-click="() => this.yeni()">Yeni</button>
+            <div class="btn-group">
+                <button class="btn btn-secondary" type="button" title="Önceki" t-on-click="() => this.model.kaydir(-1)">
+                    <i class="oi" data-icon="chevron_backward"/>
+                </button>
+                <button class="btn btn-secondary" type="button" t-on-click="() => this.model.kaydir(0)">Bugün</button>
+                <button class="btn btn-secondary" type="button" title="Sonraki" t-on-click="() => this.model.kaydir(1)">
+                    <i class="oi" data-icon="chevron_forward"/>
+                </button>
+            </div>
+            <select class="form-select o_atlas_gantt_olcek" title="Ölçek" t-on-change="(ev) => this.model.olcekSec(ev.target.value)">
+                <t t-foreach="this.olcekler" t-as="olcek" t-key="olcek.anahtar">
+                    <option t-att-value="olcek.anahtar" t-att-selected="this.model.olcek === olcek.anahtar" t-out="olcek.ad"/>
+                </t>
+            </select>
+        </div>
+    </t>
+
+    <t t-name="atlas_gorunum.GanttView">
+        <div class="o_atlas_gantt_view h-100" t-att-class="this.props.className" t-ref="this.rootRef">
+            <Layout className="'o_atlas_gantt_layout'" display="this.props.display">
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu/>
+                </t>
+                <t t-set-slot="control-panel-buttons">
+                    <t t-call="{{ this.props.buttonTemplate }}"/>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <SearchBar toggler="this.searchBarToggler"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-component="this.searchBarToggler.component" t-props="this.searchBarToggler.props"/>
+                </t>
+                <t t-set-slot="default">
+                    <AtlasGanttRenderer model="this.model" archInfo="this.props.archInfo"
+                                        openRecord.bind="this.openRecord" createAt.bind="this.createAt"/>
+                </t>
+            </Layout>
+        </div>
+    </t>
+
+    <t t-name="atlas_gorunum.GanttRenderer">
+        <div class="o_atlas_gantt_renderer o_renderer" t-ref="this.izRef">
+            <div class="o_atlas_gantt_baslik_satiri">
+                <div class="o_atlas_gantt_sol o_atlas_gantt_kose" t-out="this.model.baslik"/>
+                <div class="o_atlas_gantt_zaman" t-att-style="this.gridSutunlari">
+                    <t t-foreach="this.sutunlar" t-as="sutun" t-key="sutun.anahtar">
+                        <div class="o_atlas_gantt_sutun_baslik" t-att-class="{'o_haftasonu': sutun.haftaSonu, 'o_bugun': sutun.bugun}"
+                             t-out="sutun.etiket"/>
+                    </t>
+                </div>
+            </div>
+            <div class="o_atlas_gantt_govde">
+                <t t-foreach="this.model.satirlar" t-as="satir" t-key="satir.anahtar">
+                    <div class="o_atlas_gantt_satir" t-att-data-satir="satir_index" t-att-class="{'o_hedef': this.hedefMi(satir)}">
+                        <div class="o_atlas_gantt_sol" t-att-title="satir.ad" t-out="this.satirEtiketi(satir)"/>
+                        <div class="o_atlas_gantt_iz" t-att-style="this.satirStili(satir)">
+                            <div class="o_atlas_gantt_hucreler" t-att-style="this.gridSutunlari">
+                                <t t-foreach="this.sutunlar" t-as="sutun" t-key="sutun.anahtar">
+                                    <div class="o_atlas_gantt_hucre" t-att-class="{'o_haftasonu': sutun.haftaSonu, 'o_bugun': sutun.bugun}"
+                                         t-on-click="() => this.onHucre(satir, sutun)"/>
+                                </t>
+                            </div>
+                            <div t-if="this.bugunCizgisi" class="o_atlas_gantt_simdi" t-att-style="this.bugunCizgisi"/>
+                            <t t-foreach="satir.cubuklar" t-as="cubuk" t-key="cubuk.id">
+                                <div class="o_atlas_gantt_cubuk" t-att-class="this.cubukSinifi(cubuk)" t-att-style="this.cubukStili(cubuk)"
+                                     t-att-title="this.ipucu(cubuk)" t-att-data-id="cubuk.id"
+                                     t-on-pointerdown="(ev) => this.onCubukBas(ev, cubuk, satir, 'tasi')">
+                                    <div t-if="cubuk.ilerleme !== null" class="o_atlas_gantt_ilerleme" t-att-style="this.ilerlemeStili(cubuk)"/>
+                                    <span class="o_atlas_gantt_cubuk_ad" t-out="cubuk.ad"/>
+                                    <div t-if="this.props.archInfo.canEdit" class="o_atlas_gantt_tutamak"
+                                         t-on-pointerdown="(ev) => this.onCubukBas(ev, cubuk, satir, 'boyut')"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+                <div t-if="!this.model.satirlar.length" class="o_atlas_gantt_bos text-muted">
+                    Bu aralıkta kayıt yok. Başka bir tarihe gidin veya boş bir hücreye tıklayarak kayıt oluşturun.
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_gorunum.HaritaButtons"/>
+
+    <t t-name="atlas_gorunum.HaritaView">
+        <div class="o_atlas_harita_view h-100" t-att-class="this.props.className" t-ref="this.rootRef">
+            <Layout className="'o_atlas_harita_layout'" display="this.props.display">
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu/>
+                </t>
+                <t t-set-slot="control-panel-buttons">
+                    <t t-call="{{ this.props.buttonTemplate }}"/>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <SearchBar toggler="this.searchBarToggler"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-component="this.searchBarToggler.component" t-props="this.searchBarToggler.props"/>
+                </t>
+                <t t-set-slot="default">
+                    <AtlasHaritaRenderer model="this.model" archInfo="this.props.archInfo" openRecord.bind="this.openRecord"/>
+                </t>
+            </Layout>
+        </div>
+    </t>
+
+    <t t-name="atlas_gorunum.HaritaRenderer">
+        <div class="o_atlas_harita_renderer o_renderer">
+            <aside class="o_atlas_harita_liste">
+                <div class="o_atlas_harita_ozet">
+                    <span><t t-out="this.model.konumluKayitlar.length"/> / <t t-out="this.model.kayitlar.length"/> kayıt haritada</span>
+                    <button t-if="this.model.konumsuz.length and this.props.archInfo.partner" type="button"
+                            class="btn btn-sm btn-secondary" t-att-disabled="this.state.yukleniyor"
+                            t-on-click="() => this.konumlariBul()">
+                        <i class="fa fa-crosshairs me-1"/>Konumları bul
+                    </button>
+                </div>
+                <t t-foreach="this.model.kayitlar" t-as="kayit" t-key="kayit.id">
+                    <div class="o_atlas_harita_kayit" t-att-class="this.kayitSinifi(kayit)" t-on-click="() => kayit.konum ? this.sec(kayit) : this.props.openRecord(kayit.id)">
+                        <div class="fw-semibold text-truncate" t-out="kayit.ad"/>
+                        <div t-if="kayit.adres" class="small text-muted text-truncate" t-out="kayit.adres"/>
+                        <div t-if="!kayit.konum" class="small text-warning">Konum yok</div>
+                    </div>
+                </t>
+            </aside>
+            <div class="o_atlas_harita_alan" t-ref="this.haritaRef"/>
+        </div>
+    </t>
+</templates>

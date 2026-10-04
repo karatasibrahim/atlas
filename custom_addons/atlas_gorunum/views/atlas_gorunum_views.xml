@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Üretim -->
+    <record id="mrp_production_atlas_gantt" model="ir.ui.view">
+        <field name="name">mrp.production.atlas.gantt</field>
+        <field name="model">mrp.production</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="date_start" date_stop="date_finished" default_group_by="product_id" color="state"
+                         default_scale="hafta" create="0">
+                <field name="product_qty"/>
+            </atlas_gantt>
+        </field>
+    </record>
+    <record id="mrp.mrp_production_action" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity,atlas_gantt</field>
+    </record>
+
+    <record id="mrp_workorder_atlas_gantt" model="ir.ui.view">
+        <field name="name">mrp.workorder.atlas.gantt</field>
+        <field name="model">mrp.workorder</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="date_start" date_stop="date_finished" default_group_by="workcenter_id" color="state"
+                         label="display_name" default_scale="hafta" create="0"/>
+        </field>
+    </record>
+    <record id="mrp.mrp_workorder_todo" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,atlas_gantt</field>
+    </record>
+    <record id="mrp.action_mrp_workorder_production" model="ir.actions.act_window">
+        <field name="view_mode">list,form,calendar,pivot,graph,atlas_gantt</field>
+    </record>
+
+    <!-- Proje görevleri -->
+    <record id="project_task_atlas_gantt" model="ir.ui.view">
+        <field name="name">project.task.atlas.gantt</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="atlas_plan_baslangic" date_stop="date_deadline" default_group_by="user_ids" color="project_id"
+                         default_scale="ay"/>
+        </field>
+    </record>
+    <record id="project_task_form_atlas_plan" model="ir.ui.view">
+        <field name="name">project.task.form.atlas.plan</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//label[@for='date_deadline']" position="before">
+                <field name="atlas_plan_baslangic"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="project.action_view_all_task" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,activity,pivot,graph,atlas_gantt</field>
+    </record>
+    <record id="project.action_view_my_task" model="ir.actions.act_window">
+        <field name="view_mode">kanban,list,form,calendar,activity,pivot,graph,atlas_gantt</field>
+    </record>
+
+    <!-- İzinler -->
+    <record id="hr_leave_atlas_gantt" model="ir.ui.view">
+        <field name="name">hr.leave.atlas.gantt</field>
+        <field name="model">hr.leave</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="date_from" date_stop="date_to" default_group_by="employee_id" color="work_entry_type_id"
+                         label="work_entry_type_id" default_scale="ay" create="0"/>
+        </field>
+    </record>
+    <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,activity,atlas_gantt</field>
+    </record>
+
+    <!-- Kiralama -->
+    <record id="sale_order_kiralama_atlas_gantt" model="ir.ui.view">
+        <field name="name">sale.order.kiralama.atlas.gantt</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <atlas_gantt date_start="atlas_kira_bas" date_stop="atlas_kira_bit" default_group_by="partner_id" color="atlas_kira_durum"
+                         default_scale="ay" create="0">
+                <field name="amount_total"/>
+            </atlas_gantt>
+        </field>
+    </record>
+    <record id="atlas_kiralama.action_atlas_kiralama" model="ir.actions.act_window">
+        <field name="view_mode">list,calendar,form,atlas_gantt</field>
+    </record>
+
+    <!-- Haritalar -->
+    <record id="res_partner_atlas_harita" model="ir.ui.view">
+        <field name="name">res.partner.atlas.harita</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <atlas_harita partner="commercial_partner_id" lat="partner_latitude" lng="partner_longitude">
+                <field name="phone"/>
+                <field name="email"/>
+            </atlas_harita>
+        </field>
+    </record>
+    <record id="contacts.action_contacts" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,hierarchy,activity,atlas_harita</field>
+    </record>
+
+    <record id="sale_order_atlas_harita" model="ir.ui.view">
+        <field name="name">sale.order.atlas.harita</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <atlas_harita partner="partner_shipping_id">
+                <field name="partner_id"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </atlas_harita>
+        </field>
+    </record>
+    <record id="sale.action_orders" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity,atlas_harita</field>
+    </record>
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity,atlas_harita</field>
+    </record>
+</odoo>
