@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_mps_user,atlas.mps user,atlas.mps,mrp.group_mrp_user,r,
+access_mps_manager,atlas.mps manager,atlas.mps,mrp.group_mrp_manager,crud,
+access_mps_tahmin_user,atlas.mps.tahmin user,atlas.mps.tahmin,mrp.group_mrp_user,r,
+access_mps_tahmin_manager,atlas.mps.tahmin manager,atlas.mps.tahmin,mrp.group_mrp_manager,crud,
+atlas_mps_comp_rule,MPS şirket kuralı,atlas.mps,,crud,"[('company_id', 'in', company_ids)]"

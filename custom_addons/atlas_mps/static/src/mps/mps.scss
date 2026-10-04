@@ -1,0 +1,42 @@
+.o_atlas_mps {
+    background-color: $o-view-background-color;
+
+    .o_atlas_mps_tablo {
+        th, td {
+            min-width: 6.5rem;
+            vertical-align: middle;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: $o-view-background-color;
+        }
+        .o_atlas_mps_ilk {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            min-width: 18rem;
+            max-width: 22rem;
+            background-color: $o-view-background-color;
+        }
+        thead .o_atlas_mps_ilk {
+            z-index: 3;
+        }
+        .o_atlas_mps_baslik td {
+            border-top: 2px solid $border-color;
+        }
+    }
+    .o_atlas_mps_input {
+        min-width: 5rem;
+    }
+    .o_atlas_mps_eksik {
+        background-color: rgba($danger, 0.12);
+    }
+    .o_atlas_mps_fazla {
+        background-color: rgba($warning, 0.15);
+    }
+    .o_atlas_mps_yeterli {
+        background-color: rgba($success, 0.08);
+    }
+}

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_atlas_mps" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.atlas.mps</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="mrp.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="mrp_mps" position="replace">
+                <setting id="atlas_mps" string="Ana Üretim Planlama (MPS)"
+                         help="Dönemsel talep tahminine göre üretim ve satınalma önerileri">
+                    <div class="content-group">
+                        <div class="row mt-2">
+                            <label for="atlas_mps_periyot" string="Dönem" class="col-lg-4 o_light_label"/>
+                            <field name="atlas_mps_periyot" class="col-lg-6"/>
+                        </div>
+                        <div class="row">
+                            <label for="atlas_mps_periyot_sayisi" string="Dönem sayısı" class="col-lg-4 o_light_label"/>
+                            <field name="atlas_mps_periyot_sayisi" class="col-lg-6"/>
+                        </div>
+                        <div class="row">
+                            <label for="atlas_mps_talep" string="Talep" class="col-lg-4 o_light_label"/>
+                            <field name="atlas_mps_talep" class="col-lg-6"/>
+                        </div>
+                        <div class="mt-2">
+                            <button name="%(atlas_mps.action_atlas_mps_ekran)d" type="action" string="Ana Üretim Planını Aç" icon="oi-arrow-right" class="btn-link"/>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+</odoo>

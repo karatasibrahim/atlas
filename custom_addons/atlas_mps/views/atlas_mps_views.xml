@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_mps_list" model="ir.ui.view">
+        <field name="name">atlas.mps.list</field>
+        <field name="model">atlas.mps</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="tedarik"/>
+                <field name="bom_id" optional="show"/>
+                <field name="guvenlik_stok"/>
+                <field name="min_ikmal" optional="show"/>
+                <field name="max_ikmal" optional="show"/>
+                <field name="ikmal_tetik"/>
+                <field name="uom_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_mps_form" model="ir.ui.view">
+        <field name="name">atlas.mps.form</field>
+        <field name="model">atlas.mps</field>
+        <field name="arch" type="xml">
+            <form string="Plan Satırı">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="product_id" options="{'no_create': True}"/>
+                            <field name="warehouse_id" options="{'no_create': True}"/>
+                            <field name="tedarik" widget="radio"/>
+                            <field name="bom_id" invisible="tedarik != 'uretim'" required="tedarik == 'uretim'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <label for="guvenlik_stok"/>
+                            <div class="o_row"><field name="guvenlik_stok"/><field name="uom_id"/></div>
+                            <field name="min_ikmal"/>
+                            <field name="max_ikmal"/>
+                            <field name="ikmal_tetik" widget="radio"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_mps_search" model="ir.ui.view">
+        <field name="name">atlas.mps.search</field>
+        <field name="model">atlas.mps</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <filter name="uretim" string="Üretim" domain="[('tedarik', '=', 'uretim')]"/>
+                <filter name="satinalma" string="Satınalma" domain="[('tedarik', '=', 'satinalma')]"/>
+                <filter name="otomatik" string="Otomatik İkmal" domain="[('ikmal_tetik', '=', 'otomatik')]"/>
+                <group>
+                    <filter name="group_depo" string="Depo" context="{'group_by': 'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_mps_liste" model="ir.actions.act_window">
+        <field name="name">Plan Satırları</field>
+        <field name="res_model">atlas.mps</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Planlanacak ürünleri ekleyin</p>
+            <p>Her satır bir deponun bir ürünü için güvenlik stoğu ve ikmal kurallarını tutar.</p>
+        </field>
+    </record>
+
+    <record id="view_atlas_mps_tahmin_pivot" model="ir.ui.view">
+        <field name="name">atlas.mps.tahmin.pivot</field>
+        <field name="model">atlas.mps.tahmin</field>
+        <field name="arch" type="xml">
+            <pivot string="Talep Tahminleri">
+                <field name="product_id" type="row"/>
+                <field name="tarih" interval="month" type="col"/>
+                <field name="tahmini_talep" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_atlas_mps_tahmin_list" model="ir.ui.view">
+        <field name="name">atlas.mps.tahmin.list</field>
+        <field name="model">atlas.mps.tahmin</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="0">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="tarih"/>
+                <field name="tahmini_talep" sum="Toplam"/>
+                <field name="ikmal_elle"/>
+                <field name="ikmal_miktar" invisible="not ikmal_elle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_mps_tahmin" model="ir.actions.act_window">
+        <field name="name">Talep Tahminleri</field>
+        <field name="res_model">atlas.mps.tahmin</field>
+        <field name="view_mode">pivot,list</field>
+    </record>
+
+    <record id="action_atlas_mps_ekran" model="ir.actions.client">
+        <field name="name">Ana Üretim Planı</field>
+        <field name="tag">atlas_mps.ekran</field>
+    </record>
+
+    <menuitem id="menu_atlas_mps" name="Ana Üretim Planı (MPS)" parent="mrp.mrp_planning_menu_root"
+              action="action_atlas_mps_ekran" sequence="1" groups="mrp.group_mrp_user"/>
+    <menuitem id="menu_atlas_mps_liste" name="MPS Plan Satırları" parent="mrp.mrp_planning_menu_root"
+              action="action_atlas_mps_liste" sequence="2" groups="mrp.group_mrp_manager"/>
+    <menuitem id="menu_atlas_mps_tahmin" name="Talep Tahminleri" parent="mrp.menu_mrp_reporting"
+              action="action_atlas_mps_tahmin" sequence="50" groups="mrp.group_mrp_user"/>
+</odoo>

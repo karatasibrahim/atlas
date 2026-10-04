@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="atlas_mps.Ekran">
+        <div class="o_action o_atlas_mps d-flex flex-column h-100">
+            <div class="o_control_panel d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+                <h4 class="m-0 me-3">Ana Üretim Planı</h4>
+                <button t-if="this.state.veri and this.state.veri.yonetici" class="btn btn-primary" t-on-click="() => this.planEkle()">Ürün Ekle</button>
+                <button t-if="this.state.veri and this.state.veri.yonetici and this.state.veri.satirlar.length" class="btn btn-secondary"
+                        t-on-click="() => this.tumunuSiparisEt()">İlk Dönemi Sipariş Et</button>
+                <select t-if="this.state.veri and this.state.veri.depolar.length > 1" class="form-select w-auto" t-on-change="(ev) => this.depoDegisti(ev)">
+                    <option value="">Tüm depolar</option>
+                    <t t-foreach="this.state.veri.depolar" t-as="d" t-key="d.id">
+                        <option t-att-value="d.id" t-att-selected="d.id === this.state.depoId" t-out="d.ad"/>
+                    </t>
+                </select>
+                <span t-if="this.state.veri" class="ms-auto small text-muted">Talep: <t t-out="this.state.veri.talep_yontemi"/></span>
+                <span t-if="this.state.yukleniyor" class="spinner-border spinner-border-sm"/>
+            </div>
+            <div class="flex-grow-1 overflow-auto p-2">
+                <t t-if="this.state.veri">
+                    <div t-if="!this.state.veri.satirlar.length" class="o_view_nocontent">
+                        <div class="o_nocontent_help">
+                            <p class="o_view_nocontent_smiling_face">Plana ürün ekleyin</p>
+                            <p>Güvenlik stoğu ve dönemsel talep tahmini girilen ürünler için üretim ve satınalma önerileri hesaplanır.</p>
+                        </div>
+                    </div>
+                    <table t-else="" class="table table-sm table-bordered o_atlas_mps_tablo mb-0">
+                        <thead>
+                            <tr>
+                                <th class="o_atlas_mps_ilk">Ürün</th>
+                                <th t-foreach="this.state.veri.periyotlar" t-as="p" t-key="p.tarih" class="text-end text-nowrap" t-out="p.etiket"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="this.state.veri.satirlar" t-as="satir" t-key="satir.id">
+                                <tr class="o_atlas_mps_baslik">
+                                    <td class="o_atlas_mps_ilk">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <a href="#" class="fw-bold text-truncate" t-on-click.prevent="() => this.urunAc(satir)" t-out="satir.urun"/>
+                                            <span class="badge text-bg-light" t-out="satir.tedarik_ad"/>
+                                            <span t-if="satir.ikmal_tetik === 'otomatik'" class="badge text-bg-info">Otomatik</span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <t t-out="satir.depo"/> · Güvenlik stoğu <t t-out="this.sayi(satir.guvenlik_stok)"/> <t t-out="satir.birim"/>
+                                            <t t-if="satir.min_ikmal"> · en az <t t-out="this.sayi(satir.min_ikmal)"/></t>
+                                            <t t-if="satir.max_ikmal"> · en çok <t t-out="this.sayi(satir.max_ikmal)"/></t>
+                                        </div>
+                                        <div class="d-flex gap-2 small">
+                                            <a href="#" t-on-click.prevent="() => this.detayDegistir(satir)">
+                                                <t t-if="this.detayAcik(satir)">Detayı gizle</t><t t-else="">Detay</t>
+                                            </a>
+                                            <a t-if="this.state.veri.yonetici" href="#" t-on-click.prevent="() => this.planDuzenle(satir)">Ayarlar</a>
+                                            <a t-if="this.state.veri.yonetici" href="#" t-on-click.prevent="() => this.siparisVer([satir])">Sipariş Ver</a>
+                                        </div>
+                                    </td>
+                                    <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" t-att-class="'text-end align-bottom ' + this.hucreSinif(d)">
+                                        <div class="small text-muted">Stok sonu</div>
+                                        <div class="fw-bold" t-out="this.sayi(d.stok_sonu)"/>
+                                    </td>
+                                </tr>
+                                <t t-if="this.detayAcik(satir)">
+                                    <tr class="small">
+                                        <td class="o_atlas_mps_ilk ps-4">Başlangıç stoğu</td>
+                                        <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" class="text-end" t-out="this.sayi(d.baslangic_stok)"/>
+                                    </tr>
+                                    <tr class="small">
+                                        <td class="o_atlas_mps_ilk ps-4">− Tahmini talep</td>
+                                        <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" class="text-end p-0">
+                                            <input t-if="this.state.veri.yonetici" class="form-control form-control-sm text-end border-0 o_atlas_mps_input"
+                                                   t-att-value="this.sayi(d.tahmini_talep)" t-on-change="(ev) => this.degerYaz(satir, d, 'tahmini_talep', ev)"/>
+                                            <span t-else="" class="px-2" t-out="this.sayi(d.tahmini_talep)"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="small text-muted">
+                                        <td class="o_atlas_mps_ilk ps-4">Gerçek talep</td>
+                                        <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" class="text-end" t-out="this.sayi(d.gercek_talep)"/>
+                                    </tr>
+                                    <tr t-if="satir.dolayli_var" class="small">
+                                        <td class="o_atlas_mps_ilk ps-4">− Dolaylı talep</td>
+                                        <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" class="text-end" t-out="this.sayi(d.dolayli_talep)"/>
+                                    </tr>
+                                    <tr class="small">
+                                        <td class="o_atlas_mps_ilk ps-4">+ Onaylı ikmal</td>
+                                        <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" class="text-end" t-out="this.sayi(d.gelen)"/>
+                                    </tr>
+                                </t>
+                                <tr class="small">
+                                    <td class="o_atlas_mps_ilk ps-4">+ Önerilen ikmal</td>
+                                    <td t-foreach="satir.donemler" t-as="d" t-key="d.tarih" t-att-class="'text-end p-0 ' + this.hucreSinif(d)">
+                                        <div class="d-flex align-items-center">
+                                            <input t-if="this.state.veri.yonetici" t-att-class="'form-control form-control-sm text-end border-0 bg-transparent o_atlas_mps_input' + (d.ikmal_elle ? ' fw-bold fst-italic' : '')"
+                                                   t-att-value="this.sayi(d.ikmal)" t-on-change="(ev) => this.degerYaz(satir, d, 'ikmal_miktar', ev)"
+                                                   t-att-title="d.ikmal_elle ? 'Elle girildi' : 'Hesaplanan öneri'"/>
+                                            <span t-else="" class="px-2 ms-auto" t-out="this.sayi(d.ikmal)"/>
+                                            <button t-if="this.state.veri.yonetici and d.ikmal_elle" class="btn btn-link btn-sm p-0 px-1" title="Öneriye dön"
+                                                    t-on-click="() => this.oneriyeDon(satir, d)"><i class="oi" data-icon="undo"/></button>
+                                            <button t-if="this.state.veri.yonetici and d.ikmal &gt; 0" class="btn btn-link btn-sm p-0 px-1" title="Bu dönemi sipariş et"
+                                                    t-on-click="() => this.siparisVer([satir], d)"><i class="oi" data-icon="shopping_cart"/></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>
