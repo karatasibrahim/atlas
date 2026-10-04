@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_belge_kanban" model="ir.ui.view">
+        <field name="name">atlas.belge.kanban</field>
+        <field name="model">atlas.belge</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="mimetype"/>
+                <field name="resim_mi"/>
+                <field name="kilitleyen_id"/>
+                <templates>
+                    <t t-name="card" class="flex-row">
+                        <aside class="me-2" style="width: 64px;">
+                            <field t-if="record.resim_mi.raw_value" name="dosya" widget="image" options="{'size': [64, 64]}"/>
+                            <div t-else="" class="o_image d-flex align-items-center justify-content-center" style="width:64px;height:64px;" t-att-data-mimetype="record.mimetype.raw_value"/>
+                        </aside>
+                        <main class="overflow-hidden">
+                            <field name="name" class="fw-bold text-truncate"/>
+                            <field name="klasor_id" class="small text-muted"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <footer class="pt-1">
+                                <field name="write_date" class="small text-muted"/>
+                                <i t-if="record.kilitleyen_id.raw_value" class="oi ms-1" data-icon="lock" title="Kilitli"/>
+                                <field name="owner_id" widget="many2one_avatar_user" class="ms-auto"/>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_belge_list" model="ir.ui.view">
+        <field name="name">atlas.belge.list</field>
+        <field name="model">atlas.belge</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="klasor_id"/>
+                <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                <field name="partner_id" optional="show"/>
+                <field name="ilgili_kayit" optional="show"/>
+                <field name="mimetype" optional="hide"/>
+                <field name="boyut" optional="show"/>
+                <field name="surum" optional="hide"/>
+                <field name="owner_id" widget="many2one_avatar_user"/>
+                <field name="write_date" string="Güncelleme"/>
+                <button name="action_paylas" type="object" icon="share" title="Paylaşım bağlantısı"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_belge_form" model="ir.ui.view">
+        <field name="name">atlas.belge.form</field>
+        <field name="model">atlas.belge</field>
+        <field name="arch" type="xml">
+            <form string="Belge">
+                <header>
+                    <button name="action_kilitle" type="object" string="Kilitle / Kilidi Aç"/>
+                    <button name="action_paylas" type="object" string="Paylaşım Bağlantısı"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_ilgili_kayit" type="object" class="oe_stat_button" icon="link" invisible="not ilgili_kayit">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">İlgili Kayıt</span>
+                                <span class="o_stat_value"><field name="ilgili_kayit"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Kilitli" bg_color="text-bg-warning" invisible="not kilitleyen_id"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="Belge adı"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="klasor_id" options="{'no_create': True}"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="partner_id"/>
+                            <field name="owner_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="tip" widget="radio" options="{'horizontal': true}"/>
+                            <field name="dosya" filename="dosya_adi" invisible="tip != 'dosya'"/>
+                            <field name="dosya_adi" invisible="1"/>
+                            <field name="resim_mi" invisible="1"/>
+                            <field name="url" widget="url" invisible="tip != 'url'"/>
+                            <field name="mimetype" invisible="1"/>
+                            <field name="boyut" invisible="tip != 'dosya'"/>
+                            <field name="surum"/>
+                            <field name="kilitleyen_id" invisible="not kilitleyen_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Önizleme" name="onizleme" invisible="tip != 'dosya' or not dosya">
+                            <field name="dosya" widget="pdf_viewer" invisible="mimetype != 'application/pdf'" readonly="1"/>
+                            <field name="dosya" widget="image" invisible="not resim_mi" readonly="1"/>
+                        </page>
+                        <page string="Önceki Sürümler" name="surumler" invisible="not surum_ids">
+                            <field name="surum_ids" readonly="1">
+                                <list><field name="surum"/><field name="dosya_adi"/><field name="dosya" filename="dosya_adi"/><field name="create_date"/><field name="create_uid"/></list>
+                            </field>
+                        </page>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama" placeholder="Not..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_belge_search" model="ir.ui.view">
+        <field name="name">atlas.belge.search</field>
+        <field name="model">atlas.belge</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="etiket_ids"/>
+                <field name="partner_id"/>
+                <field name="owner_id"/>
+                <filter name="benim" string="Belgelerim" domain="[('owner_id', '=', uid)]"/>
+                <filter name="kilitli" string="Kilitli" domain="[('kilitleyen_id', '!=', False)]"/>
+                <filter name="pdf" string="PDF" domain="[('mimetype', '=', 'application/pdf')]"/>
+                <filter name="resim" string="Resim" domain="[('mimetype', '=like', 'image/%')]"/>
+                <separator/>
+                <filter name="arsiv" string="Arşiv" domain="[('aktif', '=', False)]"/>
+                <searchpanel>
+                    <field name="klasor_id" hierarchize="1" select="one" icon="folder" enable_counters="1"/>
+                    <field name="etiket_ids" select="multi" icon="sell" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_belge" model="ir.actions.act_window">
+        <field name="name">Belgeler</field>
+        <field name="res_model">atlas.belge</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('aktif', '=', True)]</field>
+        <field name="search_view_id" ref="view_atlas_belge_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Belge yükleyin</p>
+            <p>"Belge Yükle" ile dosyaları klasörlere ekleyin; kurallara uyan kayıt ekleri (ör. faturalar) otomatik toplanır.</p>
+        </field>
+    </record>
+
+    <record id="view_atlas_belge_klasor_list" model="ir.ui.view">
+        <field name="name">atlas.belge.klasor.list</field>
+        <field name="model">atlas.belge.klasor</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="complete_name"/>
+                <field name="okuma_grup_ids" widget="many2many_tags"/>
+                <field name="yazma_grup_ids" widget="many2many_tags" optional="show"/>
+                <field name="belge_sayisi"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_belge_klasor_form" model="ir.ui.view">
+        <field name="name">atlas.belge.klasor.form</field>
+        <field name="model">atlas.belge.klasor</field>
+        <field name="arch" type="xml">
+            <form string="Klasör">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_belgeler" type="object" class="oe_stat_button" icon="description">
+                            <field name="belge_sayisi" widget="statinfo" string="Belge"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="aciklama"/>
+                        </group>
+                    </group>
+                    <separator string="Erişim (boşsa üst klasörün yetkisi; o da boşsa herkes)"/>
+                    <group>
+                        <group string="Okuma">
+                            <field name="okuma_grup_ids" widget="many2many_tags"/>
+                            <field name="okuma_user_ids" widget="many2many_avatar_user"/>
+                        </group>
+                        <group string="Yazma">
+                            <field name="yazma_grup_ids" widget="many2many_tags"/>
+                            <field name="yazma_user_ids" widget="many2many_avatar_user"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_belge_klasor" model="ir.actions.act_window">
+        <field name="name">Klasörler</field>
+        <field name="res_model">atlas.belge.klasor</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_atlas_belge_kural_list" model="ir.ui.view">
+        <field name="name">atlas.belge.kural.list</field>
+        <field name="model">atlas.belge.kural</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="model_id" options="{'no_create': True}"/>
+                <field name="alan_adi" optional="hide"/>
+                <field name="klasor_id"/>
+                <field name="etiket_ids" widget="many2many_tags"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_belge_kural" model="ir.actions.act_window">
+        <field name="name">Otomatik Toplama Kuralları</field>
+        <field name="res_model">atlas.belge.kural</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_belge_paylasim_form" model="ir.ui.view">
+        <field name="name">atlas.belge.paylasim.form</field>
+        <field name="model">atlas.belge.paylasim</field>
+        <field name="arch" type="xml">
+            <form string="Paylaşım Bağlantısı">
+                <group>
+                    <field name="name"/>
+                    <field name="url" widget="CopyClipboardChar" readonly="1"/>
+                    <field name="son_tarih"/>
+                    <field name="belge_ids" widget="many2many_tags"/>
+                    <field name="indirme_sayisi"/>
+                </group>
+                <footer>
+                    <button special="save" string="Kaydet" class="btn-primary"/>
+                    <button special="cancel" string="Kapat"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="view_atlas_belge_paylasim_list" model="ir.ui.view">
+        <field name="name">atlas.belge.paylasim.list</field>
+        <field name="model">atlas.belge.paylasim</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="belge_ids" widget="many2many_tags"/>
+                <field name="son_tarih"/>
+                <field name="indirme_sayisi"/>
+                <field name="create_uid"/>
+                <field name="url"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_belge_paylasim" model="ir.actions.act_window">
+        <field name="name">Paylaşımlar</field>
+        <field name="res_model">atlas.belge.paylasim</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_atlas_belge_etiket" model="ir.actions.act_window">
+        <field name="name">Etiketler</field>
+        <field name="res_model">atlas.belge.etiket</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_atlas_belgeler_root" name="Belgeler" sequence="28" web_icon="atlas_belgeler,static/description/icon.png"
+              groups="group_belge_user"/>
+    <menuitem id="menu_atlas_belge" name="Belgeler" parent="menu_atlas_belgeler_root" action="action_atlas_belge" sequence="10"/>
+    <menuitem id="menu_atlas_belge_yukle" name="Belge Yükle" parent="menu_atlas_belgeler_root" action="action_atlas_belge_yukle" sequence="15"/>
+    <menuitem id="menu_atlas_belge_paylasim" name="Paylaşımlar" parent="menu_atlas_belgeler_root" action="action_atlas_belge_paylasim" sequence="20"/>
+    <menuitem id="menu_atlas_belge_ayar" name="Yapılandırma" parent="menu_atlas_belgeler_root" sequence="90" groups="group_belge_manager"/>
+    <menuitem id="menu_atlas_belge_klasor" name="Klasörler" parent="menu_atlas_belge_ayar" action="action_atlas_belge_klasor" sequence="10"/>
+    <menuitem id="menu_atlas_belge_kural" name="Otomatik Toplama" parent="menu_atlas_belge_ayar" action="action_atlas_belge_kural" sequence="20"/>
+    <menuitem id="menu_atlas_belge_etiket" name="Etiketler" parent="menu_atlas_belge_ayar" action="action_atlas_belge_etiket" sequence="30"/>
+
+</odoo>

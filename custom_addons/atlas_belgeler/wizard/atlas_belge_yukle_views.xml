@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_belge_yukle_form" model="ir.ui.view">
+        <field name="name">atlas.belge.yukle.form</field>
+        <field name="model">atlas.belge.yukle</field>
+        <field name="arch" type="xml">
+            <form string="Belge Yükle">
+                <group>
+                    <field name="klasor_id" options="{'no_create': True}"/>
+                    <field name="etiket_ids" widget="many2many_tags"/>
+                    <field name="partner_id"/>
+                    <field name="ek_ids" widget="many2many_binary" string="Dosyalar"/>
+                </group>
+                <footer>
+                    <button name="action_yukle" type="object" string="Yükle" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_belge_yukle" model="ir.actions.act_window">
+        <field name="name">Belge Yükle</field>
+        <field name="res_model">atlas.belge.yukle</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

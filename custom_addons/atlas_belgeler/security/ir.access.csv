@@ -1,0 +1,16 @@
+id,name,model_id,group_id/id,operation,domain
+access_klasor_user,Erişilebilen klasörler,atlas.belge.klasor,group_belge_user,r,"[('okuma_kullanici_id', '=', user.id)]"
+access_klasor_manager,atlas.belge.klasor manager,atlas.belge.klasor,group_belge_manager,crud,
+access_belge_user_r,Okunabilen belgeler,atlas.belge,group_belge_user,r,"[('klasor_id.okuma_kullanici_id', '=', user.id)]"
+access_belge_user_w,Yazılabilen belgeler,atlas.belge,group_belge_user,cud,"[('klasor_id.yazma_kullanici_id', '=', user.id)]"
+access_belge_manager,Tüm belgeler,atlas.belge,group_belge_manager,crud,
+access_etiket_user,atlas.belge.etiket user,atlas.belge.etiket,group_belge_user,cr,
+access_etiket_manager,atlas.belge.etiket manager,atlas.belge.etiket,group_belge_manager,crud,
+access_kural_user,atlas.belge.kural user,atlas.belge.kural,group_belge_user,r,
+access_kural_manager,atlas.belge.kural manager,atlas.belge.kural,group_belge_manager,crud,
+access_paylasim_user,Kendi paylaşımları,atlas.belge.paylasim,group_belge_user,crud,"[('create_uid', '=', user.id)]"
+access_paylasim_manager,atlas.belge.paylasim manager,atlas.belge.paylasim,group_belge_manager,crud,
+access_yukle_user,atlas.belge.yukle user,atlas.belge.yukle,group_belge_user,crud,
+access_surum_user,Okunabilen sürümler,atlas.belge.surum,group_belge_user,r,"[('belge_id.klasor_id.okuma_kullanici_id', '=', user.id)]"
+access_surum_user_w,Yazılabilen sürümler,atlas.belge.surum,group_belge_user,cud,"[('belge_id.klasor_id.yazma_kullanici_id', '=', user.id)]"
+access_surum_manager,atlas.belge.surum manager,atlas.belge.surum,group_belge_manager,crud,
