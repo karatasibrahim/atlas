@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_beyanname" model="ir.actions.report">
+        <field name="name">Beyanname Çalışma Kâğıdı</field>
+        <field name="model">atlas.beyanname</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_beyanname.report_beyanname</field>
+        <field name="print_report_name">'%s %s-%s' % (object.tip.upper(), object.yil, object.ay)</field>
+        <field name="binding_model_id" ref="model_atlas_beyanname"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_beyanname">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h3 t-out="o.display_name"/>
+                        <p class="text-muted">Çalışma kâğıdı — <span t-field="o.durum"/></p>
+                        <table t-if="o.tip == 'kdv1'" class="table table-sm table-borderless w-50">
+                            <tr><td>Matrah toplamı</td><td class="text-end"><span t-field="o.matrah_toplam"/></td></tr>
+                            <tr><td>Hesaplanan KDV</td><td class="text-end"><span t-field="o.hesaplanan_kdv"/></td></tr>
+                            <tr t-if="o.tevkif_edilen"><td>Alıcılarca tevkif edilen</td><td class="text-end"><span t-field="o.tevkif_edilen"/></td></tr>
+                            <tr><td>Beyan edilen KDV</td><td class="text-end"><span t-field="o.beyan_edilen_kdv"/></td></tr>
+                            <tr><td>Önceki dönemden devreden</td><td class="text-end"><span t-field="o.devreden_kdv"/></td></tr>
+                            <tr><td>Bu dönem indirilecek KDV</td><td class="text-end"><span t-field="o.indirilecek_kdv"/></td></tr>
+                            <tr class="fw-bold"><td>Ödenmesi gereken KDV</td><td class="text-end"><span t-field="o.odenecek_kdv"/></td></tr>
+                            <tr class="fw-bold"><td>Sonraki döneme devreden</td><td class="text-end"><span t-field="o.sonraki_devreden"/></td></tr>
+                        </table>
+                        <p t-if="o.tip == 'kdv2'" class="fw-bold">Sorumlu sıfatıyla ödenecek KDV: <span t-field="o.kdv2_toplam"/></p>
+                        <p t-if="o.tip in ('ba', 'bs')">Bildirim sınırı: <span t-field="o.babs_sinir"/> — bildirilen cari: <span t-out="o.bildirim_sayisi"/></p>
+                        <t t-foreach="['matrah', 'tevkifat', 'istisna', 'ihrac_kayitli', 'indirim', 'kdv2', 'babs', 'kontrol']" t-as="bolum">
+                            <t t-set="satirlar" t-value="o.satir_ids.filtered(lambda s: s.bolum == bolum)"/>
+                            <t t-if="satirlar">
+                                <h5 class="mt-3" t-out="dict(satirlar._fields['bolum'].selection)[bolum]"/>
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Kod / VKN</th><th>Açıklama</th><th>Oran</th><th>Tevkifat</th><th>Belge</th>
+                                        <th class="text-end">Matrah / Tutar</th><th class="text-end">Vergi</th><th class="text-end">Tevkif / Fark</th></tr></thead>
+                                    <tbody>
+                                        <tr t-foreach="satirlar" t-as="s">
+                                            <td t-out="s.kod or ''"/><td t-out="s.aciklama or ''"/>
+                                            <td><t t-if="s.oran" t-out="s.oran"/></td><td t-out="s.tevkifat_orani or ''"/>
+                                            <td><t t-if="s.belge_sayisi" t-out="s.belge_sayisi"/></td>
+                                            <td class="text-end"><span t-field="s.matrah"/></td><td class="text-end"><span t-field="s.vergi"/></td>
+                                            <td class="text-end"><span t-field="s.tevkifat"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </t>
+                        <div t-if="o.uyari" class="alert alert-warning" t-out="o.uyari"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

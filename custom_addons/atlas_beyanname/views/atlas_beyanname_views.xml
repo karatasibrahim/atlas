@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_beyanname_list" model="ir.ui.view">
+        <field name="name">atlas.beyanname.list</field>
+        <field name="model">atlas.beyanname</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum == 'onaylandi'" sample="1">
+                <field name="name"/>
+                <field name="tip"/>
+                <field name="yil" options="{'format': false}"/>
+                <field name="ay"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="beyan_edilen_kdv" optional="show"/>
+                <field name="indirilecek_kdv" optional="show"/>
+                <field name="odenecek_kdv" optional="show"/>
+                <field name="sonraki_devreden" optional="show"/>
+                <field name="kdv2_toplam" optional="hide"/>
+                <field name="bildirim_sayisi" optional="show"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'onaylandi'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_beyanname_form" model="ir.ui.view">
+        <field name="name">atlas.beyanname.form</field>
+        <field name="model">atlas.beyanname</field>
+        <field name="arch" type="xml">
+            <form string="Beyanname">
+                <header>
+                    <button name="action_hesapla" type="object" string="Hesapla" class="btn-primary" invisible="durum != 'taslak' or not id"/>
+                    <button name="action_xml" type="object" string="e-Beyanname XML" invisible="not satir_ids"/>
+                    <button name="action_xlsx" type="object" string="Excel" invisible="not satir_ids"/>
+                    <button name="action_pdf" type="object" string="PDF" invisible="not satir_ids"/>
+                    <button name="action_onayla" type="object" string="Verildi Olarak İşaretle" invisible="durum != 'taslak' or not satir_ids"/>
+                    <button name="action_taslak" type="object" string="Taslağa Al" invisible="durum != 'onaylandi'"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <field name="name" readonly="1" class="text-muted"/>
+                        <h1><field name="display_name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="tip" readonly="id"/>
+                            <field name="yil" options="{'format': false}" readonly="id"/>
+                            <field name="ay" readonly="id"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="id"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group invisible="tip != 'kdv1'">
+                            <field name="matrah_toplam"/>
+                            <field name="hesaplanan_kdv"/>
+                            <field name="tevkif_edilen" invisible="not tevkif_edilen"/>
+                            <field name="beyan_edilen_kdv"/>
+                            <field name="devreden_kdv" readonly="durum != 'taslak'"/>
+                            <field name="indirilecek_kdv"/>
+                            <field name="odenecek_kdv" class="fw-bold"/>
+                            <field name="sonraki_devreden" class="fw-bold"/>
+                        </group>
+                        <group invisible="tip != 'kdv2'">
+                            <field name="kdv2_toplam" class="fw-bold"/>
+                        </group>
+                        <group invisible="tip not in ('ba', 'bs')">
+                            <field name="babs_sinir"/>
+                            <field name="bildirim_sayisi"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-warning" role="alert" invisible="not uyari">
+                        <field name="uyari" readonly="1"/>
+                    </div>
+                    <field name="xml_adi" invisible="1"/>
+                    <field name="satir_ids" readonly="1">
+                        <list default_group_by="bolum" decoration-danger="bolum == 'kontrol' and tevkifat != 0">
+                            <field name="bolum" column_invisible="1"/>
+                            <field name="kod"/>
+                            <field name="aciklama"/>
+                            <field name="partner_id" optional="hide"/>
+                            <field name="ulke" optional="hide"/>
+                            <field name="oran" optional="show"/>
+                            <field name="tevkifat_orani" optional="show"/>
+                            <field name="belge_sayisi" optional="show"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="matrah" sum="Toplam"/>
+                            <field name="vergi" sum="Toplam"/>
+                            <field name="tevkifat" sum="Toplam"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_beyanname_search" model="ir.ui.view">
+        <field name="name">atlas.beyanname.search</field>
+        <field name="model">atlas.beyanname</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="tip"/>
+                <field name="yil"/>
+                <filter name="kdv" string="KDV" domain="[('tip', 'in', ('kdv1', 'kdv2'))]"/>
+                <filter name="babs" string="Ba-Bs" domain="[('tip', 'in', ('ba', 'bs'))]"/>
+                <separator/>
+                <filter name="taslak" string="Taslak" domain="[('durum', '=', 'taslak')]"/>
+                <group>
+                    <filter name="group_tip" string="Beyanname" context="{'group_by': 'tip'}"/>
+                    <filter name="group_yil" string="Yıl" context="{'group_by': 'yil'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_beyanname" model="ir.actions.act_window">
+        <field name="name">Beyannameler</field>
+        <field name="res_model">atlas.beyanname</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Beyanname oluşturun</p>
+            <p>Dönem ve beyanname türünü seçip "Hesapla"ya basın; KDV1, KDV2, Form Ba ve Bs onaylı fatura ve fişlerden hesaplanır.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_beyanname" name="Beyannameler (KDV, Ba-Bs)" parent="atlas_rapor.menu_atlas_rapor_root"
+              action="action_atlas_beyanname" sequence="90"/>
+
+    <record id="res_config_settings_view_form_atlas_beyanname" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.atlas.beyanname</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="invoicing_settings" position="before">
+                <block title="e-Beyanname" id="atlas_beyanname">
+                    <setting string="Beyanname bilgileri" company_dependent="1" help="XML'deki mükellef / düzenleyen bilgileri ve Ba-Bs sınırı">
+                        <div class="content-group">
+                            <div class="row mt-2"><label for="atlas_beyan_eposta" string="e-Posta" class="col-lg-5 o_light_label"/><field name="atlas_beyan_eposta" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_beyan_telefon" string="Telefon" class="col-lg-5 o_light_label"/><field name="atlas_beyan_telefon" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_babs_sinir" string="Ba-Bs sınırı" class="col-lg-5 o_light_label"/><field name="atlas_babs_sinir" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_duzenleyen_tip" string="Düzenleyen" class="col-lg-5 o_light_label"/><field name="atlas_duzenleyen_tip" class="col-lg-7"/></div>
+                        </div>
+                    </setting>
+                    <setting string="Mali müşavir (SMMM)" company_dependent="1" invisible="atlas_duzenleyen_tip != 'smmm'">
+                        <div class="content-group">
+                            <div class="row mt-2"><label for="atlas_smmm_vkn" string="VKN / TCKN" class="col-lg-5 o_light_label"/><field name="atlas_smmm_vkn" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_smmm_ad" string="Adı" class="col-lg-5 o_light_label"/><field name="atlas_smmm_ad" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_smmm_soyad" string="Soyadı / Unvanı" class="col-lg-5 o_light_label"/><field name="atlas_smmm_soyad" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_smmm_telefon" string="Telefon" class="col-lg-5 o_light_label"/><field name="atlas_smmm_telefon" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_smmm_eposta" string="e-Posta" class="col-lg-5 o_light_label"/><field name="atlas_smmm_eposta" class="col-lg-7"/></div>
+                        </div>
+                    </setting>
+                    <setting string="XML şema sürümleri" company_dependent="1" help="GİB yeni sürüm yayımlarsa buradan güncelleyin">
+                        <div class="content-group">
+                            <div class="row mt-2"><label for="atlas_kdv1_kodver" string="KDV1" class="col-lg-5 o_light_label"/><field name="atlas_kdv1_kodver" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_kdv2_kodver" string="KDV2" class="col-lg-5 o_light_label"/><field name="atlas_kdv2_kodver" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_ba_kodver" string="Form Ba" class="col-lg-5 o_light_label"/><field name="atlas_ba_kodver" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_bs_kodver" string="Form Bs" class="col-lg-5 o_light_label"/><field name="atlas_bs_kodver" class="col-lg-7"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

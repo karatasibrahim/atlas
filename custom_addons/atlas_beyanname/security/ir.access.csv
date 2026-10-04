@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+access_beyanname_user,atlas.beyanname user,atlas.beyanname,account.group_account_readonly,r,
+access_beyanname_manager,atlas.beyanname manager,atlas.beyanname,account.group_account_manager,crud,
+access_beyanname_satir_user,atlas.beyanname.satir user,atlas.beyanname.satir,account.group_account_readonly,r,
+access_beyanname_satir_manager,atlas.beyanname.satir manager,atlas.beyanname.satir,account.group_account_manager,crud,
+atlas_beyanname_comp_rule,Beyanname şirket kuralı,atlas.beyanname,,crud,"[('company_id', 'in', company_ids)]"
