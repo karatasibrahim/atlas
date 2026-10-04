@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_pazarlama_aktivite_form" model="ir.ui.view">
+        <field name="name">atlas.pazarlama.aktivite.form</field>
+        <field name="model">atlas.pazarlama.aktivite</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h2><field name="name" placeholder="ör. Hoş geldin e-postası"/></h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="kampanya_id" invisible="1"/>
+                            <field name="model_id" invisible="1"/>
+                            <field name="tur" widget="radio" options="{'horizontal': true}"/>
+                            <field name="parent_id" options="{'no_create': True}" placeholder="Boş: kampanya başlangıcı"/>
+                            <field name="tetik" readonly="not parent_id"/>
+                            <label for="bekleme"/>
+                            <div class="o_row">
+                                <field name="bekleme"/>
+                                <field name="bekleme_birim"/>
+                                <span class="text-muted">sonra</span>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="eylem_id" invisible="tur != 'eylem'" required="tur == 'eylem'"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="filtre" widget="domain" options="{'model': 'model_name', 'in_dialog': True}"/>
+                        </group>
+                    </group>
+                    <group invisible="tur != 'eposta'">
+                        <field name="konu" required="tur == 'eposta'"/>
+                    </group>
+                    <field name="govde" invisible="tur != 'eposta'" placeholder="E-posta içeriği… {{ object.name }} gibi alanlar kullanılabilir."
+                           options="{'codeview': true}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_pazarlama_kampanya_form" model="ir.ui.view">
+        <field name="name">atlas.pazarlama.kampanya.form</field>
+        <field name="model">atlas.pazarlama.kampanya</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_baslat" type="object" string="Başlat" class="btn-primary" invisible="durum == 'calisiyor'"/>
+                    <button name="action_simdi_calistir" type="object" string="Şimdi Çalıştır" invisible="durum != 'calisiyor'"/>
+                    <button name="action_durdur" type="object" string="Durdur" invisible="durum != 'calisiyor'"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_katilimcilar" type="object" class="oe_stat_button" icon="group">
+                            <field name="katilimci_sayisi" widget="statinfo" string="Katılımcı"/>
+                        </button>
+                        <div class="oe_stat_button">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="gonderilen_sayisi"/></span>
+                                <span class="o_stat_text">Gönderilen</span>
+                            </div>
+                        </div>
+                        <div class="oe_stat_button">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="acilan_orani"/>%</span>
+                                <span class="o_stat_text">Açılma</span>
+                            </div>
+                        </div>
+                        <div class="oe_stat_button">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="tiklanan_orani"/>%</span>
+                                <span class="o_stat_text">Tıklama</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. Yeni Müşteri Karşılama"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True}" readonly="katilimci_sayisi"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="benzersiz_alan_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="son_senkron"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <label for="domain"/>
+                    <field name="domain" widget="domain" options="{'model': 'model_name', 'in_dialog': True}"/>
+                    <notebook>
+                        <page string="Adımlar" name="adimlar">
+                            <field name="aktivite_ids" context="{'default_kampanya_id': id}">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="tur"/>
+                                    <field name="parent_id"/>
+                                    <field name="tetik"/>
+                                    <field name="bekleme"/>
+                                    <field name="bekleme_birim"/>
+                                    <field name="bekleyen"/>
+                                    <field name="yapilan"/>
+                                    <field name="gonderilen" optional="show"/>
+                                    <field name="acilan" optional="show"/>
+                                    <field name="tiklanan" optional="show"/>
+                                    <field name="yanitlanan" optional="hide"/>
+                                    <field name="atlanan" optional="hide"/>
+                                </list>
+                            </field>
+                            <div class="text-muted small">
+                                Her adım kampanya başlangıcında ya da önceki adımdan sonra çalışır. E-posta adımlarından sonra
+                                "açıldı / açılmadı / tıklandı / yanıtlandı" tetikleyicileriyle davranışa göre dallanabilirsiniz.
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_pazarlama_kampanya_list" model="ir.ui.view">
+        <field name="name">atlas.pazarlama.kampanya.list</field>
+        <field name="model">atlas.pazarlama.kampanya</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="katilimci_sayisi"/>
+                <field name="aktif_sayisi"/>
+                <field name="gonderilen_sayisi"/>
+                <field name="acilan_orani" widget="progressbar"/>
+                <field name="tiklanan_orani" widget="progressbar"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'calisiyor'" decoration-warning="durum == 'durduruldu'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_pazarlama_katilimci_list" model="ir.ui.view">
+        <field name="name">atlas.pazarlama.katilimci.list</field>
+        <field name="model">atlas.pazarlama.katilimci</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="kayit_adi"/>
+                <field name="kampanya_id"/>
+                <field name="create_date" string="Giriş"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'aktif'" decoration-success="durum == 'tamamlandi'"/>
+                <button name="action_cikar" type="object" string="Çıkar" icon="close" invisible="durum != 'aktif'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_pazarlama_katilimci_form" model="ir.ui.view">
+        <field name="name">atlas.pazarlama.katilimci.form</field>
+        <field name="model">atlas.pazarlama.katilimci</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_cikar" type="object" string="Kampanyadan Çıkar" invisible="durum != 'aktif'"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <h2><field name="kayit_adi"/></h2>
+                    <group><field name="kampanya_id"/></group>
+                    <field name="iz_ids" readonly="1">
+                        <list>
+                            <field name="aktivite_id"/>
+                            <field name="planlanan"/>
+                            <field name="yapilma"/>
+                            <field name="durum" widget="badge" decoration-info="durum == 'bekliyor'" decoration-success="durum == 'yapildi'"
+                                   decoration-danger="durum == 'hata'"/>
+                            <field name="eposta_durumu"/>
+                            <field name="sonuc"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_atlas_pazarlama_kampanya" model="ir.actions.act_window">
+        <field name="name">Otomasyon Kampanyaları</field>
+        <field name="res_model">atlas.pazarlama.kampanya</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk otomasyon kampanyanızı oluşturun</p>
+            <p>Hedef kitleyi seçin, e-posta ve eylem adımlarını zaman ve davranışa göre (açtı, tıkladı, yanıtladı) bağlayın.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_pazarlama" name="Pazarlama Otomasyonu" parent="mass_mailing.mass_mailing_menu_root"
+              action="action_atlas_pazarlama_kampanya" sequence="3"/>
+</odoo>

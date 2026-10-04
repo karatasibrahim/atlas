@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_kampanya_user,atlas.pazarlama.kampanya user,atlas.pazarlama.kampanya,mass_mailing.group_mass_mailing_user,crud,
+access_aktivite_user,atlas.pazarlama.aktivite user,atlas.pazarlama.aktivite,mass_mailing.group_mass_mailing_user,crud,
+access_katilimci_user,atlas.pazarlama.katilimci user,atlas.pazarlama.katilimci,mass_mailing.group_mass_mailing_user,crud,
+access_iz_user,atlas.pazarlama.iz user,atlas.pazarlama.iz,mass_mailing.group_mass_mailing_user,crud,
