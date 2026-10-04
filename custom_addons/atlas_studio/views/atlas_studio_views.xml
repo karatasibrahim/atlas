@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_studio_alan_form" model="ir.ui.view">
+        <field name="name">atlas.studio.alan.form</field>
+        <field name="model">atlas.studio.alan</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group string="Nereye">
+                        <field name="model_id" options="{'no_create': True}" placeholder="ör. Satış Siparişi"/>
+                        <field name="model_name" invisible="1"/>
+                        <field name="model_takipli" invisible="1"/>
+                        <field name="form_view_id" invisible="not model_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="hedef_alan_id" invisible="not model_id" options="{'no_create': True}"
+                               placeholder="Boş: formun sonuna"/>
+                        <field name="konum" invisible="not hedef_alan_id" widget="radio" options="{'horizontal': true}"/>
+                    </group>
+                    <group string="Alan">
+                        <field name="etiket" placeholder="ör. Teslim Şekli"/>
+                        <field name="tur"/>
+                        <field name="secenekler" invisible="tur != 'selection'" required="tur == 'selection'"
+                               placeholder="Kargo&#10;Elden&#10;Ambar"/>
+                        <field name="iliski_model_id" invisible="tur not in ('many2one', 'many2many')"
+                               required="tur in ('many2one', 'many2many')" options="{'no_create': True}"/>
+                        <field name="zorunlu"/>
+                        <field name="yardim"/>
+                        <field name="teknik" groups="base.group_no_one"/>
+                    </group>
+                </group>
+                <group>
+                    <group>
+                        <field name="listeye_ekle"/>
+                        <field name="aramaya_ekle"/>
+                        <field name="takip" invisible="not model_takipli"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_ekle" type="object" string="Alanı Ekle" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_studio_model_form" model="ir.ui.view">
+        <field name="name">atlas.studio.model.form</field>
+        <field name="model">atlas.studio.model</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="ad" placeholder="ör. Araç Bakım Kaydı"/>
+                        <field name="cogul_ad" placeholder="ör. Bakım Kayıtları"/>
+                        <field name="teknik" groups="base.group_no_one"/>
+                        <field name="grup_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="yeni_uygulama" invisible="ust_menu_id"/>
+                        <field name="uygulama_adi" invisible="not yeni_uygulama or ust_menu_id" placeholder="Boş: menü adı"/>
+                        <field name="ust_menu_id" options="{'no_create': True}" placeholder="veya mevcut uygulamanın altına"/>
+                    </group>
+                </group>
+                <group string="Özellikler">
+                    <group>
+                        <field name="chatter"/>
+                        <field name="arsivlenebilir"/>
+                    </group>
+                    <group>
+                        <field name="sorumlu"/>
+                        <field name="sirket"/>
+                    </group>
+                </group>
+                <separator string="Alanlar"/>
+                <field name="alan_ids">
+                    <list editable="bottom">
+                        <field name="sira" widget="handle"/>
+                        <field name="etiket"/>
+                        <field name="tur"/>
+                        <field name="secenekler" placeholder="Seçim listesi için: satır başına bir seçenek" required="tur == 'selection'"/>
+                        <field name="iliski_model_id" options="{'no_create': True}" required="tur in ('many2one', 'many2many')"/>
+                        <field name="zorunlu"/>
+                        <field name="listede"/>
+                        <field name="teknik" groups="base.group_no_one"/>
+                    </list>
+                </field>
+                <div class="text-muted small">"Ad" alanı otomatik eklenir. Seçim listesi seçeneklerini satır başına bir tane yazın.</div>
+                <footer>
+                    <button name="action_olustur" type="object" string="Oluştur" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_studio_degisiklik_list" model="ir.ui.view">
+        <field name="name">atlas.studio.degisiklik.list</field>
+        <field name="model">atlas.studio.degisiklik</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="create_date" string="Tarih"/>
+                <field name="name"/>
+                <field name="tur" widget="badge"/>
+                <field name="model_id"/>
+                <field name="alan_id" optional="hide"/>
+                <field name="create_uid" string="Yapan" widget="many2one_avatar_user"/>
+                <button name="action_ac" type="object" string="Aç" icon="fa-external-link" invisible="tur != 'model'"/>
+                <button name="action_geri_al" type="object" string="Geri Al" icon="fa-undo" class="text-danger"
+                        confirm="Bu özelleştirme ve ona ait tüm veriler kalıcı olarak silinecek. Devam edilsin mi?"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_studio_alan" model="ir.actions.act_window">
+        <field name="name">Alan Ekle</field>
+        <field name="res_model">atlas.studio.alan</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="action_atlas_studio_model" model="ir.actions.act_window">
+        <field name="name">Yeni Model / Uygulama</field>
+        <field name="res_model">atlas.studio.model</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="action_atlas_studio_degisiklik" model="ir.actions.act_window">
+        <field name="name">Özelleştirmeler</field>
+        <field name="res_model">atlas.studio.degisiklik</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz özelleştirme yok</p>
+            <p>Alan Ekle veya Yeni Model / Uygulama ile başlayın; yapılan her değişiklik burada listelenir ve geri alınabilir.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_studio_root" name="Studio" sequence="95" web_icon="atlas_studio,static/description/icon.png"
+              groups="base.group_system"/>
+    <menuitem id="menu_atlas_studio_alan" name="Alan Ekle" parent="menu_atlas_studio_root" action="action_atlas_studio_alan" sequence="10"/>
+    <menuitem id="menu_atlas_studio_model" name="Yeni Model / Uygulama" parent="menu_atlas_studio_root" action="action_atlas_studio_model" sequence="20"/>
+    <menuitem id="menu_atlas_studio_degisiklik" name="Özelleştirmeler" parent="menu_atlas_studio_root" action="action_atlas_studio_degisiklik" sequence="30"/>
+</odoo>
