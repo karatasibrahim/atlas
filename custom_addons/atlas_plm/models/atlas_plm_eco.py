@@ -8,6 +8,17 @@ DURUMLAR = [('taslak', 'Yapılacak'), ('islemde', 'İşlemde'), ('bitti', 'Uygul
 ONCELIKLER = [('0', 'Normal'), ('1', 'Düşük'), ('2', 'Yüksek'), ('3', 'Acil')]
 
 
+def _bool_arama(operator, value):
+    """Boolean hesaplanmış alan araması: Odoo 20 '=' True'yu 'in' [True] olarak da iletebilir."""
+    if operator in ('in', 'not in'):
+        degerler = {value} if isinstance(value, (bool, int, str)) or value is None else set(value)
+        sonuc = True in degerler
+        return sonuc if operator == 'in' else not sonuc
+    if operator in ('=', '!='):
+        return bool(value) if operator == '=' else not bool(value)
+    raise ValueError(operator)
+
+
 class AtlasPlmEco(models.Model):
     """Mühendislik Değişiklik Emri (ECO)."""
     _name = 'atlas.plm.eco'
@@ -124,11 +135,9 @@ class AtlasPlmEco(models.Model):
                 o.durum == 'bekliyor' and o.onay_tipi != 'yorum' and o.sablon_id._onaylayabilir(user) for o in onaylar)
 
     def _search_onayimi_bekliyor(self, operator, value):
-        if operator not in ('=', '!=') or not isinstance(value, bool):
-            raise UserError(self.env._('Desteklenmeyen arama.'))
         adaylar = self.search([('durum', 'in', ('taslak', 'islemde')), ('onay_ids.durum', '=', 'bekliyor')])
         ids = adaylar.filtered('onayimi_bekliyor').ids
-        return [('id', 'in' if (operator == '=') == value else 'not in', ids)]
+        return [('id', 'in' if _bool_arama(operator, value) else 'not in', ids)]
 
     @api.depends('bom_degisiklik_ids', 'rota_degisiklik_ids')
     def _compute_degisiklik_sayisi(self):

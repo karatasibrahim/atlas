@@ -7,6 +7,17 @@ from odoo.exceptions import UserError
 from odoo.tools import format_amount, format_date
 
 
+def _bool_arama(operator, value):
+    """Boolean hesaplanmış alan araması: Odoo 20 '=' True'yu 'in' [True] olarak da iletebilir."""
+    if operator in ('in', 'not in'):
+        degerler = {value} if isinstance(value, (bool, int, str)) or value is None else set(value)
+        sonuc = True in degerler
+        return sonuc if operator == 'in' else not sonuc
+    if operator in ('=', '!='):
+        return bool(value) if operator == '=' else not bool(value)
+    raise ValueError(operator)
+
+
 class AtlasHatirlatmaSeviye(models.Model):
     _name = 'atlas.hatirlatma.seviye'
     _description = 'Ödeme Hatırlatma Seviyesi'
@@ -139,16 +150,12 @@ class ResPartner(models.Model):
             partner.atlas_son_hatirlatma = son.get(ticari_p, False)
 
     def _search_atlas_hatirlatma_gerekli(self, operator, value):
-        if operator not in ('=', '!=') or not isinstance(value, bool):
-            raise UserError(self.env._('Desteklenmeyen arama.'))
         ids = [p.id for p in self.browse()._atlas_bekleyen(self.env.company, self._atlas_gecikmis_gruplu(self.env.company))]
-        return [('id', 'in' if (operator == '=') == value else 'not in', ids)]
+        return [('id', 'in' if _bool_arama(operator, value) else 'not in', ids)]
 
     def _search_atlas_gecikmis_var(self, operator, value):
-        if operator not in ('=', '!=') or not isinstance(value, bool):
-            raise UserError(self.env._('Desteklenmeyen arama.'))
         ids = [p.id for p in self._atlas_gecikmis_gruplu(self.env.company)]
-        return [('id', 'in' if (operator == '=') == value else 'not in', ids)]
+        return [('id', 'in' if _bool_arama(operator, value) else 'not in', ids)]
 
     # -------------------------------------------------------------------------
     # Gönderim
