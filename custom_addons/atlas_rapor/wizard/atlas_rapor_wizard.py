@@ -133,7 +133,7 @@ class AtlasRaporWizard(models.TransientModel):
     def _get_report(self):
         self.ensure_one()
         data = getattr(self, f'_report_{self.rapor_turu}')()
-        data.setdefault('title', dict(RAPOR_SELECTION)[self.rapor_turu])
+        data.setdefault('title', dict(self._fields['rapor_turu'].selection)[self.rapor_turu])
         data.setdefault('subtitle', self._period_label())
         data['company'] = self.company_id
         data['currency'] = self.company_id.currency_id

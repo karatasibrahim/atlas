@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_butce_list" model="ir.ui.view">
+        <field name="name">atlas.butce.list</field>
+        <field name="model">atlas.butce</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum == 'kapali'" sample="1">
+                <field name="yil"/>
+                <field name="name"/>
+                <field name="analytic_account_id" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="plan_toplam"/>
+                <field name="gerceklesen_toplam"/>
+                <field name="asim_kontrolu" optional="show"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'onaylandi'" decoration-info="durum == 'taslak'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_butce_form" model="ir.ui.view">
+        <field name="name">atlas.butce.form</field>
+        <field name="model">atlas.butce</field>
+        <field name="arch" type="xml">
+            <form string="Bütçe">
+                <header>
+                    <button name="action_onayla" type="object" string="Onayla" class="btn-primary" invisible="durum != 'taslak'"/>
+                    <button name="action_rapor" type="object" string="Bütçe - Gerçekleşen Raporu" invisible="not id"/>
+                    <button name="action_gerceklesenden_doldur" type="object" string="Gerçekleşenden Doldur" invisible="durum != 'taslak' or not satir_ids"
+                            confirm="Kalemlerin aylık tutarları kaynak yılın gerçekleşeniyle (artış oranı uygulanarak) değiştirilecek."/>
+                    <button name="action_sonraki_yil" type="object" string="Sonraki Yıla Kopyala" invisible="not id"/>
+                    <button name="action_taslak" type="object" string="Taslağa Al" invisible="durum == 'taslak'"/>
+                    <button name="action_kapat" type="object" string="Kapat" invisible="durum != 'onaylandi'"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. 2027 Genel Bütçe" readonly="durum != 'taslak'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="yil" options="{'format': false}" readonly="durum != 'taslak'"/>
+                            <field name="analytic_account_id" readonly="durum != 'taslak'" groups="analytic.group_analytic_accounting"/>
+                            <field name="asim_kontrolu"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="plan_toplam"/>
+                            <field name="gerceklesen_toplam"/>
+                            <field name="kaynak_yil" options="{'format': false}" invisible="durum != 'taslak'" placeholder="Önceki yıl"/>
+                            <field name="artis_orani" invisible="durum != 'taslak'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Kalemler" name="satirlar">
+                            <field name="satir_ids" readonly="durum != 'taslak'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="hesap_kodu"/>
+                                    <field name="name"/>
+                                    <field name="yon" optional="hide"/>
+                                    <field name="analytic_account_id" optional="hide" groups="analytic.group_analytic_accounting"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="ay01" optional="show"/>
+                                    <field name="ay02" optional="show"/>
+                                    <field name="ay03" optional="show"/>
+                                    <field name="ay04" optional="show"/>
+                                    <field name="ay05" optional="show"/>
+                                    <field name="ay06" optional="show"/>
+                                    <field name="ay07" optional="show"/>
+                                    <field name="ay08" optional="show"/>
+                                    <field name="ay09" optional="show"/>
+                                    <field name="ay10" optional="show"/>
+                                    <field name="ay11" optional="show"/>
+                                    <field name="ay12" optional="show"/>
+                                    <field name="toplam" sum="Toplam"/>
+                                    <field name="gerceklesen" sum="Toplam"/>
+                                    <field name="fark" sum="Toplam" decoration-danger="fark &lt; 0"/>
+                                    <field name="oran" widget="progressbar" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notlar" name="notlar">
+                            <field name="notlar"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_atlas_butce" model="ir.actions.act_window">
+        <field name="name">Bütçeler</field>
+        <field name="res_model">atlas.butce</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk bütçeyi oluşturun</p>
+            <p>Hesap kodu bazında aylık bütçe girin; gerçekleşen tutarlar muhasebe kayıtlarından otomatik hesaplanır.</p>
+        </field>
+    </record>
+    <record id="action_atlas_rapor_butce" model="ir.actions.act_window">
+        <field name="name">Bütçe - Gerçekleşen</field>
+        <field name="res_model">atlas.rapor.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_rapor_turu': 'butce'}</field>
+    </record>
+
+    <record id="view_atlas_rapor_wizard_form_butce" model="ir.ui.view">
+        <field name="name">atlas.rapor.wizard.form.butce</field>
+        <field name="model">atlas.rapor.wizard</field>
+        <field name="inherit_id" ref="atlas_rapor.view_atlas_rapor_wizard_form"/>
+        <field name="arch" type="xml">
+            <field name="rapor_turu" position="after">
+                <field name="butce_id" invisible="rapor_turu != 'butce'" required="rapor_turu == 'butce'" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_butce" name="Bütçeler" parent="account.menu_finance_entries" action="action_atlas_butce"
+              sequence="30" groups="account.group_account_readonly"/>
+    <menuitem id="menu_atlas_rapor_butce" name="Bütçe - Gerçekleşen" parent="atlas_rapor.menu_atlas_rapor_root"
+              action="action_atlas_rapor_butce" sequence="80"/>
+</odoo>

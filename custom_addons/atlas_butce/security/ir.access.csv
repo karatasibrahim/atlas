@@ -1,0 +1,8 @@
+id,name,model_id,group_id/id,operation,domain
+access_butce_user,atlas.butce user,atlas.butce,account.group_account_readonly,r,
+access_butce_manager,atlas.butce manager,atlas.butce,account.group_account_manager,crud,
+access_butce_satir_user,atlas.butce.satir user,atlas.butce.satir,account.group_account_readonly,r,
+access_butce_satir_manager,atlas.butce.satir manager,atlas.butce.satir,account.group_account_manager,crud,
+access_butce_satir_invoice,atlas.butce.satir invoice,atlas.butce.satir,account.group_account_invoice,r,
+access_butce_invoice,atlas.butce invoice,atlas.butce,account.group_account_invoice,r,
+atlas_butce_comp_rule,Bütçe şirket kuralı,atlas.butce,,crud,"[('company_id', 'in', company_ids)]"
