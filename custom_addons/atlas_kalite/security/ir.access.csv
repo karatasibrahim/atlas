@@ -1,0 +1,22 @@
+id,name,model_id,group_id/id,operation,domain
+access_ekip_user,atlas.kalite.ekip user,atlas.kalite.ekip,group_kalite_user,r,
+access_ekip_manager,atlas.kalite.ekip manager,atlas.kalite.ekip,group_kalite_manager,crud,
+access_etiket_user,atlas.kalite.etiket user,atlas.kalite.etiket,group_kalite_user,r,
+access_etiket_manager,atlas.kalite.etiket manager,atlas.kalite.etiket,group_kalite_manager,crud,
+access_neden_user,atlas.kalite.neden user,atlas.kalite.neden,group_kalite_user,r,
+access_neden_manager,atlas.kalite.neden manager,atlas.kalite.neden,group_kalite_manager,crud,
+access_asama_user,atlas.kalite.uyari.asama user,atlas.kalite.uyari.asama,group_kalite_user,r,
+access_asama_manager,atlas.kalite.uyari.asama manager,atlas.kalite.uyari.asama,group_kalite_manager,crud,
+access_nokta_user,atlas.kalite.nokta user,atlas.kalite.nokta,group_kalite_user,r,
+access_nokta_manager,atlas.kalite.nokta manager,atlas.kalite.nokta,group_kalite_manager,crud,
+access_nokta_madde_user,atlas.kalite.nokta.madde user,atlas.kalite.nokta.madde,group_kalite_user,r,
+access_nokta_madde_manager,atlas.kalite.nokta.madde manager,atlas.kalite.nokta.madde,group_kalite_manager,crud,
+access_kontrol_user,atlas.kalite.kontrol user,atlas.kalite.kontrol,group_kalite_user,cru,
+access_kontrol_manager,atlas.kalite.kontrol manager,atlas.kalite.kontrol,group_kalite_manager,crud,
+access_kontrol_madde_user,atlas.kalite.kontrol.madde user,atlas.kalite.kontrol.madde,group_kalite_user,cru,
+access_kontrol_madde_manager,atlas.kalite.kontrol.madde manager,atlas.kalite.kontrol.madde,group_kalite_manager,crud,
+access_uyari_user,atlas.kalite.uyari user,atlas.kalite.uyari,group_kalite_user,cru,
+access_uyari_manager,atlas.kalite.uyari manager,atlas.kalite.uyari,group_kalite_manager,crud,
+atlas_kalite_nokta_comp_rule,Kontrol noktası şirket kuralı,atlas.kalite.nokta,,crud,"[('company_id', 'in', company_ids)]"
+atlas_kalite_kontrol_comp_rule,Kalite kontrolü şirket kuralı,atlas.kalite.kontrol,,crud,"[('company_id', 'in', company_ids)]"
+atlas_kalite_uyari_comp_rule,Uygunsuzluk şirket kuralı,atlas.kalite.uyari,,crud,"[('company_id', 'in', company_ids)]"

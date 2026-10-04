@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_kalite_nokta_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.nokta.list</field>
+        <field name="model">atlas.kalite.nokta</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="asama"/>
+                <field name="test_tipi"/>
+                <field name="olcum_yeri" optional="show"/>
+                <field name="siklik" optional="show"/>
+                <field name="product_ids" widget="many2many_tags" optional="show"/>
+                <field name="category_ids" widget="many2many_tags" optional="hide"/>
+                <field name="picking_type_ids" widget="many2many_tags" optional="hide"/>
+                <field name="ekip_id" optional="show"/>
+                <field name="engelleyici" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_nokta_form" model="ir.ui.view">
+        <field name="name">atlas.kalite.nokta.form</field>
+        <field name="model">atlas.kalite.nokta</field>
+        <field name="arch" type="xml">
+            <form string="Kontrol Noktası">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_kontroller" type="object" class="oe_stat_button" icon="checklist">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="kontrol_sayisi"/></span>
+                                <span class="o_stat_text">Kontrol</span>
+                            </div>
+                        </button>
+                        <button name="action_kontroller" type="object" class="oe_stat_button" icon="verified" invisible="not kontrol_sayisi">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="basari_orani" widget="float" digits="[16, 1]"/> %</span>
+                                <span class="o_stat_text">Başarı</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="ör. Giriş boyut kontrolü"/></h1>
+                    </div>
+                    <group>
+                        <group string="Uygulama">
+                            <field name="active" invisible="1"/>
+                            <field name="asama"/>
+                            <field name="product_ids" widget="many2many_tags" placeholder="Tüm ürünler"/>
+                            <field name="category_ids" widget="many2many_tags" placeholder="Tüm kategoriler"/>
+                            <field name="picking_type_ids" widget="many2many_tags" placeholder="Tüm operasyon türleri"
+                                   domain="[('code', '=', 'incoming' if asama == 'giris' else ('outgoing' if asama == 'sevkiyat' else 'mrp_operation'))]"/>
+                            <field name="partner_ids" widget="many2many_tags" invisible="asama not in ('giris', 'sevkiyat')"
+                                   placeholder="Tüm cariler"/>
+                            <field name="operation_ids" widget="many2many_tags" invisible="asama != 'ara'" placeholder="Tüm operasyonlar"/>
+                            <field name="workcenter_ids" widget="many2many_tags" invisible="asama != 'ara'" placeholder="Tüm iş merkezleri"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Kontrol">
+                            <field name="test_tipi"/>
+                            <field name="olcum_yeri"/>
+                            <field name="siklik"/>
+                            <label for="yuzde" invisible="siklik != 'rastgele'"/>
+                            <div class="o_row" invisible="siklik != 'rastgele'">
+                                <field name="yuzde"/> %
+                            </div>
+                            <label for="periyot_sayi" invisible="siklik != 'periyodik'"/>
+                            <div class="o_row" invisible="siklik != 'periyodik'">
+                                <field name="periyot_sayi"/> <field name="periyot_birim"/>
+                            </div>
+                            <field name="ekip_id"/>
+                            <field name="user_id"/>
+                            <field name="engelleyici"/>
+                            <field name="kaldi_engeller"/>
+                            <field name="otomatik_uyari"/>
+                        </group>
+                    </group>
+                    <group string="Ölçüm" invisible="test_tipi != 'olcum'">
+                        <group>
+                            <field name="norm"/>
+                            <field name="alt_sinir"/>
+                            <field name="ust_sinir"/>
+                            <field name="olcu_birimi"/>
+                        </group>
+                    </group>
+                    <group string="Numune" invisible="test_tipi != 'sayim'">
+                        <group>
+                            <field name="numune_miktar"/>
+                            <field name="kabul_orani"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Kontrol Maddeleri" name="maddeler" invisible="test_tipi != 'kontrol_listesi'">
+                            <field name="madde_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Talimat" name="talimat">
+                            <field name="talimat" placeholder="Kontrolün nasıl yapılacağını yazın..."/>
+                            <group>
+                                <field name="dokuman" filename="dokuman_adi"/>
+                                <field name="dokuman_adi" invisible="1"/>
+                            </group>
+                        </page>
+                        <page string="Başarısızlıkta" name="basarisiz">
+                            <field name="basarisiz_mesaj" placeholder="Kontrol başarısız olursa yapılacaklar (karantina, tedarikçiye iade, yeniden işleme...)"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_nokta_search" model="ir.ui.view">
+        <field name="name">atlas.kalite.nokta.search</field>
+        <field name="model">atlas.kalite.nokta</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_ids"/>
+                <field name="category_ids"/>
+                <filter name="giris" string="Giriş" domain="[('asama', '=', 'giris')]"/>
+                <filter name="ara" string="Üretim Ara" domain="[('asama', '=', 'ara')]"/>
+                <filter name="final" string="Final" domain="[('asama', '=', 'final')]"/>
+                <filter name="sevkiyat" string="Sevkiyat" domain="[('asama', '=', 'sevkiyat')]"/>
+                <separator/>
+                <filter name="arsiv" string="Arşivlenmiş" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_asama" string="Aşama" context="{'group_by': 'asama'}"/>
+                    <filter name="group_test_tipi" string="Test Tipi" context="{'group_by': 'test_tipi'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_kalite_nokta" model="ir.actions.act_window">
+        <field name="name">Kontrol Noktaları</field>
+        <field name="res_model">atlas.kalite.nokta</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk kontrol noktasını tanımlayın</p>
+            <p>Kontrol noktası; hangi aşamada (mal kabul, iş emri, üretim sonu, sevkiyat), hangi ürünler için,
+               ne sıklıkla ve hangi testin yapılacağını belirler. Kontroller belgeler oluştuğunda otomatik açılır.</p>
+        </field>
+    </record>
+</odoo>

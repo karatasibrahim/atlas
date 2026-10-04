@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="atlas_kalite.BarkodApp" t-inherit="atlas_barkod.App" t-inherit-mode="extension">
+        <!-- Başlık -->
+        <xpath expr="//header//t[@t-elif=&quot;this.state.ekran === 'bilgi'&quot;]" position="after">
+            <t t-elif="this.state.ekran === 'kalite'" t-out="this.state.kontrol.ad"/>
+        </xpath>
+
+        <!-- Belgedeki kalite kontrolleri -->
+        <xpath expr="//div[hasclass('list-group')][hasclass('mb-3')]" position="before">
+            <div t-if="belge.kalite and belge.kalite.length" class="card border-warning mb-2">
+                <div class="card-header py-1 small fw-bold">
+                    <i class="oi" data-icon="verified"/> Kalite Kontrolleri
+                </div>
+                <div class="list-group list-group-flush">
+                    <t t-foreach="belge.kalite" t-as="k" t-key="k.id">
+                        <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                t-on-click="() => this.kaliteAc(k.id)">
+                            <span class="text-truncate">
+                                <span class="fw-bold" t-out="k.nokta"/>
+                                <span class="small text-muted d-block" t-out="[k.urun, k.seri].filter((x) => x).join(' / ')"/>
+                            </span>
+                            <span t-attf-class="badge text-bg-{{ this.durumRenk(k.durum) }}" t-out="this.durumAdi(k.durum)"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Kalite kontrol ekranı -->
+        <xpath expr="//main/t[@t-elif=&quot;this.state.ekran === 'bilgi'&quot;]" position="after">
+            <t t-elif="this.state.ekran === 'kalite'">
+                <t t-set="k" t-value="this.state.kontrol"/>
+                <t t-set="giris" t-value="this.state.kontrolGiris"/>
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-bold" t-out="k.nokta"/>
+                                <div class="small text-muted" t-out="k.asama + ' · ' + k.test_tipi_ad"/>
+                            </div>
+                            <span t-attf-class="badge fs-6 text-bg-{{ this.durumRenk(k.durum) }}" t-out="this.durumAdi(k.durum)"/>
+                        </div>
+                        <div t-if="k.urun" class="small mt-1">Ürün: <b t-out="k.urun"/></div>
+                        <div t-if="k.seri" class="small">Seri / Lot: <b t-out="k.seri"/></div>
+                        <div t-if="k.belge" class="small">Belge: <t t-out="k.belge.ad"/></div>
+                        <div t-if="k.kontrol_eden" class="small text-muted">Kontrol eden: <t t-out="k.kontrol_eden"/></div>
+                        <div t-if="k.uyarilar.length" class="small text-danger">Uygunsuzluk: <t t-out="k.uyarilar.join(', ')"/></div>
+                    </div>
+                </div>
+
+                <div t-if="k.talimat" class="card mb-2">
+                    <div class="card-header py-1 small fw-bold">Talimat</div>
+                    <div class="card-body py-2 small" t-out="k.talimat"/>
+                </div>
+
+                <t t-if="k.durum === 'bekliyor'">
+                    <!-- Ölçüm -->
+                    <div t-if="k.test_tipi === 'olcum'" class="mb-2">
+                        <div class="small text-muted mb-1">
+                            Nominal <t t-out="k.norm"/> · Kabul <t t-out="k.alt_sinir"/> – <t t-out="k.ust_sinir"/> <t t-out="k.birim"/>
+                        </div>
+                        <div class="input-group input-group-lg">
+                            <input class="form-control" type="number" step="any" inputmode="decimal" placeholder="Ölçülen değer"
+                                   t-att-value="giris.olcum" t-on-change="(ev) => this.kontrolDeger('olcum', ev)"/>
+                            <span t-if="k.birim" class="input-group-text" t-out="k.birim"/>
+                        </div>
+                    </div>
+                    <!-- Numune -->
+                    <div t-if="k.test_tipi === 'sayim'" class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small">Test edilen</label>
+                            <input class="form-control form-control-lg" type="number" step="any" inputmode="decimal"
+                                   t-att-value="giris.test_edilen" t-on-change="(ev) => this.kontrolDeger('test_edilen', ev)"/>
+                        </div>
+                        <div class="col-6">
+                            <label class="small">Hatalı</label>
+                            <input class="form-control form-control-lg" type="number" step="any" inputmode="decimal"
+                                   t-att-value="giris.hatali" t-on-change="(ev) => this.kontrolDeger('hatali', ev)"/>
+                        </div>
+                        <div class="col-12 small text-muted">Kabul edilebilir hata: %<t t-out="k.kabul_orani"/></div>
+                    </div>
+                    <!-- Kontrol listesi -->
+                    <div t-if="k.test_tipi === 'kontrol_listesi'" class="list-group mb-2">
+                        <t t-foreach="k.maddeler" t-as="m" t-key="m.id">
+                            <div t-attf-class="list-group-item {{ giris.maddeler[m.id] === 'uygun' ? 'list-group-item-success' : giris.maddeler[m.id] === 'uygun_degil' ? 'list-group-item-danger' : '' }}">
+                                <div class="mb-1" t-out="m.ad"/>
+                                <div class="btn-group w-100">
+                                    <button t-attf-class="btn btn-sm {{ giris.maddeler[m.id] === 'uygun' ? 'btn-success' : 'btn-outline-success' }}"
+                                            t-on-click="() => this.maddeSec(m.id, 'uygun')">Uygun</button>
+                                    <button t-attf-class="btn btn-sm {{ giris.maddeler[m.id] === 'uygun_degil' ? 'btn-danger' : 'btn-outline-danger' }}"
+                                            t-on-click="() => this.maddeSec(m.id, 'uygun_degil')">Uygun Değil</button>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    <!-- Fotoğraf -->
+                    <div t-if="k.test_tipi !== 'talimat'" class="mb-2">
+                        <label class="btn btn-outline-secondary w-100">
+                            <i class="oi" data-icon="photo_camera"/>
+                            <t t-if="giris.foto"> Fotoğraf eklendi (değiştir)</t>
+                            <t t-elif="k.test_tipi === 'foto'"> Fotoğraf Çek (zorunlu)</t>
+                            <t t-else=""> Fotoğraf Ekle</t>
+                            <input type="file" accept="image/*" capture="environment" class="d-none" t-on-change="(ev) => this.fotoSecildi(ev)"/>
+                        </label>
+                    </div>
+                    <textarea class="form-control mb-2" rows="2" placeholder="Not / gözlem" t-att-value="giris.notlar"
+                              t-on-change="(ev) => this.kontrolDeger('notlar', ev)"/>
+
+                    <t t-if="['olcum', 'kontrol_listesi', 'sayim'].includes(k.test_tipi)">
+                        <button class="btn btn-primary btn-lg w-100" t-on-click="() => this.kontrolSonuc('degerlendir')">
+                            <i class="oi" data-icon="check"/> Kaydet ve Değerlendir
+                        </button>
+                    </t>
+                    <t t-elif="k.test_tipi === 'talimat'">
+                        <button class="btn btn-success btn-lg w-100" t-on-click="() => this.kontrolSonuc('gecti')">
+                            <i class="oi" data-icon="check"/> Talimatı Uyguladım
+                        </button>
+                    </t>
+                    <div t-else="" class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-success btn-lg w-100" t-on-click="() => this.kontrolSonuc('gecti')">
+                                <i class="oi" data-icon="thumb_up"/> Geçti
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-danger btn-lg w-100" t-on-click="() => this.kontrolSonuc('kaldi')">
+                                <i class="oi" data-icon="thumb_down"/> Kaldı
+                            </button>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div t-if="k.test_tipi === 'olcum' and k.olcum !== null" class="small mb-2">
+                        Ölçülen: <b t-out="k.olcum"/> <t t-out="k.birim"/> (kabul <t t-out="k.alt_sinir"/> – <t t-out="k.ust_sinir"/>)
+                    </div>
+                    <div t-if="k.durum === 'kaldi' and k.basarisiz_mesaj" class="alert alert-danger small" t-out="k.basarisiz_mesaj"/>
+                </t>
+                <button class="btn btn-outline-secondary w-100 mt-2" t-on-click="() => this.kontrolYazdir()">
+                    <i class="oi" data-icon="print"/> Kontrol Fişi (QR)
+                </button>
+            </t>
+        </xpath>
+    </t>
+
+</templates>

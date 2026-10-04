@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_atlas_kalite" model="ir.ui.view">
+        <field name="name">stock.picking.form.atlas.kalite</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_atlas_kalite_kontrolleri" type="object" class="oe_stat_button" icon="verified"
+                        invisible="not atlas_kalite_sayisi" groups="atlas_kalite.group_kalite_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="atlas_kalite_bekleyen" invisible="not atlas_kalite_bekleyen"/>
+                            <span invisible="atlas_kalite_bekleyen"><field name="atlas_kalite_sayisi"/></span>
+                        </span>
+                        <span class="o_stat_text" invisible="not atlas_kalite_bekleyen">Bekleyen Kontrol</span>
+                        <span class="o_stat_text" invisible="atlas_kalite_bekleyen">Kalite Kontrolü</span>
+                    </div>
+                </button>
+                <button name="action_atlas_uyarilar" type="object" class="oe_stat_button" icon="warning"
+                        invisible="not atlas_uyari_sayisi" groups="atlas_kalite.group_kalite_user">
+                    <field name="atlas_uyari_sayisi" widget="statinfo" string="Uygunsuzluk"/>
+                </button>
+            </div>
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_kalite_kontrolleri" type="object" string="Kalite Kontrolleri" class="btn-warning"
+                        invisible="not atlas_kalite_bekleyen or state in ('done', 'cancel')" groups="atlas_kalite.group_kalite_user"/>
+                <button name="action_atlas_uyarilar" type="object" string="Uygunsuzluk Bildir"
+                        invisible="state == 'draft' or atlas_uyari_sayisi" groups="atlas_kalite.group_kalite_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="vpicktree_atlas_kalite" model="ir.ui.view">
+        <field name="name">stock.picking.list.atlas.kalite</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="atlas_kalite_durum" string="Kalite" optional="show" widget="badge"
+                       invisible="atlas_kalite_durum == 'yok'"
+                       decoration-warning="atlas_kalite_durum == 'bekliyor'" decoration-success="atlas_kalite_durum == 'gecti'"
+                       decoration-danger="atlas_kalite_durum == 'kaldi'" groups="atlas_kalite.group_kalite_user"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="mrp_production_form_atlas_kalite" model="ir.ui.view">
+        <field name="name">mrp.production.form.atlas.kalite</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_atlas_kalite_kontrolleri" type="object" class="oe_stat_button" icon="verified"
+                        invisible="not atlas_kalite_sayisi" groups="atlas_kalite.group_kalite_user">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="atlas_kalite_bekleyen" invisible="not atlas_kalite_bekleyen"/>
+                            <span invisible="atlas_kalite_bekleyen"><field name="atlas_kalite_sayisi"/></span>
+                        </span>
+                        <span class="o_stat_text" invisible="not atlas_kalite_bekleyen">Bekleyen Kontrol</span>
+                        <span class="o_stat_text" invisible="atlas_kalite_bekleyen">Kalite Kontrolü</span>
+                    </div>
+                </button>
+                <button name="action_atlas_uyarilar" type="object" class="oe_stat_button" icon="warning"
+                        invisible="not atlas_uyari_sayisi" groups="atlas_kalite.group_kalite_user">
+                    <field name="atlas_uyari_sayisi" widget="statinfo" string="Uygunsuzluk"/>
+                </button>
+            </div>
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_kalite_kontrolleri" type="object" string="Kalite Kontrolleri" class="btn-warning"
+                        invisible="not atlas_kalite_bekleyen or state in ('done', 'cancel')" groups="atlas_kalite.group_kalite_user"/>
+                <button name="action_atlas_uyarilar" type="object" string="Uygunsuzluk Bildir"
+                        invisible="state == 'draft' or atlas_uyari_sayisi" groups="atlas_kalite.group_kalite_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_workorder_list_atlas_kalite" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.atlas.kalite</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <button name="button_finish" position="before">
+                <field name="atlas_kalite_bekleyen" column_invisible="1"/>
+                <button name="action_atlas_kalite_kontrolleri" type="object" title="Bekleyen Kalite Kontrolleri" class="btn-warning px-2"
+                        icon="verified" invisible="not atlas_kalite_bekleyen or state in ('done', 'cancel')"/>
+            </button>
+        </field>
+    </record>
+</odoo>

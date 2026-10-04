@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_kalite_ekip_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.ekip.list</field>
+        <field name="model">atlas.kalite.ekip</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_ids" widget="many2many_avatar_user"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_kalite_ekip" model="ir.actions.act_window">
+        <field name="name">Kalite Ekipleri</field>
+        <field name="res_model">atlas.kalite.ekip</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_kalite_neden_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.neden.list</field>
+        <field name="model">atlas.kalite.neden</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_kalite_neden" model="ir.actions.act_window">
+        <field name="name">Kök Nedenler</field>
+        <field name="res_model">atlas.kalite.neden</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_kalite_etiket_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.etiket.list</field>
+        <field name="model">atlas.kalite.etiket</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_kalite_etiket" model="ir.actions.act_window">
+        <field name="name">Etiketler</field>
+        <field name="res_model">atlas.kalite.etiket</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_asama_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.asama.list</field>
+        <field name="model">atlas.kalite.uyari.asama</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="kapali"/>
+                <field name="fold"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_atlas_kalite_uyari_asama" model="ir.actions.act_window">
+        <field name="name">Uygunsuzluk Aşamaları</field>
+        <field name="res_model">atlas.kalite.uyari.asama</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

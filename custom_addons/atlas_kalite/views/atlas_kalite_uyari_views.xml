@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_kalite_uyari_kanban" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.kanban</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="asama_id" highlight_color="color" sample="1" quick_create="false">
+                <templates>
+                    <t t-name="menu">
+                        <t t-if="widget.editable"><a role="menuitem" type="open" class="dropdown-item">Düzenle</a></t>
+                        <field name="color" widget="kanban_color_picker"/>
+                    </t>
+                    <t t-name="card">
+                        <field name="name" class="small text-muted"/>
+                        <field name="baslik" class="fw-bold fs-6"/>
+                        <field name="product_id" class="small"/>
+                        <field name="partner_id" class="small"/>
+                        <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        <footer>
+                            <div class="d-flex">
+                                <field name="oncelik" widget="priority"/>
+                                <field name="activity_ids" widget="kanban_activity" class="ms-2"/>
+                            </div>
+                            <div class="d-flex ms-auto align-items-center">
+                                <field name="termin" class="small me-2"/>
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_list" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.list</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="kapali" sample="1">
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="oncelik" widget="priority" optional="show"/>
+                <field name="product_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="workcenter_id" optional="hide"/>
+                <field name="neden_id" optional="show"/>
+                <field name="ekip_id" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="termin" optional="show"/>
+                <field name="asama_id"/>
+                <field name="kapali" column_invisible="1"/>
+                <field name="create_date" string="Açılış" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_form" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.form</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <form string="Uygunsuzluk">
+                <header>
+                    <field name="asama_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Çözüldü" bg_color="text-bg-success" invisible="not kapali"/>
+                    <field name="foto" widget="image" class="oe_avatar" invisible="not foto"/>
+                    <div class="oe_title">
+                        <field name="name" readonly="1" class="text-muted"/>
+                        <h1><field name="baslik" placeholder="Uygunsuzluğun kısa tanımı"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="lot_id" invisible="not product_id" domain="[('product_id', '=', product_id)]"/>
+                            <field name="lot_name" invisible="lot_id or not product_id"/>
+                            <field name="partner_id"/>
+                            <field name="picking_id"/>
+                            <field name="production_id"/>
+                            <field name="workorder_id" invisible="not workorder_id"/>
+                            <field name="workcenter_id"/>
+                            <field name="kontrol_id" invisible="not kontrol_id"/>
+                        </group>
+                        <group>
+                            <field name="oncelik" widget="priority"/>
+                            <field name="ekip_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="termin"/>
+                            <field name="neden_id"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="kapanis_tarihi" invisible="not kapanis_tarihi"/>
+                            <field name="kapali" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama" placeholder="Ne oldu? Nerede, ne zaman, ne kadar?"/>
+                        </page>
+                        <page string="Kök Neden Analizi" name="kok_neden">
+                            <field name="kok_neden_analizi" placeholder="5 Neden, balık kılçığı (6M) analizi..."/>
+                        </page>
+                        <page string="Düzeltici Faaliyet" name="duzeltici">
+                            <field name="duzeltici_faaliyet" placeholder="Mevcut uygunsuzluğu gidermek için yapılanlar..."/>
+                        </page>
+                        <page string="Önleyici Faaliyet" name="onleyici">
+                            <field name="onleyici_faaliyet" placeholder="Tekrarını önlemek için alınan kalıcı önlemler..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_search" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.search</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="baslik"/>
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <field name="lot_name"/>
+                <field name="etiket_ids"/>
+                <filter name="acik" string="Açık" domain="[('kapali', '=', False)]"/>
+                <filter name="kapali" string="Çözülmüş" domain="[('kapali', '=', True)]"/>
+                <separator/>
+                <filter name="benim" string="Bana Atanan" domain="[('user_id', '=', uid)]"/>
+                <filter name="termin_gecmis" string="Termini Geçmiş" domain="[('termin', '&lt;', context_today().strftime('%Y-%m-%d')), ('kapali', '=', False)]"/>
+                <filter name="create_date" string="Açılış Tarihi" date="create_date"/>
+                <group>
+                    <filter name="group_asama" string="Aşama" context="{'group_by': 'asama_id'}"/>
+                    <filter name="group_urun" string="Ürün" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_partner" string="Tedarikçi / Müşteri" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_neden" string="Kök Neden" context="{'group_by': 'neden_id'}"/>
+                    <filter name="group_ekip" string="Ekip" context="{'group_by': 'ekip_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_pivot" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.pivot</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <pivot string="Uygunsuzluk Analizi" sample="1">
+                <field name="neden_id" type="row"/>
+                <field name="create_date" interval="month" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_atlas_kalite_uyari_graph" model="ir.ui.view">
+        <field name="name">atlas.kalite.uyari.graph</field>
+        <field name="model">atlas.kalite.uyari</field>
+        <field name="arch" type="xml">
+            <graph string="Uygunsuzluk Analizi" type="bar" sample="1">
+                <field name="neden_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_atlas_kalite_uyari" model="ir.actions.act_window">
+        <field name="name">Uygunsuzluklar (DÖF)</field>
+        <field name="res_model">atlas.kalite.uyari</field>
+        <field name="view_mode">kanban,list,form,pivot,graph,activity</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Açık uygunsuzluk yok</p>
+            <p>Başarısız kalite kontrolleri otomatik uygunsuzluk açar; elle de kayıt girebilirsiniz.
+               Her uygunsuzlukta kök neden, düzeltici ve önleyici faaliyet izlenir.</p>
+        </field>
+    </record>
+</odoo>

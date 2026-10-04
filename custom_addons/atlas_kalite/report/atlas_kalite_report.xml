@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_kalite_kontrol" model="ir.actions.report">
+        <field name="name">Kalite Kontrol Fişi</field>
+        <field name="model">atlas.kalite.kontrol</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_kalite.report_kalite_kontrol</field>
+        <field name="print_report_name">'Kalite Kontrol %s' % object.name</field>
+        <field name="binding_model_id" ref="model_atlas_kalite_kontrol"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_kalite_kontrol">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-9">
+                                <h2>Kalite Kontrol Fişi <span t-field="o.name"/></h2>
+                                <h5 t-field="o.nokta_id.name"/>
+                            </div>
+                            <div class="col-3 text-end">
+                                <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=200&amp;height=200' % quote_plus(o.atlas_qr)"
+                                     style="width: 30mm; height: 30mm;"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm table-borderless mt-3">
+                            <tr>
+                                <td style="width: 20%;"><strong>Aşama</strong></td><td><span t-field="o.asama"/></td>
+                                <td style="width: 20%;"><strong>Test Tipi</strong></td><td><span t-field="o.test_tipi"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Belge</strong></td><td t-out="o.belge"/>
+                                <td><strong>Cari</strong></td><td t-out="o.partner_id.display_name or ''"/>
+                            </tr>
+                            <tr>
+                                <td><strong>Ürün</strong></td><td t-out="o.product_id.display_name or ''"/>
+                                <td><strong>Lot / Seri</strong></td><td t-out="o.lot_name or ''"/>
+                            </tr>
+                            <tr t-if="o.workcenter_id">
+                                <td><strong>İş Merkezi</strong></td><td t-out="o.workcenter_id.name"/>
+                                <td/><td/>
+                            </tr>
+                            <tr>
+                                <td><strong>Sonuç</strong></td>
+                                <td><strong t-field="o.durum" t-attf-style="color: {{ 'green' if o.durum == 'gecti' else ('red' if o.durum == 'kaldi' else 'inherit') }};"/></td>
+                                <td><strong>Kontrol Eden / Tarih</strong></td>
+                                <td><span t-out="o.kontrol_eden_id.name or ''"/> <span t-field="o.kontrol_tarihi"/></td>
+                            </tr>
+                        </table>
+
+                        <t t-if="o.test_tipi == 'olcum'">
+                            <h5>Ölçüm</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Nominal</th><th>Alt Sınır</th><th>Üst Sınır</th><th>Ölçülen</th><th>Birim</th></tr></thead>
+                                <tbody><tr>
+                                    <td t-out="o.norm"/><td t-out="o.alt_sinir"/><td t-out="o.ust_sinir"/>
+                                    <td><span t-if="o.olcum_girildi" t-out="o.olcum" t-attf-style="{{ 'color: red; font-weight: bold;' if o.tolerans_disi else '' }}"/></td>
+                                    <td t-out="o.olcu_birimi or ''"/>
+                                </tr></tbody>
+                            </table>
+                        </t>
+                        <t t-if="o.test_tipi == 'sayim'">
+                            <h5>Numune</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Test Edilen</th><th>Hatalı</th><th>Hata Oranı (%)</th><th>Kabul (%)</th></tr></thead>
+                                <tbody><tr>
+                                    <td t-out="o.test_edilen"/><td t-out="o.hatali"/>
+                                    <td t-out="'%.2f' % o.hata_orani"/><td t-out="o.kabul_orani"/>
+                                </tr></tbody>
+                            </table>
+                        </t>
+                        <t t-if="o.madde_ids">
+                            <h5>Kontrol Maddeleri</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Madde</th><th style="width: 20%;">Sonuç</th><th>Not</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="o.madde_ids" t-as="m">
+                                        <td t-out="m.name"/><td><span t-field="m.sonuc"/></td><td t-out="m.notlar or ''"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <div t-if="o.talimat" class="mt-3">
+                            <h5>Talimat</h5>
+                            <div t-field="o.talimat"/>
+                        </div>
+                        <div t-if="o.notlar" class="mt-3">
+                            <h5>Notlar</h5>
+                            <p t-out="o.notlar"/>
+                        </div>
+                        <div t-if="o.foto" class="mt-3">
+                            <h5>Fotoğraf</h5>
+                            <img t-att-src="image_data_uri(o.foto)" style="max-width: 120mm; max-height: 90mm;"/>
+                        </div>
+                        <div t-if="o.uyari_ids" class="mt-3">
+                            <strong>Uygunsuzluk: </strong><span t-out="', '.join(o.uyari_ids.mapped('name'))"/>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">Kontrol Eden<br/><br/>..............................</div>
+                            <div class="col-6 text-center">Kalite Sorumlusu<br/><br/>..............................</div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_kalite_root" name="Kalite" sequence="42"
+              web_icon="atlas_kalite,static/description/icon.png" groups="group_kalite_user"/>
+
+    <menuitem id="menu_atlas_kalite_kontrol_ust" name="Kontroller" parent="menu_atlas_kalite_root" sequence="10"/>
+    <menuitem id="menu_atlas_kalite_kontrol" name="Kalite Kontrolleri" parent="menu_atlas_kalite_kontrol_ust"
+              action="action_atlas_kalite_kontrol" sequence="10"/>
+    <menuitem id="menu_atlas_kalite_nokta" name="Kontrol Noktaları" parent="menu_atlas_kalite_kontrol_ust"
+              action="action_atlas_kalite_nokta" sequence="20"/>
+
+    <menuitem id="menu_atlas_kalite_uyari" name="Uygunsuzluklar (DÖF)" parent="menu_atlas_kalite_root"
+              action="action_atlas_kalite_uyari" sequence="20"/>
+
+    <menuitem id="menu_atlas_kalite_analiz_ust" name="Raporlama" parent="menu_atlas_kalite_root" sequence="30"/>
+    <menuitem id="menu_atlas_kalite_analiz" name="Kalite Analizi" parent="menu_atlas_kalite_analiz_ust"
+              action="action_atlas_kalite_analiz" sequence="10"/>
+
+    <menuitem id="menu_atlas_kalite_ayar" name="Yapılandırma" parent="menu_atlas_kalite_root" sequence="90"
+              groups="group_kalite_manager"/>
+    <menuitem id="menu_atlas_kalite_ekip" name="Kalite Ekipleri" parent="menu_atlas_kalite_ayar"
+              action="action_atlas_kalite_ekip" sequence="10"/>
+    <menuitem id="menu_atlas_kalite_asama" name="Uygunsuzluk Aşamaları" parent="menu_atlas_kalite_ayar"
+              action="action_atlas_kalite_uyari_asama" sequence="20"/>
+    <menuitem id="menu_atlas_kalite_neden" name="Kök Nedenler" parent="menu_atlas_kalite_ayar"
+              action="action_atlas_kalite_neden" sequence="30"/>
+    <menuitem id="menu_atlas_kalite_etiket" name="Etiketler" parent="menu_atlas_kalite_ayar"
+              action="action_atlas_kalite_etiket" sequence="40"/>
+</odoo>
