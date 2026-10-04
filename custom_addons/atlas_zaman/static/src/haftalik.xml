@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_zaman.Haftalik">
+        <div class="o_atlas_zaman o_action h-100 overflow-auto">
+            <div class="o_atlas_zaman_ust">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <h4 class="m-0 me-2">Zaman Çizelgesi</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" type="button" title="Önceki hafta" t-on-click="() => this.kaydir(-7)">
+                            <i class="oi" data-icon="chevron_backward"/>
+                        </button>
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.kaydir(0)">Bu Hafta</button>
+                        <button class="btn btn-secondary" type="button" title="Sonraki hafta" t-on-click="() => this.kaydir(7)">
+                            <i class="oi" data-icon="chevron_forward"/>
+                        </button>
+                    </div>
+                    <span class="fw-semibold" t-out="this.baslik"/>
+                    <select t-if="this.state.veri and this.state.veri.calisanlar.length" class="form-select w-auto ms-md-3"
+                            t-on-change="(ev) => this.calisanSec(ev)" title="Çalışan">
+                        <t t-foreach="this.state.veri.calisanlar" t-as="c" t-key="c.id">
+                            <option t-att-value="c.id" t-att-selected="c.id === this.state.calisanId" t-out="c.ad"/>
+                        </t>
+                    </select>
+                    <div class="ms-auto d-flex gap-2 align-items-center">
+                        <span t-if="this.state.kaydediliyor" class="text-muted small"><i class="oi me-1 o_atlas_zaman_doner" data-icon="progress_activity"/>Kaydediliyor</span>
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.ayrintilar()">Kayıtlar</button>
+                        <button t-if="this.state.veri and this.state.veri.onaylayici and this.state.veri.bekleyen_onay" class="btn btn-primary"
+                                type="button" t-on-click="() => this.haftayiOnayla()">
+                            Haftayı Onayla (<t t-out="this.state.veri.bekleyen_onay"/>)
+                        </button>
+                    </div>
+                </div>
+                <div t-if="this.state.veri and this.state.veri.sayac" class="o_atlas_zaman_sayac">
+                    <i class="oi me-2" data-icon="schedule"/>
+                    <span class="fw-semibold me-2" t-out="this.state.veri.sayac.project_ad"/>
+                    <span t-if="this.state.veri.sayac.task_ad" class="me-3" t-out="this.state.veri.sayac.task_ad"/>
+                    <span class="o_atlas_zaman_sure me-3" t-out="this.sayacSuresi"/>
+                    <button class="btn btn-sm btn-danger" type="button" t-on-click="() => this.sayacDurdur()">
+                        <i class="oi me-1" data-icon="stop"/>Durdur ve Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <div t-if="this.state.veri" class="o_atlas_zaman_tablo_kutu">
+                <table class="table o_atlas_zaman_tablo">
+                    <thead>
+                        <tr>
+                            <th class="o_atlas_zaman_ad">Proje / Görev</th>
+                            <t t-foreach="this.state.veri.gunler" t-as="gun" t-key="gun.tarih">
+                                <th class="text-center" t-att-class="{'o_bugun': gun.bugun, 'o_haftasonu': gun.hafta_ici >= 5}">
+                                    <div t-out="this.gunEtiketi(gun)"/>
+                                    <div class="small text-muted fw-normal" t-out="this.beklenen(gun)"/>
+                                </th>
+                            </t>
+                            <th class="text-end">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.state.veri.satirlar" t-as="satir" t-key="satir.anahtar">
+                            <tr>
+                                <td class="o_atlas_zaman_ad">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button t-if="this.state.veri.kendi and !this.sayacBuSatirda(satir)" type="button"
+                                                class="btn btn-link p-0 o_atlas_zaman_oynat" title="Sayacı başlat"
+                                                t-on-click="() => this.sayacBaslat(satir)">
+                                            <i class="oi" data-icon="play_circle"/>
+                                        </button>
+                                        <span t-if="this.sayacBuSatirda(satir)" class="o_atlas_zaman_nokta mx-1" title="Sayaç çalışıyor"/>
+                                        <div class="text-truncate">
+                                            <div class="fw-semibold text-truncate" t-out="satir.project_ad"/>
+                                            <div class="small text-muted text-truncate" t-out="satir.task_ad"/>
+                                        </div>
+                                    </div>
+                                </td>
+                                <t t-foreach="this.state.veri.gunler" t-as="gun" t-key="gun.tarih">
+                                    <td class="o_atlas_zaman_hucre" t-att-class="this.hucreSinifi(satir, gun)">
+                                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center"
+                                               t-att-value="this.hucreDegeri(satir, gun)" t-att-disabled="this.hucreKilitli(satir, gun)"
+                                               t-att-title="this.hucreKilitli(satir, gun) ? 'Onaylandı' : ''" placeholder="–"
+                                               t-on-change="(ev) => this.hucreDegisti(ev, satir, gun)" t-on-keydown="(ev) => this.hucreTus(ev)"/>
+                                    </td>
+                                </t>
+                                <td class="text-end fw-semibold" t-out="this.satirToplami(satir)"/>
+                            </tr>
+                        </t>
+                        <tr class="o_atlas_zaman_ekle">
+                            <td colspan="9">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.projeSec(ev)">
+                                        <option value="" t-att-selected="!this.state.yeniProje">+ Proje seçin…</option>
+                                        <t t-foreach="this.state.veri.projeler" t-as="p" t-key="p.id">
+                                            <option t-att-value="p.id" t-att-selected="this.projeSecili(p)" t-out="p.ad"/>
+                                        </t>
+                                    </select>
+                                    <select t-if="this.state.yeniProje" class="form-select form-select-sm w-auto" t-on-change="(ev) => this.gorevSec(ev)">
+                                        <option value="" t-att-selected="!this.state.yeniGorev">(Görevsiz)</option>
+                                        <t t-foreach="this.secilebilirGorevler" t-as="g" t-key="g.id">
+                                            <option t-att-value="g.id" t-att-selected="this.gorevSecili(g)" t-out="g.ad"/>
+                                        </t>
+                                    </select>
+                                    <button t-if="this.state.yeniProje" class="btn btn-sm btn-primary" type="button" t-on-click="() => this.satirEkle()">Satır Ekle</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Toplam <span class="small text-muted fw-normal">/ mesai</span></th>
+                            <t t-foreach="this.state.veri.gunler" t-as="gun" t-key="gun.tarih">
+                                <th class="text-center" t-att-class="this.gunToplamSinifi(gun)" t-out="this.gunToplami(gun)"/>
+                            </t>
+                            <th class="text-end"><t t-out="this.haftaToplami"/> <span class="small text-muted fw-normal">/ <t t-out="this.haftaBeklenen"/></span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <p class="text-muted small px-3">
+                    Süreyi "1:30" veya "1,5" biçiminde yazın. Gri hücreler onaylanmıştır. Geçen haftanın satırları kolaylık için listelenir.
+                </p>
+            </div>
+        </div>
+    </t>
+</templates>

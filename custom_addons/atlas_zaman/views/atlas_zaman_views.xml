@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_timesheet_line_tree_atlas_onay" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.atlas.onay</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='readonly_timesheet']" position="before">
+                <header>
+                    <button name="action_atlas_onayla" type="object" string="Onayla" class="btn-primary"
+                            groups="hr_timesheet.group_hr_timesheet_approver"/>
+                    <button name="action_atlas_onay_kaldir" type="object" string="Onayı Kaldır"
+                            groups="hr_timesheet.group_hr_timesheet_approver"/>
+                </header>
+            </xpath>
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="atlas_onayli" optional="show" widget="boolean" string="Onaylı"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_timesheet_line_search_atlas_onay" model="ir.ui.view">
+        <field name="name">account.analytic.line.search.atlas.onay</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_search"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='mine']" position="before">
+                <filter name="atlas_onay_bekleyen" string="Onay Bekleyen" domain="[('atlas_onayli', '=', False)]"/>
+                <filter name="atlas_onayli" string="Onaylı" domain="[('atlas_onayli', '=', True)]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_form2_atlas_sayac" model="ir.ui.view">
+        <field name="name">project.task.form.atlas.sayac</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_sayac_calisiyor" invisible="1"/>
+                <button name="action_atlas_sayac_baslat" type="object" string="Sayacı Başlat" icon="play_arrow"
+                        invisible="atlas_sayac_calisiyor or not allow_timesheets" groups="hr_timesheet.group_hr_timesheet_user"/>
+                <button name="action_atlas_sayac_durdur" type="object" string="Sayacı Durdur" icon="stop" class="btn-danger"
+                        invisible="not atlas_sayac_calisiyor" groups="hr_timesheet.group_hr_timesheet_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_atlas_zaman" model="ir.ui.view">
+        <field name="name">res.config.settings.form.atlas.zaman</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_timesheet.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='reminder_user_allow']" position="replace">
+                <setting id="atlas_zaman_hatirlatma" company_dependent="1"
+                         help="Geçen hafta mesai süresinden az kayıt giren çalışanlara pazartesi e-posta gönderilir">
+                    <field name="atlas_zaman_hatirlatma"/>
+                </setting>
+            </xpath>
+            <xpath expr="//setting[@id='reminder_allow']" position="replace">
+                <setting id="atlas_zaman_onay_hatirlatma" company_dependent="1"
+                         help="Onay bekleyen kayıtlar için yöneticilere pazartesi e-posta gönderilir">
+                    <field name="atlas_zaman_onay_hatirlatma"/>
+                </setting>
+                <setting id="atlas_zaman_sayac" company_dependent="1" string="Sayaç"
+                         help="Sayaçla tutulan sürelerin yuvarlanması">
+                    <div class="row mt-2">
+                        <label for="atlas_zaman_yuvarlama" class="col-lg-5 o_light_label" string="Yuvarlama (dk)"/>
+                        <field name="atlas_zaman_yuvarlama" class="col-lg-2"/>
+                    </div>
+                    <div class="row">
+                        <label for="atlas_zaman_minimum" class="col-lg-5 o_light_label" string="Asgari süre (dk)"/>
+                        <field name="atlas_zaman_minimum" class="col-lg-2"/>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_atlas_zaman_haftalik" model="ir.actions.client">
+        <field name="name">Haftalık Zaman Çizelgesi</field>
+        <field name="tag">atlas_zaman.haftalik</field>
+        <field name="path">haftalik-zaman</field>
+    </record>
+
+    <record id="action_atlas_zaman_onay" model="ir.actions.act_window">
+        <field name="name">Onay Bekleyen Zaman Kayıtları</field>
+        <field name="res_model">account.analytic.line</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="search_view_id" ref="hr_timesheet_line_search_atlas_onay"/>
+        <field name="domain">[('project_id', '!=', False)]</field>
+        <field name="context">{'search_default_atlas_onay_bekleyen': 1, 'search_default_groupby_employee': 1, 'is_timesheet': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Onay bekleyen zaman kaydı yok</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_zaman_haftalik" name="Haftalık Çizelge" parent="hr_timesheet.timesheet_menu_root"
+              action="action_atlas_zaman_haftalik" sequence="1" groups="hr_timesheet.group_hr_timesheet_user"/>
+    <menuitem id="menu_atlas_zaman_onay" name="Onay Bekleyenler" parent="hr_timesheet.menu_hr_time_tracking"
+              action="action_atlas_zaman_onay" sequence="30" groups="hr_timesheet.group_hr_timesheet_approver"/>
+</odoo>

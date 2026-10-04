@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_zaman.Systray">
+        <div t-if="this.state.sayac" class="o_atlas_zaman_systray d-flex align-items-center me-2">
+            <button type="button" class="btn btn-sm btn-light d-flex align-items-center gap-1" t-att-title="this.ipucu" t-on-click="() => this.ac()">
+                <span class="o_atlas_zaman_nokta"/>
+                <span class="fw-semibold" t-out="this.sure"/>
+            </button>
+            <button type="button" class="btn btn-sm btn-link text-danger px-1" title="Durdur ve kaydet" t-on-click="() => this.durdur()">
+                <i class="oi" data-icon="stop"/>
+            </button>
+        </div>
+    </t>
+</templates>
