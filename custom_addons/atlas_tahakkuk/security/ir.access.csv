@@ -1,0 +1,4 @@
+id,name,model_id,group_id/id,operation,domain
+access_tahakkuk_user,atlas.tahakkuk user,atlas.tahakkuk,account.group_account_readonly,r,
+access_tahakkuk_invoice,atlas.tahakkuk invoice,atlas.tahakkuk,account.group_account_invoice,crud,
+atlas_tahakkuk_comp_rule,Tahakkuk şirket kuralı,atlas.tahakkuk,,crud,"[('company_id', 'in', company_ids)]"

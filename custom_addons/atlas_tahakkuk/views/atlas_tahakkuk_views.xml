@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_tahakkuk_list" model="ir.ui.view">
+        <field name="name">atlas.tahakkuk.list</field>
+        <field name="model">atlas.tahakkuk</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum == 'bitti'" decoration-info="durum == 'taslak'" sample="1">
+                <field name="name"/>
+                <field name="tip"/>
+                <field name="partner_id" optional="show"/>
+                <field name="hesap_id"/>
+                <field name="bas"/>
+                <field name="bit"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="tutar" sum="Toplam"/>
+                <field name="taninan" sum="Toplam"/>
+                <field name="kalan" sum="Toplam"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'devam'" decoration-success="durum == 'bitti'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_tahakkuk_form" model="ir.ui.view">
+        <field name="name">atlas.tahakkuk.form</field>
+        <field name="model">atlas.tahakkuk</field>
+        <field name="arch" type="xml">
+            <form string="Gelecek Aylara Ait Gider / Gelir">
+                <header>
+                    <button name="action_onayla" type="object" string="Onayla ve Fişleri Oluştur" class="btn-primary" invisible="move_ids or not id"/>
+                    <button name="action_geri_al" type="object" string="Fişleri Geri Al" invisible="not move_ids"
+                            confirm="Taslak fişler silinecek, onaylı fişler ters kayıtla iptal edilecek."/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_fisler" type="object" class="oe_stat_button" icon="list_alt" invisible="not move_ids">
+                            <div class="o_field_widget o_stat_info"><span class="o_stat_text">Fişler</span></div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. 2027 yılı işyeri sigortası" readonly="move_ids"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="tip" widget="radio" readonly="move_ids"/>
+                            <field name="kaynak_move_id" invisible="not kaynak_move_id"/>
+                            <field name="partner_id" readonly="move_ids"/>
+                            <field name="hesap_id" readonly="move_ids"/>
+                            <field name="analytic_distribution" widget="analytic_distribution" readonly="move_ids" groups="analytic.group_analytic_accounting"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="tutar" readonly="move_ids"/>
+                        </group>
+                        <group>
+                            <field name="tarih" readonly="move_ids"/>
+                            <label for="bas" string="Hizmet Dönemi"/>
+                            <div class="o_row">
+                                <field name="bas" readonly="move_ids"/> - <field name="bit" readonly="move_ids"/>
+                            </div>
+                            <field name="kisa_hesap_id" readonly="move_ids"/>
+                            <field name="uzun_hesap_id" readonly="move_ids"/>
+                            <field name="taninan"/>
+                            <field name="kalan"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="move_ids" readonly="1" invisible="not move_ids">
+                        <list decoration-muted="state == 'draft'" default_order="date, id">
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="atlas_tahakkuk_rol"/>
+                            <field name="ref"/>
+                            <field name="amount_total" string="Tutar" sum="Toplam"/>
+                            <field name="state" widget="badge" decoration-success="state == 'posted'"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_tahakkuk_search" model="ir.ui.view">
+        <field name="name">atlas.tahakkuk.search</field>
+        <field name="model">atlas.tahakkuk</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="hesap_id"/>
+                <filter name="gider" string="Giderler" domain="[('tip', '=', 'gider')]"/>
+                <filter name="gelir" string="Gelirler" domain="[('tip', '=', 'gelir')]"/>
+                <separator/>
+                <filter name="devam" string="Devam Eden" domain="[('durum', '!=', 'bitti')]"/>
+                <group>
+                    <filter name="group_tip" string="Tip" context="{'group_by': 'tip'}"/>
+                    <filter name="group_hesap" string="Hesap" context="{'group_by': 'hesap_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_tahakkuk" model="ir.actions.act_window">
+        <field name="name">Gelecek Aylara Ait Gider / Gelir</field>
+        <field name="res_model">atlas.tahakkuk</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_devam': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Ertelenmiş gider / gelir yok</p>
+            <p>Fatura satırına hizmet başlangıç ve bitiş tarihi girdiğinizde erteleme otomatik oluşur.
+               Faturasız kalemler (peşin ödenen sigorta, kira vb.) için buradan elle kayıt açabilirsiniz.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_tahakkuk" name="Gelecek Aylara Ait Gider / Gelir" parent="atlas_donem.menu_atlas_donem_root"
+              action="action_atlas_tahakkuk" sequence="5"/>
+
+    <!-- Fatura: satırda hizmet dönemi, üstte erteleme butonu -->
+    <record id="view_move_form_atlas_tahakkuk" model="ir.ui.view">
+        <field name="name">account.move.form.atlas.tahakkuk</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_line_ids']/list/field[@name='discount']" position="before">
+                <field name="atlas_ertele_bas" optional="hide" string="Hizmet Başl."/>
+                <field name="atlas_ertele_bit" optional="hide" string="Hizmet Bitişi"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_atlas_tahakkuklar" type="object" class="oe_stat_button" icon="schedule" invisible="not atlas_tahakkuk_sayisi">
+                    <field name="atlas_tahakkuk_sayisi" widget="statinfo" string="Erteleme"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_atlas_tahakkuk" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.atlas.tahakkuk</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="account_vendor_bills" position="after">
+                <block title="Gelecek Aylara Ait Gider / Gelir" id="atlas_tahakkuk">
+                    <setting string="Erteleme hesapları" company_dependent="1"
+                             help="Hizmet dönemi girilen fatura satırları bu hesaplarla aylara dağıtılır">
+                        <div class="content-group">
+                            <div class="row mt-2"><label for="atlas_gag_hesap_id" string="Gider (12 ay içi)" class="col-lg-5 o_light_label"/><field name="atlas_gag_hesap_id" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_gyag_hesap_id" string="Gider (sonraki yıllar)" class="col-lg-5 o_light_label"/><field name="atlas_gyag_hesap_id" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_gaa_gelir_hesap_id" string="Gelir (12 ay içi)" class="col-lg-5 o_light_label"/><field name="atlas_gaa_gelir_hesap_id" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_gya_gelir_hesap_id" string="Gelir (sonraki yıllar)" class="col-lg-5 o_light_label"/><field name="atlas_gya_gelir_hesap_id" class="col-lg-7"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>
