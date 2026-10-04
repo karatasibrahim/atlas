@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="imza_sayfasi" name="e-İmza: İmza Sayfası">
+        <t t-set="belge_url" t-value="'/imza/%s/belge' % token"/>
+        &lt;!DOCTYPE html&gt;
+        <html lang="tr">
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta name="robots" content="noindex"/>
+            <title t-out="'%s · %s' % (talep.konu, talep.company_id.name)"/>
+            <style>
+                @font-face { font-family: AtlasImzaYazi; src: url('/web/static/fonts/sign/MarckScript-Regular.ttf'); }
+                * { box-sizing: border-box; }
+                body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1f2937; background: #f3f4f6; }
+                header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+                header .sirket { font-weight: 600; }
+                header .konu { color: #6b7280; }
+                main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+                @media (max-width: 900px) { main { grid-template-columns: 1fr; } .onizleme { height: 60vh !important; } }
+                .onizleme { width: 100%; height: calc(100vh - 110px); border: 1px solid #d1d5db; border-radius: 8px; background: #fff; }
+                .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px; align-self: start; }
+                h2 { font-size: 18px; margin: 0 0 6px; }
+                .ikincil { color: #6b7280; font-size: 13px; }
+                .sekme { display: flex; gap: 6px; margin: 14px 0 8px; }
+                .sekme button { flex: 1; padding: 6px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 6px; cursor: pointer; }
+                .sekme button.etkin { background: #2563eb; border-color: #2563eb; color: #fff; }
+                canvas { width: 100%; height: 150px; border: 1px dashed #9ca3af; border-radius: 6px; touch-action: none; background: #fff; display: block; }
+                label { display: block; margin: 10px 0 4px; font-size: 13px; font-weight: 600; }
+                input[type=text], textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; }
+                .onay { display: flex; gap: 8px; align-items: flex-start; font-weight: normal; font-size: 13px; margin-top: 12px; }
+                .btn { display: inline-block; padding: 9px 16px; border-radius: 6px; border: 1px solid transparent; font: inherit; cursor: pointer; text-decoration: none; }
+                .btn-ana { background: #2563eb; color: #fff; width: 100%; margin-top: 14px; font-weight: 600; }
+                .btn-ana:disabled { opacity: .5; cursor: not-allowed; }
+                .btn-bag { background: none; color: #6b7280; padding: 4px 0; font-size: 13px; }
+                .uyari { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; }
+                .uyari-hata { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+                .uyari-tamam { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+                .uyari-bilgi { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+                .mesaj { font-size: 14px; border-left: 3px solid #e5e7eb; padding-left: 10px; margin: 10px 0; }
+                .not { font-size: 11px; color: #9ca3af; margin-top: 14px; }
+                details summary { cursor: pointer; color: #6b7280; font-size: 13px; margin-top: 16px; }
+            </style>
+        </head>
+        <body>
+            <header>
+                <span class="sirket" t-out="talep.company_id.name"/>
+                <span class="konu" t-out="'%s — %s' % (talep.name, talep.konu)"/>
+            </header>
+            <main>
+                <iframe class="onizleme" t-att-src="belge_url" title="Belge"/>
+                <div class="panel">
+                    <div t-if="hata" class="uyari uyari-hata" t-out="hata"/>
+                    <h2 t-out="'Merhaba %s' % imzaci.partner_id.name"/>
+                    <div class="ikincil">
+                        <t t-out="talep.user_id.name or talep.create_uid.name"/> sizden bu belgeyi imzalamanızı istiyor.
+                        <a t-att-href="belge_url + '?indir=1'">Belgeyi indir</a>
+                    </div>
+                    <div t-if="talep.mesaj" class="mesaj" t-out="talep.mesaj"/>
+
+                    <t t-if="imzalayabilir">
+                        <form method="post" t-att-action="'/imza/%s/imzala' % token" id="imza_formu">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="imza" id="imza_veri"/>
+                            <label for="ad_soyad">Adınız soyadınız</label>
+                            <input type="text" id="ad_soyad" name="ad_soyad" required="required" autocomplete="name"
+                                   t-att-value="imzaci.partner_id.name"/>
+                            <div class="sekme">
+                                <button type="button" class="etkin" data-mod="ciz">Çiz</button>
+                                <button type="button" data-mod="yaz">Adımı yaz</button>
+                            </div>
+                            <canvas id="imza_tuval" aria-label="İmza alanı"/>
+                            <button type="button" class="btn btn-bag" id="temizle">Temizle</button>
+                            <label class="onay">
+                                <input type="checkbox" name="onay" value="1" id="onay"/>
+                                <span>Belgeyi okudum. Bu elektronik imzanın belgeyi onayladığım anlamına geldiğini kabul ediyorum.</span>
+                            </label>
+                            <button type="submit" class="btn btn-ana" id="imzala" disabled="disabled">İmzala</button>
+                        </form>
+                        <details>
+                            <summary>İmzalamak istemiyorum</summary>
+                            <form method="post" t-att-action="'/imza/%s/reddet' % token">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <label for="neden">Red nedeni</label>
+                                <textarea id="neden" name="neden" rows="3" required="required"/>
+                                <button type="submit" class="btn" style="margin-top:8px;border-color:#dc2626;color:#dc2626;background:#fff">Reddet</button>
+                            </form>
+                        </details>
+                        <div class="not">IP adresiniz, tarayıcı bilginiz ve imza zamanı denetim kaydına eklenir.
+                            Bu bir basit elektronik imzadır.</div>
+                    </t>
+                    <t t-elif="imzaci.durum == 'imzaladi'">
+                        <div class="uyari uyari-tamam" style="margin-top:14px">
+                            Belgeyi <t t-out="imzaci.ad_soyad"/> adına imzaladınız. Teşekkür ederiz.
+                        </div>
+                        <div t-if="talep.durum == 'tamamlandi'">
+                            Tüm imzalar tamamlandı. <a t-att-href="belge_url + '?indir=1'">İmzalı belgeyi indirin</a>.
+                        </div>
+                        <div t-else="" class="ikincil">Diğer imzacılar imzaladığında imzalı belge e-posta ile gönderilecek.</div>
+                    </t>
+                    <div t-elif="imzaci.durum == 'reddetti'" class="uyari uyari-bilgi" style="margin-top:14px">
+                        İmzalamayı reddettiniz. Gönderen bilgilendirildi.
+                    </div>
+                    <div t-elif="imzaci.durum == 'bekliyor' and talep.durum == 'gonderildi'" class="uyari uyari-bilgi" style="margin-top:14px">
+                        Belge önce sıradaki imzacılara gönderildi. Sıra size geldiğinde e-posta alacaksınız.
+                    </div>
+                    <div t-else="" class="uyari uyari-bilgi" style="margin-top:14px">
+                        Bu imza talebi artık etkin değil.
+                    </div>
+                </div>
+            </main>
+            <script t-if="imzalayabilir">
+(function () {
+    const tuval = document.getElementById('imza_tuval');
+    const ctx = tuval.getContext('2d');
+    const adAlani = document.getElementById('ad_soyad');
+    const onay = document.getElementById('onay');
+    const dugme = document.getElementById('imzala');
+    let mod = 'ciz', cizildi = false, cizim = false, son = null;
+
+    function boyutla() {
+        const oran = window.devicePixelRatio || 1;
+        const r = tuval.getBoundingClientRect();
+        tuval.width = Math.round(r.width * oran);
+        tuval.height = Math.round(r.height * oran);
+        ctx.setTransform(oran, 0, 0, oran, 0, 0);
+        temizle();
+    }
+    function temizle() {
+        ctx.clearRect(0, 0, tuval.width, tuval.height);
+        cizildi = false;
+        if (mod === 'yaz') { yaz(); }
+        guncelle();
+    }
+    function yaz() {
+        const r = tuval.getBoundingClientRect();
+        ctx.clearRect(0, 0, tuval.width, tuval.height);
+        const ad = adAlani.value.trim();
+        if (!ad) { cizildi = false; return; }
+        let boy = 48;
+        ctx.font = boy + 'px AtlasImzaYazi, cursive';
+        while (ctx.measureText(ad).width > r.width - 24 &amp;&amp; boy > 16) { boy -= 2; ctx.font = boy + 'px AtlasImzaYazi, cursive'; }
+        ctx.fillStyle = '#0f172a';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ad, 12, r.height / 2);
+        cizildi = true;
+    }
+    function nokta(e) { const r = tuval.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+    tuval.addEventListener('pointerdown', function (e) {
+        if (mod !== 'ciz') { return; }
+        cizim = true; son = nokta(e); tuval.setPointerCapture(e.pointerId);
+    });
+    tuval.addEventListener('pointermove', function (e) {
+        if (!cizim) { return; }
+        const p = nokta(e);
+        ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.beginPath(); ctx.moveTo(son[0], son[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+        son = p; cizildi = true; guncelle();
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (o) { tuval.addEventListener(o, function () { cizim = false; }); });
+    document.querySelectorAll('.sekme button').forEach(function (b) {
+        b.addEventListener('click', function () {
+            document.querySelectorAll('.sekme button').forEach(function (x) { x.classList.toggle('etkin', x === b); });
+            mod = b.dataset.mod;
+            if (mod === 'yaz' &amp;&amp; document.fonts) { document.fonts.load('48px AtlasImzaYazi').then(temizle); } else { temizle(); }
+        });
+    });
+    adAlani.addEventListener('input', function () { if (mod === 'yaz') { yaz(); } guncelle(); });
+    document.getElementById('temizle').addEventListener('click', temizle);
+    onay.addEventListener('change', guncelle);
+    function guncelle() { dugme.disabled = !(cizildi &amp;&amp; onay.checked &amp;&amp; adAlani.value.trim().length >= 3); }
+    document.getElementById('imza_formu').addEventListener('submit', function (e) {
+        if (dugme.disabled) { e.preventDefault(); return; }
+        document.getElementById('imza_veri').value = tuval.toDataURL('image/png');
+        dugme.disabled = true;
+        dugme.textContent = 'İmzalanıyor…';
+    });
+    window.addEventListener('resize', function () { if (!cizildi || mod === 'yaz') { boyutla(); } });
+    boyutla();
+})();
+            </script>
+        </body>
+        </html>
+    </template>
+</odoo>

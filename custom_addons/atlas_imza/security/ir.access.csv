@@ -1,0 +1,7 @@
+id,name,model_id,group_id/id,operation,domain
+access_talep_user,Kendi imza talepleri,atlas.imza.talep,group_imza_user,crud,"['|', ('create_uid', '=', user.id), ('user_id', '=', user.id)]"
+access_talep_manager,Tüm imza talepleri,atlas.imza.talep,group_imza_manager,crud,
+access_imzaci_user,Kendi taleplerinin imzacıları,atlas.imza.imzaci,group_imza_user,crud,"['|', ('talep_id.create_uid', '=', user.id), ('talep_id.user_id', '=', user.id)]"
+access_imzaci_manager,Tüm imzacılar,atlas.imza.imzaci,group_imza_manager,crud,
+access_denetim_user,Kendi taleplerinin denetim izi,atlas.imza.denetim,group_imza_user,r,"['|', ('talep_id.create_uid', '=', user.id), ('talep_id.user_id', '=', user.id)]"
+access_denetim_manager,Tüm denetim izi,atlas.imza.denetim,group_imza_manager,r,

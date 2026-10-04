@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_imza_talep_list" model="ir.ui.view">
+        <field name="name">atlas.imza.talep.list</field>
+        <field name="model">atlas.imza.talep</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="konu"/>
+                <field name="imzaci_ids" widget="many2many_tags" optional="show"/>
+                <field name="ilerleme" widget="progressbar" optional="show"/>
+                <field name="son_tarih" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="create_date" string="Oluşturma" optional="hide"/>
+                <field name="tamamlanma_tarihi" optional="hide"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'gonderildi'" decoration-success="durum == 'tamamlandi'"
+                       decoration-danger="durum in ('reddedildi', 'suresi_doldu')" decoration-muted="durum == 'iptal'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_imza_talep_kanban" model="ir.ui.view">
+        <field name="name">atlas.imza.talep.kanban</field>
+        <field name="model">atlas.imza.talep</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="durum" quick_create="false" group_create="false" records_draggable="false">
+                <field name="imzalanan_sayisi"/>
+                <field name="imzaci_sayisi"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="konu" class="fw-bold"/>
+                            <field name="name" class="text-muted small"/>
+                        </div>
+                        <field name="imzaci_ids" widget="many2many_tags"/>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="small text-muted"><t t-out="record.imzalanan_sayisi.raw_value"/> / <t t-out="record.imzaci_sayisi.raw_value"/> imza</span>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_imza_talep_form" model="ir.ui.view">
+        <field name="name">atlas.imza.talep.form</field>
+        <field name="model">atlas.imza.talep</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_gonder" type="object" string="İmzaya Gönder" class="btn-primary" invisible="durum != 'taslak'"/>
+                    <button name="action_hatirlat" type="object" string="Hatırlatma Gönder" invisible="durum != 'gonderildi'"/>
+                    <button name="action_imzali_indir" type="object" string="İmzalı Belgeyi İndir" class="btn-primary" invisible="durum != 'tamamlandi'"/>
+                    <button name="action_iptal" type="object" string="İptal Et" invisible="durum not in ('taslak', 'gonderildi')"
+                            confirm="Talep iptal edilecek ve imza bağlantıları geçersiz olacak. Devam edilsin mi?"/>
+                    <button name="action_taslaga_al" type="object" string="Taslağa Al" invisible="durum not in ('iptal', 'reddedildi', 'suresi_doldu')"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="taslak,gonderildi,tamamlandi"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Reddedildi" bg_color="text-bg-danger" invisible="durum != 'reddedildi'"/>
+                    <widget name="web_ribbon" title="Süresi Doldu" bg_color="text-bg-warning" invisible="durum != 'suresi_doldu'"/>
+                    <div class="oe_title">
+                        <div class="text-muted"><field name="name" readonly="1"/></div>
+                        <h1><field name="konu" placeholder="ör. Satış Sözleşmesi" readonly="durum != 'taslak'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="dosya" filename="dosya_adi" readonly="durum != 'taslak'" required="durum == 'taslak'"/>
+                            <field name="dosya_adi" invisible="1"/>
+                            <field name="sayfa_sayisi" invisible="not dosya"/>
+                            <field name="imzali_dosya" filename="imzali_dosya_adi" invisible="not imzali_dosya"/>
+                            <field name="imzali_dosya_adi" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="sirali" readonly="durum != 'taslak'"/>
+                            <field name="son_tarih"/>
+                            <field name="hatirlatma_gun"/>
+                            <field name="ilerleme" widget="progressbar" invisible="durum == 'taslak'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="İmzacılar" name="imzacilar">
+                            <field name="imzaci_ids" readonly="durum != 'taslak'">
+                                <list editable="bottom">
+                                    <field name="sira" string="Sıra" column_invisible="not parent.sirali"/>
+                                    <field name="partner_id" context="{'show_email': True}"/>
+                                    <field name="sayfa" optional="show"/>
+                                    <field name="konum_otomatik" optional="hide"/>
+                                    <field name="x_oran" optional="hide" readonly="konum_otomatik"/>
+                                    <field name="y_oran" optional="hide" readonly="konum_otomatik"/>
+                                    <field name="durum" widget="badge" decoration-info="durum in ('gonderildi', 'goruldu')"
+                                           decoration-success="durum == 'imzaladi'" decoration-danger="durum == 'reddetti'"/>
+                                    <field name="imza_tarihi" optional="show"/>
+                                    <field name="url" widget="CopyClipboardChar" optional="hide" groups="atlas_imza.group_imza_manager"/>
+                                </list>
+                            </field>
+                            <div class="text-muted small">
+                                Sayfa 0 = son sayfa. Otomatik konumda imzalar sayfanın alt kısmına yan yana yerleştirilir;
+                                kapatırsanız konum sayfanın sol üst köşesinden yüzde olarak verilir.
+                            </div>
+                        </page>
+                        <page string="Mesaj" name="mesaj">
+                            <field name="mesaj" placeholder="İmzacılara iletilecek not…"/>
+                        </page>
+                        <page string="Denetim İzi" name="denetim" invisible="durum == 'taslak'">
+                            <group>
+                                <field name="orijinal_ozet"/>
+                                <field name="imzali_ozet" invisible="not imzali_ozet"/>
+                                <field name="tamamlanma_tarihi" invisible="not tamamlanma_tarihi"/>
+                            </group>
+                            <field name="denetim_ids">
+                                <list create="false" delete="false">
+                                    <field name="create_date" string="Zaman"/>
+                                    <field name="olay"/>
+                                    <field name="imzaci_id"/>
+                                    <field name="kullanici_id" optional="hide"/>
+                                    <field name="ip"/>
+                                    <field name="aciklama"/>
+                                    <field name="tarayici" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_imza_talep_search" model="ir.ui.view">
+        <field name="name">atlas.imza.talep.search</field>
+        <field name="model">atlas.imza.talep</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="konu"/>
+                <field name="name"/>
+                <field name="imzaci_ids" string="İmzacı" filter_domain="[('imzaci_ids.partner_id', 'ilike', self)]"/>
+                <filter name="benim" string="Taleplerim" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="bekleyen" string="İmza Bekleyen" domain="[('durum', '=', 'gonderildi')]"/>
+                <filter name="tamamlanan" string="Tamamlanan" domain="[('durum', '=', 'tamamlandi')]"/>
+                <filter name="sorunlu" string="Reddedilen / Süresi Dolan" domain="[('durum', 'in', ('reddedildi', 'suresi_doldu'))]"/>
+                <group>
+                    <filter name="grp_durum" string="Durum" context="{'group_by': 'durum'}"/>
+                    <filter name="grp_user" string="Sorumlu" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_imza_talep" model="ir.actions.act_window">
+        <field name="name">İmza Talepleri</field>
+        <field name="res_model">atlas.imza.talep</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_benim': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk imza talebinizi oluşturun</p>
+            <p>PDF belgeyi yükleyin, imzacıları ekleyin ve gönderin. İmzacılar e-postadaki bağlantıdan imzalar;
+               tamamlanınca denetim sayfalı imzalı belge herkese gönderilir.</p>
+        </field>
+    </record>
+
+    <record id="view_atlas_imza_imzaci_list" model="ir.ui.view">
+        <field name="name">atlas.imza.imzaci.list</field>
+        <field name="model">atlas.imza.imzaci</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="talep_id"/>
+                <field name="partner_id"/>
+                <field name="davet_tarihi"/>
+                <field name="imza_tarihi"/>
+                <field name="ip" optional="hide"/>
+                <field name="durum" widget="badge" decoration-info="durum in ('gonderildi', 'goruldu')"
+                       decoration-success="durum == 'imzaladi'" decoration-danger="durum == 'reddetti'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_imza_imzaci" model="ir.actions.act_window">
+        <field name="name">İmzacılar</field>
+        <field name="res_model">atlas.imza.imzaci</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_atlas_imza_root" name="e-İmza" sequence="29" web_icon="atlas_imza,static/description/icon.png"
+              groups="group_imza_user"/>
+    <menuitem id="menu_atlas_imza_talep" name="İmza Talepleri" parent="menu_atlas_imza_root" action="action_atlas_imza_talep" sequence="10"/>
+    <menuitem id="menu_atlas_imza_imzaci" name="İmzacı Durumları" parent="menu_atlas_imza_root" action="action_atlas_imza_imzaci" sequence="20"/>
+</odoo>

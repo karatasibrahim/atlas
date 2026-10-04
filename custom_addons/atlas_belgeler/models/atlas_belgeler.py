@@ -294,9 +294,9 @@ class AtlasBelgePaylasim(models.Model):
     _token_uniq = models.UniqueIndex('(token)')
 
     def _compute_url(self):
-        base = self.get_base_url()
+        # website kuruluyken get_base_url tekil kayıt ister
         for p in self:
-            p.url = f'{base}/belge/paylas/{p.token}'
+            p.url = f'{p.get_base_url()}/belge/paylas/{p.token}'
 
     def _gecerli(self):
         self.ensure_one()
