@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_hatirlatma" model="ir.actions.report">
+        <field name="name">Ödeme Hatırlatma Mektubu</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_hatirlatma.report_hatirlatma</field>
+        <field name="print_report_name">'Odeme Hatirlatma - %s' % object.name</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_hatirlatma">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="address">
+                        <address t-field="o.self" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                        <div t-if="o.vat">VKN/TCKN: <span t-field="o.vat"/></div>
+                    </t>
+                    <t t-set="satirlar" t-value="o._atlas_hatirlatma_rapor()"/>
+                    <div class="page">
+                        <h3>Ödeme Hatırlatma Mektubu</h3>
+                        <p>Tarih: <span t-out="context_timestamp(datetime.datetime.now()).strftime('%d.%m.%Y')"/></p>
+                        <p>Sayın <span t-field="o.name"/>,</p>
+                        <p>Kayıtlarımıza göre aşağıda dökümü verilen ve vadesi geçmiş <strong t-out="satirlar['toplam']"/> tutarında borcunuz bulunmaktadır.
+                           Ödemenizi yaptıysanız bu mektubu dikkate almayınız; yapmadıysanız en kısa sürede ödemenizi rica ederiz.</p>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr><th>Belge</th><th>Belge Tarihi</th><th>Vade</th><th class="text-end">Gecikme (gün)</th><th class="text-end">Tutar</th><th class="text-end">Kalan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="satirlar['satirlar']" t-as="s">
+                                    <td t-out="s['belge']"/><td t-out="s['tarih']"/><td t-out="s['vade']"/>
+                                    <td class="text-end" t-out="s['gecikme']"/><td class="text-end" t-out="s['tutar']"/><td class="text-end" t-out="s['kalan']"/>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr><th colspan="5" class="text-end">Toplam Gecikmiş</th><th class="text-end" t-out="satirlar['toplam']"/></tr>
+                            </tfoot>
+                        </table>
+                        <p>Banka hesap bilgilerimiz aşağıdadır. Ödemenin açıklamasına cari kodunuzu (<span t-out="o.ref or ''"/>) yazmanızı rica ederiz.</p>
+                        <ul>
+                            <li t-foreach="satirlar['bankalar']" t-as="b"><span t-out="b[0]"/>: <span t-out="b[1]"/></li>
+                        </ul>
+                        <p class="mt-4">Saygılarımızla,<br/><span t-out="o.env.company.name"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

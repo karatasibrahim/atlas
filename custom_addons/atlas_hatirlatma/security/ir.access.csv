@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_seviye_user,atlas.hatirlatma.seviye user,atlas.hatirlatma.seviye,account.group_account_invoice,r,
+access_seviye_manager,atlas.hatirlatma.seviye manager,atlas.hatirlatma.seviye,account.group_account_manager,crud,
+access_gecmis_user,atlas.hatirlatma.gecmis user,atlas.hatirlatma.gecmis,account.group_account_invoice,cr,
+access_gecmis_manager,atlas.hatirlatma.gecmis manager,atlas.hatirlatma.gecmis,account.group_account_manager,crud,

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_hatirlatma_seviye_list" model="ir.ui.view">
+        <field name="name">atlas.hatirlatma.seviye.list</field>
+        <field name="model">atlas.hatirlatma.seviye</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="gun"/>
+                <field name="name"/>
+                <field name="eposta"/>
+                <field name="mektup"/>
+                <field name="gorev"/>
+                <field name="otomatik"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_hatirlatma_seviye_form" model="ir.ui.view">
+        <field name="name">atlas.hatirlatma.seviye.form</field>
+        <field name="model">atlas.hatirlatma.seviye</field>
+        <field name="arch" type="xml">
+            <form string="Hatırlatma Seviyesi">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="gun"/>
+                            <field name="otomatik"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="eposta"/>
+                            <field name="mektup"/>
+                            <field name="gorev"/>
+                            <field name="gorev_ozet" invisible="not gorev"/>
+                        </group>
+                    </group>
+                    <group invisible="not eposta">
+                        <field name="konu"/>
+                        <field name="mesaj"/>
+                    </group>
+                    <div class="text-muted small">Mesajda {cari}, {tutar}, {gun} ve {sirket} kullanılabilir; gecikmiş kalem tablosu otomatik eklenir.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_hatirlatma_seviye" model="ir.actions.act_window">
+        <field name="name">Hatırlatma Seviyeleri</field>
+        <field name="res_model">atlas.hatirlatma.seviye</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_partner_list_atlas_hatirlatma" model="ir.ui.view">
+        <field name="name">res.partner.list.atlas.hatirlatma</field>
+        <field name="model">res.partner</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="atlas_hatirlatma_gerekli">
+                <header>
+                    <button name="action_atlas_hatirlatma_gonder" type="object" string="Hatırlatma Gönder" class="btn-primary"/>
+                    <button name="action_atlas_hatirlatma_mektup" type="object" string="Mektup Yazdır"/>
+                </header>
+                <field name="ref" string="Cari Kodu"/>
+                <field name="name"/>
+                <field name="email" optional="show"/>
+                <field name="phone" optional="hide"/>
+                <field name="atlas_hatirlatma_currency_id" column_invisible="1"/>
+                <field name="atlas_gecikmis_tutar"/>
+                <field name="atlas_en_eski_gecikme"/>
+                <field name="atlas_sonraki_seviye_id"/>
+                <field name="atlas_son_hatirlatma" optional="show"/>
+                <field name="atlas_tahsilat_sorumlusu_id" optional="show"/>
+                <field name="atlas_hatirlatma_gerekli" column_invisible="1"/>
+                <button name="action_atlas_gecikmis_kalemler" type="object" icon="list_alt" title="Gecikmiş kalemler"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_partner_search_atlas_hatirlatma" model="ir.ui.view">
+        <field name="name">res.partner.search.atlas.hatirlatma</field>
+        <field name="model">res.partner</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="ref"/>
+                <filter name="gerekli" string="Hatırlatma Gerekli" domain="[('atlas_hatirlatma_gerekli', '=', True)]"/>
+                <filter name="gecikmis" string="Gecikmiş Alacağı Olan" domain="[('atlas_gecikmis_var', '=', True)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="action_atlas_hatirlatma" model="ir.actions.act_window">
+        <field name="name">Ödeme Hatırlatmaları</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('atlas_gecikmis_var', '=', True)]</field>
+        <field name="context">{'search_default_gerekli': 1}</field>
+        <field name="search_view_id" ref="view_partner_search_atlas_hatirlatma"/>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_partner_list_atlas_hatirlatma')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Hatırlatılacak gecikmiş alacak yok</p>
+            <p>Vadesi geçen faturalar, hatırlatma seviyelerinde tanımlı gün sayısına gelince burada listelenir.</p>
+        </field>
+    </record>
+
+    <record id="view_partner_form_atlas_hatirlatma" model="ir.ui.view">
+        <field name="name">res.partner.form.atlas.hatirlatma</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Tahsilat Takibi" name="atlas_tahsilat" invisible="not is_company and parent_id" groups="account.group_account_invoice">
+                    <group>
+                        <group>
+                            <field name="atlas_hatirlatma_currency_id" invisible="1"/>
+                            <field name="atlas_gecikmis_tutar"/>
+                            <field name="atlas_en_eski_gecikme"/>
+                            <field name="atlas_sonraki_seviye_id"/>
+                            <field name="atlas_son_hatirlatma"/>
+                        </group>
+                        <group>
+                            <field name="atlas_tahsilat_sorumlusu_id"/>
+                            <field name="atlas_hatirlatma_durdur"/>
+                            <div colspan="2">
+                                <button name="action_atlas_hatirlatma_gonder" type="object" string="Hatırlatma Gönder" class="btn-secondary me-2"
+                                        invisible="not atlas_hatirlatma_gerekli"/>
+                                <button name="action_atlas_hatirlatma_mektup" type="object" string="Mektup Yazdır" class="btn-secondary"
+                                        invisible="not atlas_gecikmis_tutar"/>
+                                <field name="atlas_hatirlatma_gerekli" invisible="1"/>
+                            </div>
+                        </group>
+                    </group>
+                    <field name="atlas_hatirlatma_gecmis_ids" readonly="1">
+                        <list>
+                            <field name="tarih"/>
+                            <field name="seviye_id"/>
+                            <field name="kanal"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="tutar"/>
+                            <field name="user_id"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_hatirlatma" name="Ödeme Hatırlatmaları" parent="account.menu_finance_receivables"
+              action="action_atlas_hatirlatma" sequence="90"/>
+    <menuitem id="menu_atlas_hatirlatma_seviye" name="Ödeme Hatırlatma Seviyeleri" parent="account.account_invoicing_menu"
+              action="action_atlas_hatirlatma_seviye" sequence="90" groups="account.group_account_manager"/>
+</odoo>
