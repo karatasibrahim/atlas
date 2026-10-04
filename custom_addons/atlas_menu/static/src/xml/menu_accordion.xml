@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Web istemcisine sol menüyü ekle -->
+    <t t-name="atlas_menu.WebClient" t-inherit="web.WebClient" t-inherit-mode="extension">
+        <xpath expr="//ActionContainer" position="before">
+            <AtlasSidebar t-if="!this.state.fullscreen"/>
+        </xpath>
+    </t>
+
+    <t t-name="atlas_menu.Sidebar">
+        <aside t-if="!this.ui.isSmall" class="o_atlas_sidebar d-print-none" t-att-class="{ 'o_atlas_sidebar_collapsed': this.state.collapsed }">
+            <!-- Marka -->
+            <div class="o_atlas_brand">
+                <a href="/odoo" class="o_atlas_logo" title="Ana sayfa">
+                    <span class="o_atlas_logo_mark">A</span>
+                    <span class="o_atlas_logo_text">ATLAS <small>ERP</small></span>
+                </a>
+                <button class="o_atlas_icon_btn" t-on-click="() => this.toggleCollapsed()"
+                        t-att-title="this.state.collapsed ? 'Menüyü genişlet' : 'Menüyü daralt'">
+                    <i class="oi" t-att-data-icon="this.state.collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'"/>
+                </button>
+            </div>
+
+            <!-- Arama -->
+            <div class="o_atlas_search" t-if="!this.state.collapsed">
+                <i class="oi" data-icon="search"/>
+                <input type="search" placeholder="Menüde ara..." t-att-value="this.state.search"
+                       t-on-input="(ev) => this.onSearchInput(ev)" t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+            </div>
+
+            <nav class="o_atlas_nav">
+                <!-- Arama sonuçları -->
+                <t t-if="this.state.search.trim() and !this.state.collapsed">
+                    <div t-if="!this.searchResults.length" class="o_atlas_empty">Sonuç yok</div>
+                    <a t-foreach="this.searchResults" t-as="r" t-key="r.menu.id" class="o_atlas_result"
+                       t-att-href="this.href(r.menu)" t-on-click="(ev) => this.open(r.menu, ev)">
+                        <span class="o_atlas_result_name" t-out="r.menu.name"/>
+                        <span class="o_atlas_result_path" t-out="r.path"/>
+                    </a>
+                </t>
+
+                <!-- Uygulamalar -->
+                <t t-else="">
+                    <div class="o_atlas_section_title" t-if="!this.state.collapsed">
+                        <span>Modüller</span>
+                        <button class="o_atlas_link_btn" t-on-click="() => this.collapseAll()" title="Tümünü kapat">
+                            <i class="oi" data-icon="expand_less"/>
+                        </button>
+                    </div>
+                    <div t-foreach="this.apps" t-as="app" t-key="app.id" class="o_atlas_app"
+                         t-att-class="{ 'o_atlas_open': this.isOpen(app), 'o_atlas_current': app.id === this.state.appId }">
+                        <t t-set="ikon" t-value="this.appIcon(app)"/>
+                        <a class="o_atlas_app_head" t-att-href="this.href(app)" t-att-title="app.name"
+                           t-att-data-menu-xmlid="app.xmlid" t-on-click.prevent="() => this.onAppClick(app)">
+                            <span class="o_atlas_app_icon" t-att-style="ikon.bg ? 'background:' + ikon.bg : ''">
+                                <img t-if="ikon.image" t-att-src="ikon.image" alt=""/>
+                                <i t-elif="ikon.icon" class="oi" t-att-data-icon="ikon.icon" t-att-style="'color:' + ikon.color"/>
+                                <b t-else="" t-out="ikon.letter"/>
+                            </span>
+                            <span class="o_atlas_app_name" t-out="app.name"/>
+                            <i t-if="this.children(app).length" class="oi o_atlas_chevron" data-icon="chevron_right"/>
+                        </a>
+                        <ul t-if="this.isOpen(app) and !this.state.collapsed" class="o_atlas_tree">
+                            <t t-foreach="this.children(app)" t-as="section" t-key="section.id">
+                                <t t-call="atlas_menu.Node" node="section" depth="1"/>
+                            </t>
+                        </ul>
+                    </div>
+                </t>
+            </nav>
+        </aside>
+    </t>
+
+    <!-- Bölüm (açılır) veya işlem (bağlantı) -->
+    <t t-name="atlas_menu.Node">
+        <li t-if="this.children(node).length" class="o_atlas_group"
+            t-att-class="{ 'o_atlas_open': this.isOpen(node), 'o_atlas_branch_active': this.isActiveBranch(node) }">
+            <button class="o_atlas_group_head" t-attf-style="padding-left: {{ 0.9 + depth * 0.85 }}rem"
+                    t-att-data-menu-xmlid="node.xmlid" t-on-click="() => this.toggle(node)">
+                <i class="oi o_atlas_chevron" data-icon="chevron_right"/>
+                <span t-out="node.name"/>
+            </button>
+            <ul t-if="this.isOpen(node)">
+                <t t-foreach="this.children(node)" t-as="child" t-key="child.id">
+                    <t t-call="atlas_menu.Node" node="child" depth="depth + 1"/>
+                </t>
+            </ul>
+        </li>
+        <li t-elif="node.actionID">
+            <a class="o_atlas_item" t-att-class="{ 'o_atlas_active': node.id === this.state.activeMenuId }"
+               t-attf-style="padding-left: {{ 1.9 + depth * 0.85 }}rem" t-att-href="this.href(node)"
+               t-att-data-menu-xmlid="node.xmlid" t-on-click="(ev) => this.open(node, ev)" t-out="node.name"/>
+        </li>
+    </t>
+
+</templates>

@@ -1,0 +1,257 @@
+// Atlas kurumsal tema + akordeon sol menü
+$atlas-sidebar-w: 17rem;
+$atlas-sidebar-w-collapsed: 4.25rem;
+$atlas-sidebar-bg: #111827;
+$atlas-sidebar-bg-2: #1f2937;
+$atlas-sidebar-fg: #cbd5e1;
+$atlas-sidebar-muted: #64748b;
+$atlas-accent: #3b82f6;
+
+// ---------------------------------------------------------------- Yerleşim
+body.o_web_client.o_atlas_menu:has(> .o_atlas_sidebar) {
+    display: grid;
+    grid-template-columns: $atlas-sidebar-w minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "side nav" "side main";
+    transition: grid-template-columns 0.18s ease;
+
+    > .o_navbar { grid-area: nav; min-width: 0; }
+    > .o_atlas_sidebar { grid-area: side; }
+    > .o_action_manager { grid-area: main; height: auto; min-height: 0; }
+    > :not(.o_navbar):not(.o_atlas_sidebar):not(.o_action_manager) { grid-column: 1 / -1; }
+
+    // Sol menüde olanlar üst barda tekrar edilmesin
+    .o_main_navbar {
+        .o_navbar_apps_menu,
+        .o_menu_sections { display: none !important; }
+    }
+}
+body.o_web_client.o_atlas_menu.o_atlas_menu_collapsed:has(> .o_atlas_sidebar) {
+    grid-template-columns: $atlas-sidebar-w-collapsed minmax(0, 1fr);
+}
+
+// ---------------------------------------------------------------- Üst bar (açık, sade)
+body.o_web_client.o_atlas_menu:has(> .o_atlas_sidebar) .o_main_navbar {
+    background: $o-view-background-color;
+    border-bottom: 1px solid $border-color;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    padding-left: 0.75rem;
+    --NavBar-entry-backgroundColor: transparent;
+    --NavBar-entry-color: #{$gray-800};
+    --NavBar-entry-color--hover: #{$gray-900};
+    --NavBar-entry-backgroundColor--hover: #{rgba($gray-500, 0.12)};
+    --NavBar-entry-color--active: #{$gray-900};
+    --NavBar-entry-backgroundColor--active: #{rgba($gray-500, 0.16)};
+    --NavBar-brand-color: #{$gray-900};
+    color: $gray-800;
+
+    .o_menu_brand { font-weight: 600; color: $gray-900; }
+    .o_menu_systray, .o_menu_systray .o-dropdown > .dropdown-toggle, .o_menu_systray button, .o_menu_systray a { color: $gray-700; }
+}
+
+// ---------------------------------------------------------------- Sol menü
+.o_atlas_sidebar {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    background: linear-gradient(180deg, $atlas-sidebar-bg 0%, #0b1220 100%);
+    color: $atlas-sidebar-fg;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    font-size: 0.875rem;
+    z-index: 2;
+
+    a, button { color: inherit; text-decoration: none; }
+    button { background: none; border: 0; }
+
+    .o_atlas_brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        height: $o-navbar-height;
+        padding: 0 0.75rem 0 0.9rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        flex: 0 0 auto;
+    }
+    .o_atlas_logo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+        overflow: hidden;
+        small { font-weight: 400; color: $atlas-sidebar-muted; letter-spacing: 0.04em; }
+    }
+    .o_atlas_logo_mark {
+        flex: 0 0 auto;
+        display: inline-grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.55rem;
+        background: linear-gradient(135deg, $atlas-accent, #6366f1);
+        color: #fff;
+        font-size: 1rem;
+        letter-spacing: 0;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+    .o_atlas_icon_btn {
+        flex: 0 0 auto;
+        width: 1.9rem;
+        height: 1.9rem;
+        border-radius: 0.45rem;
+        color: $atlas-sidebar-muted;
+        &:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+    }
+
+    .o_atlas_search {
+        position: relative;
+        margin: 0.75rem 0.75rem 0.25rem;
+        flex: 0 0 auto;
+        .oi { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: $atlas-sidebar-muted; }
+        input {
+            width: 100%;
+            padding: 0.45rem 0.6rem 0.45rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            outline: none;
+            &::placeholder { color: $atlas-sidebar-muted; }
+            &:focus { border-color: rgba($atlas-accent, 0.7); background: rgba(255, 255, 255, 0.08); }
+        }
+    }
+
+    .o_atlas_nav {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0.25rem 0.5rem 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
+    .o_atlas_section_title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0.5rem 0.35rem;
+        color: $atlas-sidebar-muted;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        .o_atlas_link_btn { color: $atlas-sidebar-muted; padding: 0 0.2rem; &:hover { color: #fff; } }
+    }
+
+    ul { list-style: none; margin: 0; padding: 0; }
+
+    .o_atlas_chevron {
+        margin-left: auto;
+        font-size: 1rem;
+        color: $atlas-sidebar-muted;
+        transition: transform 0.15s ease;
+    }
+    .o_atlas_open > .o_atlas_app_head > .o_atlas_chevron,
+    .o_atlas_open > .o_atlas_group_head > .o_atlas_chevron { transform: rotate(90deg); }
+
+    // Uygulama başlığı
+    .o_atlas_app { margin-bottom: 0.15rem; }
+    .o_atlas_app_head {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.45rem 0.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        &:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+    }
+    .o_atlas_current > .o_atlas_app_head {
+        background: rgba($atlas-accent, 0.16);
+        color: #fff;
+        box-shadow: inset 3px 0 0 $atlas-accent;
+    }
+    .o_atlas_app_icon {
+        flex: 0 0 auto;
+        display: inline-grid;
+        place-items: center;
+        width: 1.85rem;
+        height: 1.85rem;
+        border-radius: 0.45rem;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+        img { width: 100%; height: 100%; object-fit: cover; }
+        b { font-size: 0.85rem; color: #fff; }
+    }
+    .o_atlas_app_name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    // Ağaç
+    .o_atlas_tree {
+        margin: 0.15rem 0 0.4rem;
+        padding-left: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.06);
+        margin-left: 1.4rem;
+    }
+    .o_atlas_group_head {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        width: 100%;
+        padding-top: 0.38rem;
+        padding-bottom: 0.38rem;
+        padding-right: 0.5rem;
+        border-radius: 0.4rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+        color: #94a3b8;
+        .o_atlas_chevron { order: -1; margin-left: 0; font-size: 0.95rem; }
+        &:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+    }
+    .o_atlas_branch_active > .o_atlas_group_head { color: #e2e8f0; }
+    .o_atlas_item {
+        display: block;
+        padding-top: 0.34rem;
+        padding-bottom: 0.34rem;
+        padding-right: 0.5rem;
+        border-radius: 0.4rem;
+        color: $atlas-sidebar-fg;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        &:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        &.o_atlas_active {
+            background: $atlas-accent;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+        }
+    }
+
+    // Arama sonuçları
+    .o_atlas_result {
+        display: flex;
+        flex-direction: column;
+        padding: 0.45rem 0.6rem;
+        border-radius: 0.45rem;
+        &:hover, &:first-of-type { background: rgba(255, 255, 255, 0.06); }
+        .o_atlas_result_name { color: #fff; font-weight: 500; }
+        .o_atlas_result_path { color: $atlas-sidebar-muted; font-size: 0.72rem; }
+    }
+    .o_atlas_empty { padding: 1rem 0.6rem; color: $atlas-sidebar-muted; }
+
+    // Daraltılmış (yalnızca ikonlar)
+    &.o_atlas_sidebar_collapsed {
+        .o_atlas_brand { justify-content: center; padding: 0; flex-direction: column; gap: 0; height: auto; padding: 0.55rem 0; }
+        .o_atlas_logo_text, .o_atlas_app_name, .o_atlas_chevron, .o_atlas_section_title { display: none; }
+        .o_atlas_nav { padding: 0.5rem 0.4rem; }
+        .o_atlas_app_head { justify-content: center; padding: 0.45rem 0; }
+    }
+}
