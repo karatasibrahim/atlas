@@ -32,7 +32,7 @@
                     <button t-if="this.model.konumsuz.length and this.props.archInfo.partner" type="button"
                             class="btn btn-sm btn-secondary" t-att-disabled="this.state.yukleniyor"
                             t-on-click="() => this.konumlariBul()">
-                        <i class="fa fa-crosshairs me-1"/>Konumları bul
+                        <i class="oi me-1" data-icon="my_location"/>Konumları bul
                     </button>
                 </div>
                 <t t-foreach="this.model.kayitlar" t-as="kayit" t-key="kayit.id">

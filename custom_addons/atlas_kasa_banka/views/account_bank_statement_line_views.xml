@@ -27,8 +27,8 @@
                 <field name="atlas_bekleyen_line_id" readonly="1" optional="show"/>
                 <field name="atlas_oneri" optional="show"/>
                 <field name="is_reconciled" string="Eşleşti" widget="boolean" readonly="1"/>
-                <button name="action_atlas_eslestir" type="object" string="Eşleştir" icon="fa-link" invisible="is_reconciled"/>
-                <button name="action_atlas_geri_al" type="object" string="Geri Al" icon="fa-undo" invisible="not is_reconciled"/>
+                <button name="action_atlas_eslestir" type="object" string="Eşleştir" icon="link" invisible="is_reconciled"/>
+                <button name="action_atlas_geri_al" type="object" string="Geri Al" icon="undo" invisible="not is_reconciled"/>
             </list>
         </field>
     </record>

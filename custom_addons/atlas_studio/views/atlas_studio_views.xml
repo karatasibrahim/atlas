@@ -103,8 +103,8 @@
                 <field name="model_id"/>
                 <field name="alan_id" optional="hide"/>
                 <field name="create_uid" string="Yapan" widget="many2one_avatar_user"/>
-                <button name="action_ac" type="object" string="Aç" icon="fa-external-link" invisible="tur != 'model'"/>
-                <button name="action_geri_al" type="object" string="Geri Al" icon="fa-undo" class="text-danger"
+                <button name="action_ac" type="object" string="Aç" icon="open_in_new" invisible="tur != 'model'"/>
+                <button name="action_geri_al" type="object" string="Geri Al" icon="undo" class="text-danger"
                         confirm="Bu özelleştirme ve ona ait tüm veriler kalıcı olarak silinecek. Devam edilsin mi?"/>
             </list>
         </field>

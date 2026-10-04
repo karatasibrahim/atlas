@@ -29,7 +29,7 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_open_moves" type="object" class="oe_stat_button" icon="fa-book" string="Fişler" invisible="not move_ids"/>
+                        <button name="action_open_moves" type="object" class="oe_stat_button" icon="book" string="Fişler" invisible="not move_ids"/>
                     </div>
                     <div class="oe_title"><h1><field name="name"/></h1></div>
                     <group>

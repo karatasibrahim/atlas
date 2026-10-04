@@ -17,9 +17,9 @@
                         </div>
                         <div class="mt-2">
                             <button name="atlas_action_tcmb_update" type="object" string="Kurları Şimdi Güncelle"
-                                    class="btn-link" icon="fa-refresh"/>
+                                    class="btn-link" icon="refresh"/>
                             <button name="%(action_atlas_tcmb_rate_wizard)d" type="action" string="Geçmiş Kurları Çek"
-                                    class="btn-link" icon="fa-history"/>
+                                    class="btn-link" icon="history"/>
                         </div>
                     </div>
                 </setting>

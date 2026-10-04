@@ -30,7 +30,7 @@
             <form string="Kasa / Banka Hesabı">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_atlas_hareketler" type="object" class="oe_stat_button" icon="fa-exchange">
+                        <button name="action_atlas_hareketler" type="object" class="oe_stat_button" icon="swap_horiz">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="atlas_bakiye" widget="monetary" options="{'currency_field': 'atlas_currency_id'}"/>
@@ -38,9 +38,9 @@
                                 <span class="o_stat_text">Hareketler</span>
                             </div>
                         </button>
-                        <button name="action_atlas_ekstre_yukle" type="object" class="oe_stat_button" icon="fa-upload"
+                        <button name="action_atlas_ekstre_yukle" type="object" class="oe_stat_button" icon="upload_file"
                                 string="Ekstre Yükle" invisible="type != 'bank'"/>
-                        <button name="action_atlas_eslestirme" type="object" class="oe_stat_button" icon="fa-link"
+                        <button name="action_atlas_eslestirme" type="object" class="oe_stat_button" icon="link"
                                 string="Eşleştirme" invisible="type != 'bank'"/>
                     </div>
                     <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>

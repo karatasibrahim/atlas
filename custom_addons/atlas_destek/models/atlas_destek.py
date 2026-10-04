@@ -241,7 +241,8 @@ class AtlasDestekTalep(models.Model):
     @api.depends('create_date', 'kapanis_tarihi')
     def _compute_cozum_saat(self):
         for talep in self:
-            talep.cozum_saat = ((talep.kapanis_tarihi - talep.create_date).total_seconds() / 3600
+            # kapanış saniyeye yuvarlı saklanır; aynı saniyede kapanan talep eksiye düşmesin
+            talep.cozum_saat = (max(0.0, (talep.kapanis_tarihi - talep.create_date).total_seconds() / 3600)
                                 if talep.kapanis_tarihi and talep.create_date else 0.0)
 
     def _compute_access_url(self):

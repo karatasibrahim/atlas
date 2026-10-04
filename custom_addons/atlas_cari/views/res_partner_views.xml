@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
             <div name="button_box" position="inside">
-                <button name="action_atlas_cari_hareket" type="object" class="oe_stat_button" icon="fa-list-alt"
+                <button name="action_atlas_cari_hareket" type="object" class="oe_stat_button" icon="list_alt"
                         invisible="not atlas_cari_tipi" groups="account.group_account_invoice,account.group_account_readonly">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_value">
@@ -16,7 +16,7 @@
                         <span class="o_stat_text">Cari Bakiye</span>
                     </div>
                 </button>
-                <button name="action_atlas_cari_ekstre" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                <button name="action_atlas_cari_ekstre" type="object" class="oe_stat_button" icon="description"
                         string="Ekstre" invisible="not atlas_cari_tipi"
                         groups="account.group_account_invoice,account.group_account_readonly"/>
             </div>

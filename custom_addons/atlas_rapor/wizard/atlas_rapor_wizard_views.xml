@@ -27,9 +27,9 @@
                     </group>
                 </group>
                 <footer>
-                    <button name="action_html" type="object" string="Ekranda Göster" class="btn-primary" icon="fa-eye"/>
-                    <button name="action_pdf" type="object" string="PDF" icon="fa-file-pdf-o"/>
-                    <button name="action_xlsx" type="object" string="Excel" icon="fa-file-excel-o"/>
+                    <button name="action_html" type="object" string="Ekranda Göster" class="btn-primary" icon="visibility"/>
+                    <button name="action_pdf" type="object" string="PDF" icon="picture_as_pdf"/>
+                    <button name="action_xlsx" type="object" string="Excel" icon="table_view"/>
                     <button string="Kapat" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>

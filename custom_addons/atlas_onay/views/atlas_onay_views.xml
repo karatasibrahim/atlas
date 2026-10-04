@@ -164,7 +164,7 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_ilgili_kayit" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not res_model">
+                        <button name="action_ilgili_kayit" type="object" class="oe_stat_button" icon="description" invisible="not res_model">
                             <span class="o_stat_text">İlgili Kayıt</span>
                         </button>
                     </div>
