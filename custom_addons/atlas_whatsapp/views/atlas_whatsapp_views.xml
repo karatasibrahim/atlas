@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_whatsapp_hesap_form" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.hesap.form</field>
+        <field name="model">atlas.whatsapp.hesap</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_baglanti_test" type="object" string="Bağlantıyı Test Et" class="btn-primary"/>
+                    <button name="action_sablon_senkron" type="object" string="Şablonları Getir"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="ör. Satış Hattı"/></h1></div>
+                    <group>
+                        <group string="Meta WhatsApp Cloud API">
+                            <field name="telefon_no_id"/>
+                            <field name="waba_id"/>
+                            <field name="erisim_anahtari" password="True"/>
+                            <field name="api_surumu"/>
+                            <field name="gorunen_numara" readonly="1"/>
+                        </group>
+                        <group string="Webhook">
+                            <field name="webhook_url" widget="CopyClipboardChar"/>
+                            <field name="dogrulama_anahtari" widget="CopyClipboardChar"/>
+                            <field name="uygulama_sirri" password="True"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">
+                        Meta Developers &gt; Uygulamanız &gt; WhatsApp &gt; Yapılandırma ekranında Callback URL olarak webhook adresini,
+                        Verify Token olarak doğrulama anahtarını girin ve "messages" alanına abone olun. Webhook adresi internetten
+                        HTTPS ile erişilebilir olmalıdır.
+                    </div>
+                    <notebook>
+                        <page string="Şablonlar" name="sablonlar">
+                            <field name="sablon_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="dil"/>
+                                    <field name="kategori"/>
+                                    <field name="model_id"/>
+                                    <field name="durum" widget="badge" decoration-success="durum == 'onaylandi'" decoration-danger="durum == 'reddedildi'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_hesap_list" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.hesap.list</field>
+        <field name="model">atlas.whatsapp.hesap</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="gorunen_numara"/>
+                <field name="telefon_no_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_sablon_form" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.sablon.form</field>
+        <field name="model">atlas.whatsapp.sablon</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="hesap_id"/>
+                            <field name="wa_adi"/>
+                            <field name="dil"/>
+                            <field name="kategori"/>
+                            <field name="durum"/>
+                        </group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="telefon_alani" invisible="not model_id"/>
+                        </group>
+                    </group>
+                    <field name="baslik" placeholder="Başlık (isteğe bağlı)"/>
+                    <field name="govde" placeholder="Sayın {{1}}, {{2}} numaralı siparişiniz hazırlandı."/>
+                    <separator string="Değişkenler"/>
+                    <field name="degisken_ids">
+                        <list editable="bottom">
+                            <field name="sira"/>
+                            <field name="alan_yolu" placeholder="ör. partner_id.name"/>
+                            <field name="sabit"/>
+                        </list>
+                    </field>
+                    <div class="text-muted small">Şablon Meta tarafından onaylanmalıdır; burada yalnız eşleştirme yapılır. "Şablonları Getir" ile güncellenir.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_sablon_list" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.sablon.list</field>
+        <field name="model">atlas.whatsapp.sablon</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="hesap_id"/>
+                <field name="dil"/>
+                <field name="kategori"/>
+                <field name="model_id"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'onaylandi'" decoration-danger="durum == 'reddedildi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_mesaj_list" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.mesaj.list</field>
+        <field name="model">atlas.whatsapp.mesaj</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-info="yon == 'gelen'">
+                <field name="create_date" string="Zaman"/>
+                <field name="yon" widget="badge" decoration-info="yon == 'gelen'"/>
+                <field name="partner_id"/>
+                <field name="telefon"/>
+                <field name="govde"/>
+                <field name="kullanici_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="durum" widget="badge" decoration-success="durum in ('iletildi', 'okundu')" decoration-danger="durum == 'hata'"/>
+                <button name="action_yanitla" type="object" string="Yanıtla" icon="reply" invisible="yon != 'gelen'"/>
+                <button name="action_tekrar_gonder" type="object" string="Tekrar Gönder" icon="refresh" invisible="durum != 'hata' or yon != 'giden'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_mesaj_search" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.mesaj.search</field>
+        <field name="model">atlas.whatsapp.mesaj</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="telefon"/>
+                <field name="govde"/>
+                <filter name="gelen" string="Gelen" domain="[('yon', '=', 'gelen')]"/>
+                <filter name="giden" string="Giden" domain="[('yon', '=', 'giden')]"/>
+                <filter name="hata" string="Hatalı" domain="[('durum', '=', 'hata')]"/>
+                <group>
+                    <filter name="grp_partner" string="Kişi" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_whatsapp_gonder_form" model="ir.ui.view">
+        <field name="name">atlas.whatsapp.gonder.form</field>
+        <field name="model">atlas.whatsapp.gonder</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="telefon"/>
+                        <field name="hesap_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="tur" widget="radio" options="{'horizontal': true}"/>
+                        <field name="oturum_acik"/>
+                        <field name="res_model" invisible="1"/>
+                        <field name="res_id" invisible="1"/>
+                    </group>
+                </group>
+                <field name="sablon_id" invisible="tur != 'sablon'" options="{'no_create': True}" placeholder="Onaylı şablon seçin"/>
+                <field name="metin" invisible="tur != 'metin'" placeholder="Mesajınız…"/>
+                <div invisible="tur != 'metin' or oturum_acik" class="alert alert-warning py-2 mt-2" role="alert">
+                    Kişi son 24 saatte size yazmadı; WhatsApp kuralı gereği yalnız onaylı şablon gönderilebilir.
+                </div>
+                <separator string="Önizleme" invisible="not onizleme"/>
+                <field name="onizleme" readonly="1" invisible="not onizleme" class="o_atlas_whatsapp_onizleme"/>
+                <footer>
+                    <button name="action_gonder" type="object" string="Gönder" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kayıtlardan gönderim -->
+    <record id="action_server_whatsapp_partner" model="ir.actions.server">
+        <field name="name">WhatsApp Gönder</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">action = env['atlas.whatsapp.gonder']._ac(record)</field>
+    </record>
+    <record id="action_server_whatsapp_sale" model="ir.actions.server">
+        <field name="name">WhatsApp Gönder</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">form</field>
+        <field name="state">code</field>
+        <field name="code">action = env['atlas.whatsapp.gonder']._ac(record)</field>
+    </record>
+    <record id="action_server_whatsapp_move" model="ir.actions.server">
+        <field name="name">WhatsApp Gönder</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">form</field>
+        <field name="state">code</field>
+        <field name="code">action = env['atlas.whatsapp.gonder']._ac(record)</field>
+    </record>
+
+    <record id="action_atlas_whatsapp_mesaj" model="ir.actions.act_window">
+        <field name="name">WhatsApp Mesajları</field>
+        <field name="res_model">atlas.whatsapp.mesaj</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz WhatsApp mesajı yok</p>
+            <p>Kişi, sipariş veya fatura ekranındaki Eylem menüsünden "WhatsApp Gönder" ile mesaj gönderin.</p>
+        </field>
+    </record>
+    <record id="action_atlas_whatsapp_hesap" model="ir.actions.act_window">
+        <field name="name">WhatsApp Hesapları</field>
+        <field name="res_model">atlas.whatsapp.hesap</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_atlas_whatsapp_sablon" model="ir.actions.act_window">
+        <field name="name">WhatsApp Şablonları</field>
+        <field name="res_model">atlas.whatsapp.sablon</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_atlas_whatsapp_root" name="WhatsApp" sequence="36" web_icon="atlas_whatsapp,static/description/icon.png"
+              groups="base.group_user"/>
+    <menuitem id="menu_atlas_whatsapp_mesaj" name="Mesajlar" parent="menu_atlas_whatsapp_root" action="action_atlas_whatsapp_mesaj" sequence="10"/>
+    <menuitem id="menu_atlas_whatsapp_ayar" name="Yapılandırma" parent="menu_atlas_whatsapp_root" sequence="90" groups="base.group_system"/>
+    <menuitem id="menu_atlas_whatsapp_hesap" name="Hesaplar" parent="menu_atlas_whatsapp_ayar" action="action_atlas_whatsapp_hesap" sequence="10"/>
+    <menuitem id="menu_atlas_whatsapp_sablon" name="Şablonlar" parent="menu_atlas_whatsapp_ayar" action="action_atlas_whatsapp_sablon" sequence="20"/>
+</odoo>
