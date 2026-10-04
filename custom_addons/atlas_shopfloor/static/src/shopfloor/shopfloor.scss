@@ -1,0 +1,95 @@
+.o_atlas_sf {
+    background: #eef2f7;
+    font-size: 1rem;
+
+    .o_atlas_sf_bar {
+        min-height: 3.5rem;
+        background: #111827;
+        color: #fff;
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+    .o_atlas_sf_chip {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+        padding: 0.35rem 0.9rem;
+        cursor: pointer;
+        white-space: nowrap;
+        &:hover { background: rgba(255, 255, 255, 0.18); }
+    }
+    .o_atlas_sf_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+        gap: 1rem;
+        &.o_atlas_sf_grid_sm { grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
+    }
+    .o_atlas_sf_tile {
+        background: #fff;
+        border: 0;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        text-align: left;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        border-top: 5px solid #94a3b8;
+        min-height: 8rem;
+        &:hover { box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12); }
+        &.o_atlas_sf_done { border-top-color: #16a34a; }
+        &.o_atlas_sf_blocked { border-top-color: #dc2626; }
+        &.o_atlas_sf_normal { border-top-color: #2563eb; }
+    }
+    .o_atlas_sf_avatar { width: 5rem; height: 5rem; border-radius: 50%; object-fit: cover; }
+    .o_atlas_sf_list { display: grid; gap: 0.75rem; }
+    .o_atlas_sf_card {
+        background: #fff;
+        border: 0;
+        border-radius: 0.9rem;
+        padding: 1rem 1.25rem;
+        text-align: left;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+        border-left: 6px solid #2563eb;
+        &.o_atlas_sf_running { border-left-color: #16a34a; background: #f0fdf4; }
+    }
+    .o_atlas_sf_panel {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+    .o_atlas_sf_timer {
+        font-size: 3.5rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+    }
+    .o_atlas_sf_big {
+        font-size: 1.5rem;
+        padding: 1rem;
+        border-radius: 0.9rem;
+    }
+    .o_atlas_sf_pin { max-width: 22rem; }
+    .o_atlas_sf_pin_dots { font-size: 2rem; letter-spacing: 0.4rem; min-height: 3rem; }
+    .o_atlas_sf_keypad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        .btn { font-size: 1.5rem; padding: 1rem 0; }
+    }
+    .o_atlas_sf_overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        z-index: 1050;
+    }
+    .o_atlas_sf_sheet {
+        background: #fff;
+        width: 100%;
+        max-width: 36rem;
+        border-radius: 1.25rem 1.25rem 0 0;
+        padding: 1.5rem;
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+        max-height: 90vh;
+        overflow: auto;
+    }
+}

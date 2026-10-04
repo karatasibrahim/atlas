@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_atlas_shopfloor" model="ir.actions.client">
+        <field name="name">Üretim Alanı</field>
+        <field name="tag">atlas_shopfloor.app</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <menuitem id="menu_atlas_shopfloor_root" name="Üretim Alanı" action="action_atlas_shopfloor"
+              web_icon="atlas_shopfloor,static/description/icon.png" sequence="41" groups="mrp.group_mrp_user"/>
+    <menuitem id="menu_atlas_shopfloor_mrp" name="Üretim Alanı (Operatör Ekranı)" parent="mrp.menu_mrp_manufacturing"
+              action="action_atlas_shopfloor" sequence="1" groups="mrp.group_mrp_user"/>
+
+    <record id="mrp_routing_workcenter_form_atlas" model="ir.ui.view">
+        <field name="name">mrp.routing.workcenter.form.atlas.shopfloor</field>
+        <field name="model">mrp.routing.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_routing_workcenter_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <separator string="Operatör Talimatı (Üretim Alanı ekranı)"/>
+                <field name="atlas_talimat" placeholder="Adım adım çalışma talimatı, dikkat edilecekler, tork değerleri..."/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_workorder_list_atlas_shopfloor" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.atlas.shopfloor</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="atlas_hatali_adet" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>
