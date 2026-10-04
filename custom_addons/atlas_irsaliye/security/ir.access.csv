@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_plaka_user,atlas.irsaliye.plaka user,atlas.irsaliye.plaka,stock.group_stock_user,r,
+access_plaka_manager,atlas.irsaliye.plaka manager,atlas.irsaliye.plaka,stock.group_stock_manager,crud,
+access_sofor_user,atlas.irsaliye.sofor user,atlas.irsaliye.sofor,stock.group_stock_user,r,
+access_sofor_manager,atlas.irsaliye.sofor manager,atlas.irsaliye.sofor,stock.group_stock_manager,crud,

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_atlas_eirsaliye" inherit_id="atlas_stok.report_delivery_document_atlas">
+        <xpath expr="//div[@name='div_atlas_arac']" position="after">
+            <div t-if="o.atlas_tasiyici_id" class="col col-3 mw-100 mb-2" name="div_atlas_tasiyici">
+                <strong>Taşıyıcı</strong>
+                <div t-field="o.atlas_tasiyici_id.commercial_partner_id.name" class="m-0"/>
+                <div t-if="o.atlas_tasiyici_id.commercial_partner_id.vat" class="m-0">VKN: <span t-field="o.atlas_tasiyici_id.commercial_partner_id.vat"/></div>
+            </div>
+            <div t-if="o.atlas_irsaliye_tipi == 'MATBUDAN' and o.atlas_matbu_no" class="col col-3 mw-100 mb-2" name="div_atlas_matbu">
+                <strong>Matbu İrsaliye</strong>
+                <div class="m-0"><span t-field="o.atlas_matbu_no"/> / <span t-field="o.atlas_matbu_tarih"/></div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
