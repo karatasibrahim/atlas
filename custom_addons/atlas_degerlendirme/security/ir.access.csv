@@ -1,0 +1,14 @@
+id,name,model_id,group_id/id,operation,domain
+access_sablon_user,atlas.degerlendirme.sablon user,atlas.degerlendirme.sablon,base.group_user,r,
+access_sablon_hr,atlas.degerlendirme.sablon hr,atlas.degerlendirme.sablon,hr.group_hr_manager,crud,
+access_soru_user,atlas.degerlendirme.soru user,atlas.degerlendirme.soru,base.group_user,r,
+access_soru_hr,atlas.degerlendirme.soru hr,atlas.degerlendirme.soru,hr.group_hr_manager,crud,
+access_donem_user,atlas.degerlendirme.donem user,atlas.degerlendirme.donem,base.group_user,r,
+access_donem_hr,atlas.degerlendirme.donem hr,atlas.degerlendirme.donem,hr.group_hr_manager,crud,
+access_deg_user,Kendi ve ekibinin değerlendirmeleri,atlas.degerlendirme,base.group_user,ru,"['|', ('calisan_kullanici_id', '=', user.id), ('yonetici_kullanici_id', '=', user.id)]"
+access_deg_hr,atlas.degerlendirme hr,atlas.degerlendirme,hr.group_hr_manager,crud,
+access_cevap_user,Kendi ve ekibinin cevapları,atlas.degerlendirme.cevap,base.group_user,ru,"['|', ('degerlendirme_id.calisan_kullanici_id', '=', user.id), ('degerlendirme_id.yonetici_kullanici_id', '=', user.id)]"
+access_cevap_hr,atlas.degerlendirme.cevap hr,atlas.degerlendirme.cevap,hr.group_hr_manager,crud,
+access_hedef_calisan,Kendi hedefleri,atlas.hedef,base.group_user,ru,"[('calisan_kullanici_id', '=', user.id)]"
+access_hedef_yonetici,Ekibinin hedefleri,atlas.hedef,base.group_user,crud,"[('yonetici_kullanici_id', '=', user.id)]"
+access_hedef_hr,atlas.hedef hr,atlas.hedef,hr.group_hr_manager,crud,

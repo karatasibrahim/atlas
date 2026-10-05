@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Değerlendirme -->
+    <record id="view_atlas_degerlendirme_form" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.form</field>
+        <field name="model">atlas.degerlendirme</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_oz_tamamla" type="object" string="Öz Değerlendirmeyi Gönder" class="btn-primary" invisible="durum != 'oz'"/>
+                    <button name="action_yonetici_tamamla" type="object" string="Değerlendirmeyi Gönder" class="btn-primary" invisible="durum != 'yonetici'"/>
+                    <button name="action_calisan_onayla" type="object" string="Okudum, Onaylıyorum" invisible="durum != 'gorusme' or calisan_onayi"/>
+                    <button name="action_tamamla" type="object" string="Görüşme Yapıldı, Tamamla" class="btn-primary" invisible="durum != 'gorusme'"/>
+                    <button name="action_geri_al" type="object" string="Yönetici Aşamasına Geri Al" invisible="durum not in ('gorusme', 'tamamlandi')"
+                            groups="hr.group_hr_manager"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="oz,yonetici,gorusme,tamamlandi"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Tamamlandı" bg_color="text-bg-success" invisible="durum != 'tamamlandi'"/>
+                    <div class="oe_title">
+                        <h2><field name="employee_id" readonly="1"/></h2>
+                        <field name="donem_id" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="yonetici_id" readonly="durum != 'oz'"/>
+                            <field name="department_id"/>
+                            <field name="son_tarih"/>
+                            <field name="gorusme_tarihi"/>
+                            <field name="calisan_onayi"/>
+                        </group>
+                        <group invisible="durum in ('oz', 'yonetici')">
+                            <field name="yetkinlik_puan"/>
+                            <field name="hedef_puan"/>
+                            <field name="sonuc_puan" class="fw-bold fs-4"/>
+                            <field name="derece" class="fw-bold"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Yetkinlikler" name="yetkinlik">
+                            <div class="text-muted small mb-2">1: Yetersiz · 2: Gelişmeli · 3: Beklentiyi karşılıyor · 4: Beklentinin üstünde · 5: Olağanüstü</div>
+                            <field name="cevap_ids">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="soru_id" readonly="1"/>
+                                    <field name="tur" column_invisible="1"/>
+                                    <field name="agirlik" optional="hide"/>
+                                    <field name="oz_puan" invisible="tur != 'puan'"
+                                           readonly="parent.durum != 'oz'" column_invisible="not parent.donem_id"/>
+                                    <field name="oz_yorum" readonly="parent.durum != 'oz'"/>
+                                    <field name="yonetici_puan" invisible="tur != 'puan'" readonly="parent.durum != 'yonetici'"
+                                           column_invisible="parent.durum == 'oz'"/>
+                                    <field name="yonetici_yorum" readonly="parent.durum != 'yonetici'" column_invisible="parent.durum == 'oz'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Hedefler" name="hedefler">
+                            <field name="hedef_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="son_tarih"/>
+                                    <field name="agirlik"/>
+                                    <field name="ilerleme" widget="progressbar"/>
+                                    <field name="durum" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Yorumlar" name="yorumlar">
+                            <group>
+                                <field name="oz_yorum" readonly="durum != 'oz'"/>
+                                <field name="guclu_yonler" readonly="durum not in ('yonetici', 'gorusme')"/>
+                                <field name="gelisim_alanlari" readonly="durum not in ('yonetici', 'gorusme')"/>
+                                <field name="yonetici_yorum" readonly="durum not in ('yonetici', 'gorusme')"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_degerlendirme_list" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.list</field>
+        <field name="model">atlas.degerlendirme</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="employee_id"/>
+                <field name="donem_id"/>
+                <field name="yonetici_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="son_tarih"/>
+                <field name="sonuc_puan" optional="show"/>
+                <field name="derece" optional="show"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="durum" widget="badge" decoration-info="durum in ('oz', 'yonetici')" decoration-warning="durum == 'gorusme'"
+                       decoration-success="durum == 'tamamlandi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_degerlendirme_kanban" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.kanban</field>
+        <field name="model">atlas.degerlendirme</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="durum" create="false" records_draggable="false">
+                <templates>
+                    <t t-name="card">
+                        <field name="employee_id" class="fw-bold"/>
+                        <field name="donem_id" class="small text-muted"/>
+                        <div class="d-flex justify-content-between mt-1">
+                            <field name="derece"/>
+                            <field name="sonuc_puan"/>
+                        </div>
+                        <footer><field name="activity_ids" widget="kanban_activity"/><field name="son_tarih" class="ms-auto small"/></footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_degerlendirme_search" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.search</field>
+        <field name="model">atlas.degerlendirme</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="donem_id"/>
+                <field name="department_id"/>
+                <filter name="benim" string="Benim Değerlendirmem" domain="[('calisan_kullanici_id', '=', uid)]"/>
+                <filter name="ekibim" string="Ekibimin Değerlendirmeleri" domain="[('yonetici_kullanici_id', '=', uid)]"/>
+                <filter name="acik" string="Devam Eden" domain="[('durum', 'not in', ('tamamlandi', 'iptal'))]"/>
+                <group>
+                    <filter name="grp_derece" string="Derece" context="{'group_by': 'derece'}"/>
+                    <filter name="grp_bolum" string="Bölüm" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Dönem -->
+    <record id="view_atlas_degerlendirme_donem_form" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.donem.form</field>
+        <field name="model">atlas.degerlendirme.donem</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_baslat" type="object" string="Başlat" class="btn-primary" invisible="durum == 'kapandi'"/>
+                    <button name="action_kapat" type="object" string="Dönemi Kapat" invisible="durum != 'devam'"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" placeholder="ör. 2026 Yıl Sonu Değerlendirmesi"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="sablon_id"/>
+                            <field name="tarih_bas"/>
+                            <field name="tarih_bit"/>
+                            <field name="son_tarih"/>
+                            <field name="oz_degerlendirme"/>
+                        </group>
+                        <group>
+                            <field name="toplam"/>
+                            <field name="tamamlanan"/>
+                            <field name="ortalama_puan"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="department_ids" widget="many2many_tags"/>
+                        <field name="employee_ids" widget="many2many_avatar_employee"/>
+                    </group>
+                    <field name="degerlendirme_ids" readonly="1">
+                        <list>
+                            <field name="employee_id"/>
+                            <field name="yonetici_id"/>
+                            <field name="sonuc_puan"/>
+                            <field name="derece"/>
+                            <field name="durum" widget="badge"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_degerlendirme_donem_list" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.donem.list</field>
+        <field name="model">atlas.degerlendirme.donem</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="tarih_bas"/>
+                <field name="tarih_bit"/>
+                <field name="son_tarih"/>
+                <field name="toplam"/>
+                <field name="tamamlanan"/>
+                <field name="ortalama_puan"/>
+                <field name="durum" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Şablon -->
+    <record id="view_atlas_degerlendirme_sablon_form" model="ir.ui.view">
+        <field name="name">atlas.degerlendirme.sablon.form</field>
+        <field name="model">atlas.degerlendirme.sablon</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group><field name="hedef_agirligi"/></group>
+                    <field name="soru_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="tur"/>
+                            <field name="agirlik"/>
+                            <field name="aciklama"/>
+                        </list>
+                    </field>
+                    <field name="aciklama" placeholder="Değerlendirme yönergesi…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Hedef -->
+    <record id="view_atlas_hedef_list" model="ir.ui.view">
+        <field name="name">atlas.hedef.list</field>
+        <field name="model">atlas.hedef</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="son_tarih"/>
+                <field name="agirlik" optional="show"/>
+                <field name="ilerleme" widget="progressbar"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'tamamlandi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_hedef_form" model="ir.ui.view">
+        <field name="name">atlas.hedef.form</field>
+        <field name="model">atlas.hedef</field>
+        <field name="arch" type="xml">
+            <form>
+                <header><field name="durum" widget="statusbar" options="{'clickable': '1'}"/></header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" placeholder="ör. Müşteri şikâyetlerini %20 azaltmak"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="yonetici_id"/>
+                            <field name="agirlik"/>
+                        </group>
+                        <group>
+                            <field name="baslangic"/>
+                            <field name="son_tarih"/>
+                            <field name="ilerleme" widget="progressbar" options="{'editable': true}"/>
+                        </group>
+                    </group>
+                    <field name="aciklama" placeholder="Ölçüt ve ara adımlar…"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_hedef_search" model="ir.ui.view">
+        <field name="name">atlas.hedef.search</field>
+        <field name="model">atlas.hedef</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <filter name="benim" string="Hedeflerim" domain="[('calisan_kullanici_id', '=', uid)]"/>
+                <filter name="ekibim" string="Ekibimin Hedefleri" domain="[('yonetici_kullanici_id', '=', uid)]"/>
+                <filter name="acik" string="Devam Eden" domain="[('durum', '=', 'acik')]"/>
+                <group><filter name="grp_calisan" string="Çalışan" context="{'group_by': 'employee_id'}"/></group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Çalışan formu -->
+    <record id="view_employee_form_atlas_degerlendirme" model="ir.ui.view">
+        <field name="name">hr.employee.form.atlas.degerlendirme</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Performans" name="atlas_performans" groups="hr.group_hr_user">
+                    <group>
+                        <group>
+                            <field name="atlas_son_derece"/>
+                            <field name="atlas_sonraki_degerlendirme"/>
+                        </group>
+                    </group>
+                    <field name="atlas_hedef_ids" context="{'default_employee_id': id}">
+                        <list editable="bottom">
+                            <field name="name"/>
+                            <field name="son_tarih"/>
+                            <field name="agirlik"/>
+                            <field name="ilerleme" widget="progressbar" options="{'editable': true}"/>
+                            <field name="durum"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Eylemler ve menü -->
+    <record id="action_atlas_degerlendirme" model="ir.actions.act_window">
+        <field name="name">Değerlendirmeler</field>
+        <field name="res_model">atlas.degerlendirme</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_acik': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Devam eden değerlendirme yok</p>
+            <p>İK bir değerlendirme dönemi başlattığında size ve ekibinize ait değerlendirmeler burada görünür.</p>
+        </field>
+    </record>
+    <record id="action_atlas_hedef" model="ir.actions.act_window">
+        <field name="name">Hedefler</field>
+        <field name="res_model">atlas.hedef</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_acik': 1}</field>
+    </record>
+    <record id="action_atlas_degerlendirme_donem" model="ir.actions.act_window">
+        <field name="name">Değerlendirme Dönemleri</field>
+        <field name="res_model">atlas.degerlendirme.donem</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_atlas_degerlendirme_sablon" model="ir.actions.act_window">
+        <field name="name">Değerlendirme Şablonları</field>
+        <field name="res_model">atlas.degerlendirme.sablon</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_atlas_performans" name="Performans" parent="hr.menu_hr_root" sequence="25"/>
+    <menuitem id="menu_atlas_degerlendirme" name="Değerlendirmeler" parent="menu_atlas_performans" action="action_atlas_degerlendirme" sequence="10"/>
+    <menuitem id="menu_atlas_hedef" name="Hedefler" parent="menu_atlas_performans" action="action_atlas_hedef" sequence="20"/>
+    <menuitem id="menu_atlas_degerlendirme_donem" name="Dönemler" parent="menu_atlas_performans" action="action_atlas_degerlendirme_donem"
+              sequence="30" groups="hr.group_hr_manager"/>
+    <menuitem id="menu_atlas_degerlendirme_sablon" name="Şablonlar" parent="menu_atlas_performans" action="action_atlas_degerlendirme_sablon"
+              sequence="40" groups="hr.group_hr_manager"/>
+</odoo>
