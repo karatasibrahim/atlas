@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_analiz_pivot" model="ir.ui.view">
+        <field name="name">atlas.uretim.analiz.pivot</field>
+        <field name="model">atlas.uretim.analiz</field>
+        <field name="arch" type="xml">
+            <pivot string="Üretim Analizi" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="date_finished" interval="month" type="col"/>
+                <field name="qty_produced" type="measure"/>
+                <field name="total_cost" type="measure"/>
+                <field name="unit_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="view_analiz_graph" model="ir.ui.view">
+        <field name="name">atlas.uretim.analiz.graph</field>
+        <field name="model">atlas.uretim.analiz</field>
+        <field name="arch" type="xml">
+            <graph string="Üretim Maliyetleri" type="bar" stacked="1" sample="1">
+                <field name="date_finished" interval="month"/>
+                <field name="component_cost" type="measure"/>
+                <field name="workcenter_cost" type="measure"/>
+                <field name="employee_cost" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="view_analiz_list" model="ir.ui.view">
+        <field name="name">atlas.uretim.analiz.list</field>
+        <field name="model">atlas.uretim.analiz</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="sapma_yuzde &gt; 10" decoration-success="sapma_yuzde &lt; -5">
+                <field name="date_finished"/>
+                <field name="production_id"/>
+                <field name="product_id"/>
+                <field name="qty_produced" sum="Toplam"/>
+                <field name="yield_rate" optional="show"/>
+                <field name="duration" optional="hide" sum="Toplam"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="component_cost" sum="Toplam"/>
+                <field name="workcenter_cost" sum="Toplam" optional="show"/>
+                <field name="employee_cost" sum="Toplam" optional="show"/>
+                <field name="total_cost" sum="Toplam"/>
+                <field name="unit_cost"/>
+                <field name="expected_total_cost_unit" optional="show"/>
+                <field name="sapma_yuzde" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_analiz_search" model="ir.ui.view">
+        <field name="name">atlas.uretim.analiz.search</field>
+        <field name="model">atlas.uretim.analiz</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="production_id"/>
+                <filter name="sapma" string="Sapma > %10" domain="[('sapma_yuzde', '&gt;', 10)]"/>
+                <filter name="tarih" string="Bitiş Tarihi" date="date_finished"/>
+                <group>
+                    <filter name="g_urun" string="Ürün" context="{'group_by': 'product_id'}"/>
+                    <filter name="g_ay" string="Ay" context="{'group_by': 'date_finished:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_uretim_analiz" model="ir.actions.act_window">
+        <field name="name">Üretim Analizi</field>
+        <field name="res_model">atlas.uretim.analiz</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Henüz biten üretim emri yok</p>
+            <p>Üretim emirleri tamamlandıkça maliyetleri burada analiz edilir.</p></field>
+    </record>
+    <record id="action_uretim_analiz_yenile" model="ir.actions.server">
+        <field name="name">Üretim Analizini Yenile</field>
+        <field name="model_id" ref="model_atlas_uretim_analiz"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_yenile()</field>
+        <field name="group_ids" eval="[(4, ref('mrp.group_mrp_manager'))]"/>
+    </record>
+    <menuitem id="menu_uretim_analiz" name="Üretim Analizi" parent="mrp.menu_mrp_reporting" action="action_uretim_analiz" sequence="5"/>
+    <menuitem id="menu_uretim_analiz_yenile" name="Üretim Analizini Yenile" parent="mrp.menu_mrp_reporting" action="action_uretim_analiz_yenile"
+              sequence="6" groups="mrp.group_mrp_manager"/>
+</odoo>

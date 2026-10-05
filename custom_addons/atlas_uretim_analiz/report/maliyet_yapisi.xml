@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_maliyet_yapisi" model="ir.actions.report">
+        <field name="name">Maliyet Yapısı</field>
+        <field name="model">mrp.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_uretim_analiz.maliyet_yapisi</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="maliyet_yapisi">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page" style="font-size: 11px;">
+                    <h3>Maliyet Yapısı</h3>
+                    <t t-set="tl" t-value="lambda v: '{:,.2f}'.format(v or 0).replace(',', 'X').replace('.', ',').replace('X', '.')"/>
+                    <t t-foreach="docs._atlas_maliyet_yapisi()" t-as="u">
+                        <h4 class="mt-4"><t t-out="u['urun'].display_name"/></h4>
+                        <div class="text-muted"><t t-out="len(u['uretimler'])"/> üretim emri: <t t-out="', '.join(u['uretimler'].mapped('name'))"/> —
+                            üretilen <b t-out="tl(u['uretilen'])"/> <t t-out="u['urun'].uom_id.name"/></div>
+                        <table class="table table-sm mt-2">
+                            <thead><tr><th>Bileşen</th><th class="text-end">Miktar</th><th class="text-end">Toplam Maliyet</th><th class="text-end">Birim Başına</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="u['bilesenler']" t-as="b">
+                                    <td t-out="b['urun'].display_name"/>
+                                    <td class="text-end"><t t-out="tl(b['miktar'])"/> <t t-out="b['urun'].uom_id.name"/></td>
+                                    <td class="text-end" t-out="tl(b['maliyet'])"/>
+                                    <td class="text-end" t-out="tl(b['maliyet'] / u['uretilen'] if u['uretilen'] else 0)"/>
+                                </tr>
+                                <tr class="fw-bold"><td colspan="2">Bileşen toplamı</td><td class="text-end" t-out="tl(u['bilesen'])"/>
+                                    <td class="text-end" t-out="tl(u['bilesen'] / u['uretilen'] if u['uretilen'] else 0)"/></tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm" t-if="u['operasyonlar']">
+                            <thead><tr><th>İş Merkezi</th><th>Operasyon</th><th class="text-end">Süre (dk)</th><th class="text-end">Saat Ücreti</th><th class="text-end">Maliyet</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="u['operasyonlar']" t-as="o">
+                                    <td t-out="o['is_merkezi'].name"/><td t-out="o['operasyon']"/>
+                                    <td class="text-end" t-out="tl(o['sure'])"/><td class="text-end" t-out="tl(o['saat_ucreti'])"/>
+                                    <td class="text-end" t-out="tl(o['maliyet'])"/>
+                                </tr>
+                                <tr class="fw-bold"><td colspan="4">İş merkezi toplamı</td><td class="text-end" t-out="tl(u['is_merkezi'])"/></tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-sm" style="width: 50%; margin-left: auto;">
+                            <tr><td>Bileşen</td><td class="text-end" t-out="tl(u['bilesen'])"/></tr>
+                            <tr><td>İş merkezi</td><td class="text-end" t-out="tl(u['is_merkezi'])"/></tr>
+                            <tr><td>İşçilik</td><td class="text-end" t-out="tl(u['iscilik'])"/></tr>
+                            <tr t-if="u['ek']"><td>Ek maliyet</td><td class="text-end" t-out="tl(u['ek'])"/></tr>
+                            <tr class="fw-bold"><td>Toplam maliyet</td><td class="text-end" t-out="tl(u['toplam'])"/></tr>
+                            <tr class="fw-bold"><td>Birim maliyet</td><td class="text-end" t-out="tl(u['birim'])"/></tr>
+                            <tr t-if="u['beklenen']"><td>Beklenen birim maliyet (reçete)</td><td class="text-end" t-out="tl(u['beklenen'])"/></tr>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
