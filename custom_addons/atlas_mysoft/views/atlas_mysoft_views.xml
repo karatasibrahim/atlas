@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ayarlar -->
+    <record id="res_config_settings_view_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">res.config.settings.form.atlas.mysoft</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="atlas_ebelge.res_config_settings_view_form_atlas_ebelge"/>
+        <field name="arch" type="xml">
+            <block id="atlas_ebelge" position="after">
+                <block title="MySoft Entegratör" id="atlas_mysoft" invisible="not atlas_ebelge_aktif">
+                    <setting string="MySoft e-Belge API" company_dependent="1"
+                             help="e-Fatura, e-Arşiv, e-İrsaliye gönderimi; gelen faturalar ve mükellef sorgusu MySoft üzerinden yapılır">
+                        <field name="atlas_mysoft_aktif"/>
+                        <div class="content-group mt-2" invisible="not atlas_mysoft_aktif">
+                            <div class="row"><label for="atlas_mysoft_ortam" string="Ortam" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_ortam" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_mysoft_anahtar_tipi" string="Anahtar tipi" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_anahtar_tipi" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_mysoft_client_id" string="Client Id" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_client_id" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_mysoft_client_secret" string="Client Secret" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_client_secret" password="True" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_mysoft_gb_etiket" string="Gönderici etiketi (GB)" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_gb_etiket" class="col-lg-7" placeholder="urn:mail:defaultgb@..."/></div>
+                            <button name="action_atlas_mysoft_test" type="object" string="Bağlantıyı Test Et" class="btn-link mt-2" icon="link"/>
+                        </div>
+                    </setting>
+                    <setting string="Gönderim" company_dependent="1" invisible="not atlas_mysoft_aktif"
+                             help="Onaylanan faturalar ve tamamlanan e-İrsaliyeler kuyruğa alınır, 10 dakikada bir gönderilir">
+                        <field name="atlas_mysoft_otomatik"/>
+                        <div class="content-group mt-2">
+                            <div class="row"><label for="atlas_mysoft_gonderim" string="Gönderim şekli" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_gonderim" class="col-lg-7"/></div>
+                            <div class="row"><label for="atlas_mysoft_numara" string="Belge numarası" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_numara" class="col-lg-7"/></div>
+                            <div class="row" invisible="atlas_mysoft_numara != 'mysoft'">
+                                <label for="atlas_mysoft_efatura_onek" string="Ön ekler (e-Fatura / e-Arşiv / e-İrsaliye)" class="col-lg-5 o_light_label"/>
+                                <div class="col-lg-7 d-flex gap-2">
+                                    <field name="atlas_mysoft_efatura_onek" placeholder="EFT"/>
+                                    <field name="atlas_mysoft_earsiv_onek" placeholder="ARS"/>
+                                    <field name="atlas_mysoft_eirsaliye_onek" placeholder="IRS"/>
+                                </div>
+                            </div>
+                            <div class="row"><label for="atlas_mysoft_earsiv_teslim" string="e-Arşiv teslim" class="col-lg-5 o_light_label"/>
+                                <field name="atlas_mysoft_earsiv_teslim" class="col-lg-7"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+    <!-- Fatura -->
+    <record id="view_move_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">account.move.form.atlas.mysoft</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_mysoft_gosterilsin" invisible="1"/>
+                <button name="action_atlas_mysoft_gonder" type="object" string="e-Belge Gönder" class="btn-primary"
+                        invisible="not atlas_mysoft_gosterilsin or state != 'posted' or atlas_mysoft_durum not in ('gonderilmedi', 'kuyrukta', 'hata')"
+                        groups="account.group_account_invoice"/>
+                <button name="action_atlas_mysoft_taslak_gonder" type="object" string="Taslağı GİB'e Gönder" class="btn-primary"
+                        invisible="atlas_mysoft_durum != 'taslak'" groups="account.group_account_invoice"/>
+                <button name="action_atlas_mysoft_taslak_sil" type="object" string="MySoft Taslağını Sil"
+                        invisible="atlas_mysoft_durum != 'taslak'" groups="account.group_account_invoice"
+                        confirm="MySoft'taki taslak silinecek. Devam edilsin mi?"/>
+                <button name="action_atlas_mysoft_durum" type="object" string="e-Belge Durumu"
+                        invisible="atlas_mysoft_durum in ('gonderilmedi', 'kuyrukta') or not atlas_ettn"/>
+                <button name="action_atlas_mysoft_pdf" type="object" string="e-Belge PDF" icon="download"
+                        invisible="atlas_mysoft_durum in ('gonderilmedi', 'kuyrukta', 'hata')"/>
+                <button name="action_atlas_mysoft_iptal" type="object" string="e-Arşiv İptal"
+                        invisible="atlas_ebelge_tipi != 'earsiv' or atlas_mysoft_durum not in ('gonderildi', 'basarili')"
+                        groups="account.group_account_manager"
+                        confirm="e-Arşiv faturası GİB'de iptal edilecek ve muhasebe kaydı ters kayıtla kapatılacak. Devam edilsin mi?"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-danger mb-0 py-2" role="alert" invisible="atlas_mysoft_durum not in ('hata', 'red')">
+                    <strong>e-Belge: </strong><field name="atlas_mysoft_mesaj" class="d-inline"/>
+                </div>
+            </xpath>
+            <field name="atlas_ettn" position="after">
+                <field name="atlas_mysoft_durum" invisible="not atlas_mysoft_gosterilsin" widget="badge"
+                       decoration-info="atlas_mysoft_durum in ('kuyrukta', 'taslak', 'gonderildi')"
+                       decoration-success="atlas_mysoft_durum in ('basarili', 'kabul')"
+                       decoration-danger="atlas_mysoft_durum in ('hata', 'red')"/>
+                <field name="atlas_mysoft_durum_metin" invisible="not atlas_mysoft_durum_metin"/>
+                <field name="atlas_mysoft_belge_no" invisible="not atlas_mysoft_belge_no or atlas_mysoft_belge_no == name"/>
+            </field>
+            <xpath expr="//page[@name='other_info']//field[@name='invoice_incoterm_id']" position="after">
+                <field name="atlas_tasima_modu" invisible="atlas_ebelge_senaryo != 'IHRACAT'"/>
+                <field name="atlas_kap_cinsi" invisible="atlas_ebelge_senaryo != 'IHRACAT'"/>
+                <field name="atlas_kap_adedi" invisible="atlas_ebelge_senaryo != 'IHRACAT'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_out_invoice_list_atlas_mysoft" model="ir.ui.view">
+        <field name="name">account.move.list.atlas.mysoft</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_out_invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="atlas_ebelge_tipi" position="after">
+                <field name="atlas_mysoft_durum" optional="show" widget="badge"
+                       decoration-success="atlas_mysoft_durum in ('basarili', 'kabul')" decoration-danger="atlas_mysoft_durum in ('hata', 'red')"
+                       decoration-info="atlas_mysoft_durum in ('kuyrukta', 'taslak', 'gonderildi')"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_atlas_mysoft" model="ir.ui.view">
+        <field name="name">account.move.search.atlas.mysoft</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="atlas_mysoft_bekleyen" string="e-Belge Gönderilmedi"
+                        domain="[('atlas_mysoft_durum', 'in', ('gonderilmedi', 'kuyrukta')), ('atlas_ebelge_tipi', 'in', ('efatura', 'earsiv')), ('state', '=', 'posted')]"/>
+                <filter name="atlas_mysoft_hata" string="e-Belge Hatalı" domain="[('atlas_mysoft_durum', 'in', ('hata', 'red'))]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_server_mysoft_toplu_gonder" model="ir.actions.server">
+        <field name="name">e-Belge Gönder (MySoft)</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.filtered(lambda m: m.atlas_mysoft_gosterilsin and m.state == 'posted' and m.atlas_mysoft_durum in ('gonderilmedi', 'kuyrukta', 'hata'))._atlas_mysoft_gonder()</field>
+    </record>
+
+    <!-- Cari: mükellef sorgusu -->
+    <record id="view_partner_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">res.partner.form.atlas.mysoft</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="atlas_ebelge.view_partner_form_atlas_ebelge"/>
+        <field name="arch" type="xml">
+            <field name="atlas_efatura_kontrol" position="after">
+                <button name="action_atlas_mukellef_sorgula" type="object" string="GİB'den sorgula" class="btn-link ps-0" icon="search"
+                        invisible="not vat"/>
+            </field>
+            <field name="atlas_efatura_kontrol" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- Ürün GTİP / birim kodu -->
+    <record id="product_template_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">product.template.form.atlas.mysoft</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']//field[@name='categ_id']" position="after">
+                <field name="atlas_gtip"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="uom_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">uom.uom.form.atlas.mysoft</field>
+        <field name="model">uom.uom</field>
+        <field name="inherit_id" ref="uom.uom_uom_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="atlas_birim_kodu" placeholder="C62"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- e-İrsaliye -->
+    <record id="view_picking_form_atlas_mysoft" model="ir.ui.view">
+        <field name="name">stock.picking.form.atlas.mysoft</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="atlas_mysoft_gosterilsin" invisible="1"/>
+                <button name="action_atlas_mysoft_gonder" type="object" string="e-İrsaliye Gönder" class="btn-primary"
+                        invisible="not atlas_mysoft_gosterilsin or state != 'done' or atlas_mysoft_durum not in ('gonderilmedi', 'kuyrukta', 'hata')"/>
+                <button name="action_atlas_mysoft_durum" type="object" string="e-İrsaliye Durumu"
+                        invisible="not atlas_ettn or atlas_mysoft_durum in ('gonderilmedi', 'kuyrukta')"/>
+                <button name="action_atlas_mysoft_pdf" type="object" string="e-İrsaliye PDF" icon="download"
+                        invisible="atlas_mysoft_durum in ('gonderilmedi', 'kuyrukta', 'hata')"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-danger mb-0 py-2" role="alert" invisible="atlas_mysoft_durum != 'hata'">
+                    <strong>e-İrsaliye: </strong><field name="atlas_mysoft_mesaj" class="d-inline"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="atlas_mysoft_durum" invisible="not atlas_mysoft_gosterilsin" widget="badge"
+                       decoration-success="atlas_mysoft_durum in ('basarili', 'kabul')" decoration-danger="atlas_mysoft_durum == 'hata'"
+                       decoration-info="atlas_mysoft_durum in ('kuyrukta', 'gonderildi')"/>
+                <field name="atlas_ettn" invisible="not atlas_ettn"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Gelen faturalar -->
+    <record id="view_atlas_mysoft_gelen_list" model="ir.ui.view">
+        <field name="name">atlas.mysoft.gelen.list</field>
+        <field name="model">atlas.mysoft.gelen</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-muted="durum == 'red'" decoration-bf="durum == 'yeni'">
+                <header>
+                    <button name="action_fatura_olustur" type="object" string="Alış Faturası Oluştur" class="btn-primary"/>
+                </header>
+                <field name="tarih"/>
+                <field name="belge_no"/>
+                <field name="gonderen_ad"/>
+                <field name="gonderen_vkn" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="senaryo" optional="show"/>
+                <field name="fatura_tipi" optional="show"/>
+                <field name="tutar" sum="Toplam"/>
+                <field name="para_birimi"/>
+                <field name="fatura_id" optional="show"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'yeni'" decoration-success="durum in ('aktarildi', 'kabul')"
+                       decoration-danger="durum == 'red'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_mysoft_gelen_form" model="ir.ui.view">
+        <field name="name">atlas.mysoft.gelen.form</field>
+        <field name="model">atlas.mysoft.gelen</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_fatura_olustur" type="object" string="Alış Faturası Oluştur" class="btn-primary" invisible="fatura_id"/>
+                    <button name="action_pdf_al" type="object" string="PDF" icon="download"/>
+                    <button name="action_xml_al" type="object" string="UBL XML Al" invisible="xml_dosya"/>
+                    <button name="action_kabul" type="object" string="Kabul Et" invisible="senaryo != 'TICARIFATURA' or durum in ('kabul', 'red')"/>
+                    <button name="action_red_sihirbaz" type="object" string="Reddet" invisible="senaryo != 'TICARIFATURA' or durum in ('kabul', 'red')"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2><field name="belge_no" readonly="1"/></h2>
+                        <div class="text-muted"><field name="ettn" readonly="1"/></div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="gonderen_ad" readonly="1"/>
+                            <field name="gonderen_vkn" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="tarih" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="senaryo" readonly="1"/>
+                            <field name="fatura_tipi" readonly="1"/>
+                            <field name="tutar" readonly="1"/>
+                            <field name="para_birimi" readonly="1"/>
+                            <field name="fatura_id"/>
+                            <field name="red_nedeni" invisible="not red_nedeni"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="xml_dosya" filename="xml_adi" readonly="1"/>
+                        <field name="xml_adi" invisible="1"/>
+                        <field name="pdf_dosya" filename="pdf_adi" readonly="1"/>
+                        <field name="pdf_adi" invisible="1"/>
+                    </group>
+                    <details class="mt-2"><summary class="text-muted">MySoft kaydı</summary><field name="ham" class="font-monospace small"/></details>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_mysoft_gelen_search" model="ir.ui.view">
+        <field name="name">atlas.mysoft.gelen.search</field>
+        <field name="model">atlas.mysoft.gelen</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="belge_no"/>
+                <field name="gonderen_ad"/>
+                <field name="gonderen_vkn"/>
+                <field name="ettn"/>
+                <filter name="yeni" string="İşlenmemiş" domain="[('durum', '=', 'yeni')]"/>
+                <filter name="ticari" string="Ticari (yanıt bekleyen)" domain="[('senaryo', '=', 'TICARIFATURA'), ('durum', 'in', ('yeni', 'aktarildi'))]"/>
+                <group>
+                    <filter name="grp_gonderen" string="Gönderen" context="{'group_by': 'gonderen_ad'}"/>
+                    <filter name="grp_ay" string="Ay" context="{'group_by': 'tarih:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_mysoft_gelen_red_form" model="ir.ui.view">
+        <field name="name">atlas.mysoft.gelen.red.form</field>
+        <field name="model">atlas.mysoft.gelen.red</field>
+        <field name="arch" type="xml">
+            <form>
+                <group><field name="gelen_id" invisible="1"/><field name="neden"/></group>
+                <footer>
+                    <button name="action_reddet" type="object" string="Reddet" class="btn-danger"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_atlas_mysoft_gelen" model="ir.actions.act_window">
+        <field name="name">Gelen e-Faturalar</field>
+        <field name="res_model">atlas.mysoft.gelen</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_yeni': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Gelen e-fatura yok</p>
+            <p>MySoft'a gelen faturalar 30 dakikada bir alınır. "Gelenleri Al" ile hemen sorgulayabilirsiniz.</p>
+        </field>
+    </record>
+    <record id="action_server_mysoft_gelen_al" model="ir.actions.server">
+        <field name="name">Gelenleri Al</field>
+        <field name="model_id" ref="model_atlas_mysoft_gelen"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_gelenleri_al()</field>
+    </record>
+
+    <!-- Günlük -->
+    <record id="view_atlas_mysoft_log_list" model="ir.ui.view">
+        <field name="name">atlas.mysoft.log.list</field>
+        <field name="model">atlas.mysoft.log</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="not basarili">
+                <field name="create_date" string="Zaman"/>
+                <field name="islem"/>
+                <field name="yontem"/>
+                <field name="adres"/>
+                <field name="durum_kodu"/>
+                <field name="sure_ms" optional="show"/>
+                <field name="basarili"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_mysoft_log_form" model="ir.ui.view">
+        <field name="name">atlas.mysoft.log.form</field>
+        <field name="model">atlas.mysoft.log</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_kayit_ac" type="object" string="İlgili Kayıt" invisible="not res_model"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group><field name="islem"/><field name="yontem"/><field name="adres"/></group>
+                        <group><field name="durum_kodu"/><field name="basarili"/><field name="sure_ms"/><field name="create_date"/>
+                            <field name="res_model" invisible="1"/></group>
+                    </group>
+                    <separator string="İstek"/>
+                    <field name="istek" class="font-monospace small"/>
+                    <separator string="Yanıt"/>
+                    <field name="yanit" class="font-monospace small"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_mysoft_log" model="ir.actions.act_window">
+        <field name="name">MySoft Günlüğü</field>
+        <field name="res_model">atlas.mysoft.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_atlas_mysoft_gelen" name="Gelen e-Faturalar" parent="account.menu_finance_payables"
+              action="action_atlas_mysoft_gelen" sequence="5"/>
+    <menuitem id="menu_atlas_mysoft_gelen_al" name="Gelen e-Faturaları Al" parent="account.menu_finance_payables"
+              action="action_server_mysoft_gelen_al" sequence="6"/>
+    <menuitem id="menu_atlas_mysoft_log" name="MySoft Günlüğü" parent="account.menu_finance_configuration"
+              action="action_atlas_mysoft_log" sequence="90" groups="base.group_system"/>
+</odoo>

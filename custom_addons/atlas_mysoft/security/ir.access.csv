@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_log_user,atlas.mysoft.log user,atlas.mysoft.log,account.group_account_invoice,r,
+access_log_system,atlas.mysoft.log system,atlas.mysoft.log,base.group_system,crud,
+access_gelen_user,atlas.mysoft.gelen user,atlas.mysoft.gelen,account.group_account_invoice,crud,
+access_gelen_red,atlas.mysoft.gelen.red user,atlas.mysoft.gelen.red,account.group_account_invoice,crud,
