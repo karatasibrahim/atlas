@@ -1,0 +1,2 @@
+id,name,model_id,group_id/id,operation,domain
+access_tablo_user,atlas.tablo user,atlas.tablo,base.group_user,crud,

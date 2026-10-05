@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_tablo_list" model="ir.ui.view">
+        <field name="name">atlas.tablo.list</field>
+        <field name="model">atlas.tablo</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="klasor_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="write_date" string="Son Değişiklik"/>
+                <button name="action_ac" type="object" string="Aç" icon="open_in_new" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_tablo_kanban" model="ir.ui.view">
+        <field name="name">atlas.tablo.kanban</field>
+        <field name="model">atlas.tablo</field>
+        <field name="arch" type="xml">
+            <kanban action="action_ac" type="object">
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="oi fs-2 text-success" data-icon="table_view"/>
+                            <div class="min-w-0">
+                                <field name="name" class="fw-bold text-truncate d-block"/>
+                                <field name="klasor_id" class="small text-muted"/>
+                            </div>
+                        </div>
+                        <footer>
+                            <field name="write_date" class="small text-muted"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="view_tablo_form" model="ir.ui.view">
+        <field name="name">atlas.tablo.form</field>
+        <field name="model">atlas.tablo</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_ac" type="object" string="Tabloyu Aç" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <field name="klasor_id"/>
+                        <field name="user_id"/>
+                        <field name="paylasilan_ids" widget="many2many_tags"/>
+                        <field name="aciklama"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="view_tablo_search" model="ir.ui.view">
+        <field name="name">atlas.tablo.search</field>
+        <field name="model">atlas.tablo</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="klasor_id"/>
+                <filter name="benim" string="Benim Tablolarım" domain="[('user_id', '=', uid)]"/>
+                <group><filter name="g_klasor" string="Klasör" context="{'group_by': 'klasor_id'}"/></group>
+            </search>
+        </field>
+    </record>
+    <record id="action_tablo" model="ir.actions.act_window">
+        <field name="name">Hesap Tabloları</field>
+        <field name="res_model">atlas.tablo</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">İlk hesap tablonuzu oluşturun</p>
+            <p>Excel benzeri tablolar; herhangi bir pivot görünümünden ⚙ › "Hesap Tablosuna Ekle" ile canlı ERP verisi bağlayın.</p></field>
+    </record>
+    <record id="action_tablo_yeni" model="ir.actions.server">
+        <field name="name">Yeni Hesap Tablosu</field>
+        <field name="model_id" ref="model_atlas_tablo"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_yeni()</field>
+    </record>
+    <menuitem id="menu_tablo" name="Hesap Tabloları" parent="atlas_belgeler.menu_atlas_belgeler_root" action="action_tablo" sequence="12"/>
+    <menuitem id="menu_tablo_yeni" name="Yeni Hesap Tablosu" parent="atlas_belgeler.menu_atlas_belgeler_root" action="action_tablo_yeni" sequence="13"/>
+</odoo>

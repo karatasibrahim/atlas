@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_tablo.Editor">
+        <div class="o_atlas_tablo o_action d-flex flex-column h-100">
+            <div class="o_atlas_tablo_ust d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom">
+                <i class="oi text-success" data-icon="table_view"/>
+                <input class="form-control form-control-sm o_atlas_tablo_ad" t-att-value="this.state.ad" t-att-readonly="this.state.saltOkunur"
+                       t-on-change="(ev) => this.adDegistir(ev)" title="Tablo adı"/>
+                <span class="small text-muted" t-if="!this.state.saltOkunur" t-out="this.durumMetni"/>
+                <span class="badge text-bg-secondary" t-if="this.state.saltOkunur">Salt okunur</span>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn btn-sm btn-secondary" type="button" t-on-click="() => this.excel()">
+                        <i class="oi me-1" data-icon="download"/>Excel
+                    </button>
+                </div>
+            </div>
+            <div class="flex-grow-1 position-relative o_atlas_tablo_alan">
+                <SpreadsheetComponent model="this.model"/>
+            </div>
+        </div>
+    </t>
+</templates>
