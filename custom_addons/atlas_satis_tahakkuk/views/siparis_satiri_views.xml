@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <function model="res.company" name="_atlas_tahakkuk_kur"/>
+    <record id="view_satir_tahakkuk_list" model="ir.ui.view">
+        <field name="name">sale.order.line.tahakkuk.list</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="order_id"/>
+                <field name="order_partner_id" string="Müşteri"/>
+                <field name="product_id"/>
+                <field name="name" optional="hide"/>
+                <field name="qty_delivered"/>
+                <field name="qty_invoiced"/>
+                <field name="atlas_tahakkuk_miktar"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="atlas_tahakkuk_tutar" sum="Toplam"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_satir_tahakkuk_search" model="ir.ui.view">
+        <field name="name">sale.order.line.tahakkuk.search</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="order_id"/>
+                <field name="order_partner_id"/>
+                <field name="product_id"/>
+                <filter name="son_365" string="Son 365 gün" domain="[('order_id.date_order', '&gt;=', (context_today() - relativedelta(days=365)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="groupby_customer" string="Müşteri" context="{'group_by': 'order_partner_id'}"/>
+                    <filter name="g_siparis" string="Sipariş" context="{'group_by': 'order_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <menuitem id="menu_tahakkuk_ust" name="Satış" parent="account.account_audit_menu" sequence="20"/>
+    <record id="action_fatura_kesilecek" model="ir.actions.act_window">
+        <field name="name">Düzenlenecek Faturalar</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('atlas_fatura_kesilecek', '=', True)]</field>
+        <field name="context">{'accrual_type': 'invoice_to_be_issued', 'search_default_son_365': 1, 'search_default_groupby_customer': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_satir_tahakkuk_list')})]"/>
+        <field name="search_view_id" ref="view_satir_tahakkuk_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Kayıt yok</p><p>Teslim edildi, fatura henüz kesilmedi (dönem sonu gelir tahakkuku). Satırları seçip "İşlem › Tahakkuk Kaydı" ile dönem sonu tahakkuk fişi oluşturabilirsiniz.</p></field>
+    </record>
+    <menuitem id="menu_fatura_kesilecek" name="Düzenlenecek Faturalar" parent="menu_tahakkuk_ust" action="action_fatura_kesilecek" sequence="1"/>
+    <record id="action_teslim_edilmemis" model="ir.actions.act_window">
+        <field name="name">Faturalanıp Teslim Edilmeyen</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('atlas_teslim_edilmemis', '=', True)]</field>
+        <field name="context">{'accrual_type': 'invoiced_not_delivered', 'search_default_son_365': 1, 'search_default_groupby_customer': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_satir_tahakkuk_list')})]"/>
+        <field name="search_view_id" ref="view_satir_tahakkuk_search"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Kayıt yok</p><p>Fatura kesildi, teslim henüz yapılmadı (ertelenmiş gelir). Satırları seçip "İşlem › Tahakkuk Kaydı" ile dönem sonu tahakkuk fişi oluşturabilirsiniz.</p></field>
+    </record>
+    <menuitem id="menu_teslim_edilmemis" name="Faturalanıp Teslim Edilmeyen" parent="menu_tahakkuk_ust" action="action_teslim_edilmemis" sequence="2"/>
+</odoo>
