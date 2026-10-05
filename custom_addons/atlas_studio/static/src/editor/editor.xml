@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_studio.Editor">
+        <div class="o_as_editor d-flex flex-grow-1 overflow-hidden" t-if="this.state.durum" t-on-dragend="() => this.surukleBitti()">
+            <div class="o_as_tuval flex-grow-1 overflow-auto" t-on-click="() => { this.state.secili = null; this.state.sekme = 'ekle'; }">
+                <t t-if="this.props.tur === 'form'" t-call="atlas_studio.FormTuval"/>
+                <t t-elif="this.props.tur === 'list'" t-call="atlas_studio.ListeTuval"/>
+                <t t-elif="this.props.tur === 'search'" t-call="atlas_studio.AramaTuval"/>
+                <t t-else="" t-call="atlas_studio.GenelTuval"/>
+            </div>
+            <div class="o_as_panel border-start bg-white d-flex flex-column">
+                <div class="o_as_panel_ust d-flex align-items-center gap-1 px-2 py-2 border-bottom">
+                    <button class="btn btn-sm btn-light" t-att-disabled="!this.state.durum.geri or this.state.mesgul" title="Geri Al" t-on-click="() => this.geriAl()">
+                        <i class="oi" data-icon="undo"/>
+                    </button>
+                    <button class="btn btn-sm btn-light" t-att-disabled="!this.state.durum.ileri or this.state.mesgul" title="Yinele" t-on-click="() => this.yinele()">
+                        <i class="oi" data-icon="redo"/>
+                    </button>
+                    <span t-if="this.state.mesgul" class="small text-muted ms-1"><i class="oi o_as_doner" data-icon="progress_activity"/></span>
+                    <div class="ms-auto d-flex gap-1">
+                        <button class="btn btn-sm btn-light" title="XML" t-on-click="() => this.xmlAc()"><i class="oi" data-icon="code"/> XML</button>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs o_as_sekmeler px-2 pt-2">
+                    <li class="nav-item"><a href="#" class="nav-link" t-att-class="{'active': this.state.sekme === 'ekle'}" t-on-click.prevent="() => this.state.sekme = 'ekle'">Ekle</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" t-att-class="{'active': this.state.sekme === 'goruntule'}" t-on-click.prevent="() => this.state.sekme = 'goruntule'">Görüntüle</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link" t-att-class="{'active': this.state.sekme === 'ozellikler', 'disabled': !this.secili}" t-on-click.prevent="() => this.secili and (this.state.sekme = 'ozellikler')">Özellikler</a></li>
+                </ul>
+                <div class="o_as_panel_govde flex-grow-1 overflow-auto p-3">
+                    <t t-if="this.state.sekme === 'ekle'" t-call="atlas_studio.PanelEkle"/>
+                    <t t-elif="this.state.sekme === 'goruntule'" t-call="atlas_studio.PanelGoruntule"/>
+                    <t t-elif="this.secili" t-call="atlas_studio.PanelOzellikler" d="this.secili"/>
+                </div>
+            </div>
+            <t t-call="atlas_studio.EditorDiyaloglari"/>
+        </div>
+        <div t-else="" class="p-5 text-center text-muted"><i class="oi o_as_doner" data-icon="progress_activity"/></div>
+    </t>
+
+    <!-- ============================================================ FORM -->
+    <t t-name="atlas_studio.FormTuval">
+        <div class="o_as_form">
+            <t t-foreach="this.kok.children" t-as="c" t-key="c.anahtar">
+                <t t-call="atlas_studio.FormDugum" d="c"/>
+            </t>
+            <div t-if="!this.kok.children.length" class="o_as_bos" t-att-class="this.sinif(this.kok)"
+                 t-on-dragover="(ev) => this.uzerinde(this.kok, ev)" t-on-drop="(ev) => this.birak(ev)">Alanı buraya sürükleyin</div>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.Cocuklar">
+        <t t-foreach="d.children" t-as="c" t-key="c.anahtar">
+            <t t-call="atlas_studio.FormDugum" d="c"/>
+        </t>
+        <div t-if="!d.children.length" class="o_as_bos" t-att-class="{'o_as_hedef_inside': this.state.hedef and this.state.hedef.anahtar === d.anahtar}"
+             t-on-dragover="(ev) => this.uzerinde(d, ev)" t-on-drop="(ev) => this.birak(ev)">Buraya sürükleyin</div>
+    </t>
+
+    <t t-name="atlas_studio.FormDugum">
+        <t t-if="this.gizli(d) or d.tag === 'xpath'"/>
+        <!-- üst çubuk -->
+        <div t-elif="d.tag === 'header'" t-att-class="this.sinif(d, 'o_as_header d-flex flex-wrap align-items-center gap-2')"
+             t-on-click="(ev) => this.sec(d, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)" t-on-drop="(ev) => this.birak(ev)">
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.FormDugum" d="c"/></t>
+        </div>
+        <div t-elif="d.tag === 'sheet'" t-att-class="this.sinif(d, 'o_as_sheet')">
+            <t t-call="atlas_studio.Cocuklar"/>
+        </div>
+        <div t-elif="d.tag === 'chatter'" t-att-class="this.sinif(d, 'o_as_chatter')" t-on-click="(ev) => this.sec(d, ev)">
+            <i class="oi me-2" data-icon="mail"/>Mesajlaşma: mesaj gönder · not al · aktivite
+        </div>
+        <!-- akıllı düğmeler -->
+        <div t-elif="this.dugmeKutusu(d)" t-att-class="this.sinif(d, 'o_as_dugme_kutusu d-flex flex-wrap justify-content-end gap-1')">
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar">
+                <div t-if="!this.gizli(c)" t-att-class="this.sinif(c, 'o_as_istat')" draggable="true"
+                     t-on-dragstart="(ev) => this.surukleBasla({kaynak: c}, ev)" t-on-dragover="(ev) => this.uzerinde(c, ev, true)"
+                     t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(c, ev)">
+                    <i t-if="c.attrs.icon" class="oi me-1" t-att-data-icon="c.attrs.icon"/>
+                    <span t-out="this.istatEtiket(c)"/>
+                </div>
+            </t>
+        </div>
+        <!-- not defteri -->
+        <div t-elif="d.tag === 'notebook'" t-att-class="this.sinif(d, 'o_as_notebook')" t-on-click="(ev) => this.sec(d, ev)">
+            <t t-set="aktif" t-value="this.sayfaAktif(d)"/>
+            <ul class="nav nav-tabs">
+                <t t-foreach="d.children" t-as="p" t-key="p.anahtar">
+                    <li t-if="!this.gizli(p)" class="nav-item">
+                        <a href="#" class="nav-link" t-att-class="this.sinif(p, aktif === p ? 'active' : '')" draggable="true"
+                           t-on-dragstart="(ev) => this.surukleBasla({kaynak: p}, ev)" t-on-dragover="(ev) => this.uzerinde(p, ev, true)"
+                           t-on-drop="(ev) => this.birak(ev)" t-on-click.prevent="(ev) => this.sayfaSec(d, p, ev)" t-out="p.attrs.string or p.attrs.name or 'Sayfa'"/>
+                    </li>
+                </t>
+                <li class="nav-item">
+                    <a href="#" class="nav-link text-muted" title="Sekme ekle"
+                       t-on-click.prevent="(ev) => { ev.stopPropagation(); this.uygula({islem: 'ekle', hedef_yol: d.yol, konum: 'inside', dugum: {tag: 'page', attrs: {string: 'Yeni Sekme', name: 'studio_sayfa_' + Date.now() % 100000000}}}); }">
+                        <i class="oi" data-icon="add"/>
+                    </a>
+                </li>
+            </ul>
+            <div class="o_as_sayfa p-2" t-if="aktif" t-on-dragover="(ev) => !aktif.children.length and this.uzerinde(aktif, ev)" t-on-drop="(ev) => this.birak(ev)">
+                <t t-call="atlas_studio.Cocuklar" d="aktif"/>
+            </div>
+        </div>
+        <!-- grup -->
+        <div t-elif="d.tag === 'group' and this.altGruplu(d)" t-att-class="this.sinif(d, 'o_as_grup_dis')" t-on-click="(ev) => this.sec(d, ev)"
+             draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)">
+            <div t-if="d.attrs.string" class="o_as_grup_baslik" t-out="d.attrs.string"/>
+            <div class="row g-3">
+                <t t-foreach="d.children" t-as="c" t-key="c.anahtar">
+                    <div t-if="!this.gizli(c)" t-att-class="c.tag === 'group' ? 'col-lg' : 'col-12'"><t t-call="atlas_studio.FormDugum" d="c"/></div>
+                </t>
+            </div>
+        </div>
+        <div t-elif="d.tag === 'group'" t-att-class="this.sinif(d, 'o_as_grup')" t-on-click="(ev) => this.sec(d, ev)">
+            <div t-if="d.attrs.string" class="o_as_grup_baslik" t-out="d.attrs.string"/>
+            <t t-call="atlas_studio.Cocuklar"/>
+        </div>
+        <!-- alan -->
+        <div t-elif="d.tag === 'field'" t-att-class="this.sinif(d, (d.ust and d.ust.tag === 'group' and !d.attrs.nolabel) ? 'o_as_alan o_as_alan_satir' : 'o_as_alan')"
+             draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)"
+             t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(d, ev)">
+            <t t-set="f" t-value="this.alan(d.attrs.name)"/>
+            <label t-if="d.ust and d.ust.tag === 'group' and !d.attrs.nolabel" class="o_as_etiket">
+                <t t-out="this.etiket(d)"/><span t-if="d.attrs.required and d.attrs.required !== '0' and d.attrs.required !== 'False' or f.required" class="text-danger">*</span>
+            </label>
+            <div class="o_as_deger">
+                <t t-if="d.attrs.widget === 'statusbar'">
+                    <div class="o_as_statusbar"><t t-foreach="(f.selection or [['', this.etiket(d)]]).slice(0, 4)" t-as="s" t-key="s_index"><span t-out="s[1]"/></t></div>
+                </t>
+                <t t-elif="f.type === 'one2many' or (f.type === 'many2many' and !(d.attrs.widget or '').includes('tags'))">
+                    <div class="o_as_x2m">
+                        <div class="o_as_x2m_baslik"><i class="oi me-1" data-icon="view_list"/><t t-out="this.etiket(d)"/></div>
+                        <div class="o_as_x2m_satirlar">
+                            <t t-set="ic" t-value="d.children.find(c => c.tag === 'list')"/>
+                            <t t-if="ic"><t t-foreach="ic.children.filter(c => c.tag === 'field' and !this.gizli(c)).slice(0, 6)" t-as="s" t-key="s.anahtar"><span t-out="s.attrs.string or s.attrs.name"/></t></t>
+                            <span t-else="" class="text-muted">Satır ekle</span>
+                        </div>
+                    </div>
+                </t>
+                <t t-elif="d.attrs.widget === 'image' or f.type === 'binary' and (d.attrs.widget or '') === 'image'">
+                    <div class="o_as_resim"><i class="oi" data-icon="image"/></div>
+                </t>
+                <t t-elif="d.attrs.widget === 'priority'">
+                    <span class="o_as_yildiz"><i class="oi" data-icon="star"/><i class="oi" data-icon="star"/><i class="oi" data-icon="star"/></span>
+                </t>
+                <t t-elif="d.attrs.widget === 'signature'">
+                    <div class="o_as_imza">İmza</div>
+                </t>
+                <t t-elif="f.type === 'boolean'"><input type="checkbox" class="form-check-input" disabled="1"/></t>
+                <t t-elif="d.ust and ['h1', 'h2', 'h3'].includes(d.ust.tag)"><span class="o_as_baslik_alan" t-out="d.attrs.placeholder or this.etiket(d)"/></t>
+                <span t-else="" class="o_as_girdi">
+                    <t t-out="d.attrs.placeholder or this.onizleme(d)"/>
+                    <i t-if="f.type === 'many2one'" class="oi ms-auto" data-icon="arrow_drop_down"/>
+                </span>
+            </div>
+            <span t-if="d.attrs.invisible and !this.gizli(d) and !['1','True','true'].includes(d.attrs.invisible)" class="o_as_rozet" title="Koşullu görünürlük"><i class="oi" data-icon="visibility"/></span>
+            <span t-if="d.attrs.groups" class="o_as_rozet" title="Gruba özel"><i class="oi" data-icon="lock"/></span>
+        </div>
+        <!-- düğme -->
+        <button t-elif="d.tag === 'button'" type="button" t-att-class="this.sinif(d, 'btn btn-sm ' + (d.attrs.class or 'btn-secondary'))"
+                draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev, true)"
+                t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(d, ev)">
+            <i t-if="d.attrs.icon" class="oi me-1" t-att-data-icon="d.attrs.icon"/>
+            <t t-out="d.attrs.string or d.attrs.title or d.attrs.name"/>
+            <i t-if="d.attrs.name === 'atlas_studio_onayli_calistir'" class="oi ms-1" data-icon="verified" title="Onay adımlı"/>
+        </button>
+        <div t-elif="d.tag === 'separator'" t-att-class="this.sinif(d, 'o_as_ayrac')" t-on-click="(ev) => this.sec(d, ev)"
+             draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)" t-on-drop="(ev) => this.birak(ev)">
+            <t t-out="d.attrs.string or ''"/>
+        </div>
+        <div t-elif="d.tag === 'widget'" t-att-class="this.sinif(d, 'o_as_widget')" t-on-click="(ev) => this.sec(d, ev)">
+            <i class="oi me-1" data-icon="widgets"/><t t-out="d.attrs.name"/>
+        </div>
+        <span t-elif="d.tag === 'label'" t-att-class="this.sinif(d, 'o_as_etiket_ogesi')" t-on-click="(ev) => this.sec(d, ev)"
+              t-out="d.attrs.string or (d.attrs.for and this.alan(d.attrs.for).string) or d.text"/>
+        <t t-elif="['h1', 'h2', 'h3'].includes(d.tag)">
+            <div t-att-class="this.sinif(d, 'o_as_' + d.tag)"><t t-out="d.text"/><t t-call="atlas_studio.Cocuklar"/></div>
+        </t>
+        <t t-elif="['templates', 't', 'list', 'kanban', 'field'].includes(d.tag)"/>
+        <div t-else="" t-att-class="this.sinif(d, 'o_as_kap ' + (d.attrs.class or '').replace('oe_title', 'o_as_title'))">
+            <span t-if="d.text" t-out="d.text"/>
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.FormDugum" d="c"/></t>
+        </div>
+    </t>
+
+    <!-- ============================================================ LİSTE -->
+    <t t-name="atlas_studio.ListeTuval">
+        <div class="o_as_liste_kap">
+            <div class="d-flex gap-2 mb-2 small text-muted">
+                <span t-if="this.kok.attrs.editable"><i class="oi" data-icon="edit"/> Satır içi düzenleme: <t t-out="this.kok.attrs.editable === 'top' ? 'üstte' : 'altta'"/></span>
+                <span t-if="this.kok.attrs.default_order"><i class="oi" data-icon="swap_vert"/> <t t-out="this.kok.attrs.default_order"/></span>
+            </div>
+            <div class="table-responsive">
+                <table class="table o_as_liste mb-0">
+                    <thead>
+                        <tr>
+                            <th class="o_as_secim"><input type="checkbox" class="form-check-input" disabled="1"/></th>
+                            <t t-foreach="this.listeSutunlari()" t-as="c" t-key="c.anahtar">
+                                <th t-att-class="this.sinif(c)" t-att-style="this.sutunGenisligi(c)" draggable="true"
+                                    t-on-dragstart="(ev) => this.surukleBasla({kaynak: c}, ev)" t-on-dragover="(ev) => this.uzerinde(c, ev, true)"
+                                    t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(c, ev)">
+                                    <t t-out="c.tag === 'button' ? (c.attrs.string or c.attrs.name) : this.etiket(c)"/>
+                                    <i t-if="c.attrs.optional" class="oi ms-1 text-muted" data-icon="tune" t-att-title="'İsteğe bağlı: ' + c.attrs.optional"/>
+                                </th>
+                            </t>
+                            <th class="o_as_son" t-att-class="{'o_as_hedef_inside': this.state.hedef and this.state.hedef.anahtar === this.kok.anahtar}"
+                                t-on-dragover="(ev) => this.uzerinde(this.kok, ev)" t-on-drop="(ev) => this.birak(ev)">
+                                <i class="oi text-muted" data-icon="add"/>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.state.ornekler.length ? this.state.ornekler : [{}, {}, {}]" t-as="k" t-key="k_index">
+                            <tr>
+                                <td><input type="checkbox" class="form-check-input" disabled="1"/></td>
+                                <t t-foreach="this.listeSutunlari()" t-as="c" t-key="c.anahtar">
+                                    <td t-att-class="{'o_as_secili_sutun': this.state.secili === c.anahtar}" t-on-click="(ev) => this.sec(c, ev)">
+                                        <t t-if="c.tag === 'button'"><span class="btn btn-link btn-sm p-0" t-out="c.attrs.string or ''"/></t>
+                                        <t t-else="" t-out="this.ornekDeger(k, c)"/>
+                                    </td>
+                                </t>
+                                <td/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ ARAMA -->
+    <t t-name="atlas_studio.AramaTuval">
+        <div class="o_as_arama row g-3">
+            <t t-foreach="[['alan', 'Otomatik Tamamlama Alanları'], ['filtre', 'Filtreler'], ['gruplama', 'Gruplama']]" t-as="b" t-key="b[0]">
+                <div class="col-lg-4">
+                    <div class="o_as_arama_bolum">
+                        <div class="o_as_grup_baslik" t-out="b[1]"/>
+                        <t t-set="liste" t-value="this.aramaDugumleri(b[0])"/>
+                        <t t-foreach="liste" t-as="c" t-key="c.anahtar">
+                            <div t-if="!this.gizli(c)" t-att-class="this.sinif(c, c.tag === 'separator' ? 'o_as_arama_ayrac' : 'o_as_arama_oge')" draggable="true"
+                                 t-on-dragstart="(ev) => this.surukleBasla({kaynak: c}, ev)" t-on-dragover="(ev) => this.uzerinde(c, ev)"
+                                 t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(c, ev)">
+                                <t t-if="c.tag !== 'separator'" t-out="this.etiket(c)"/>
+                            </div>
+                        </t>
+                        <div t-if="!liste.length" class="o_as_bos" t-att-class="{'o_as_hedef_inside': this.state.hedef and this.state.hedef.anahtar === this.kok.anahtar}"
+                             t-on-dragover="(ev) => this.uzerinde(this.kok, ev)" t-on-drop="(ev) => this.birak(ev)">Boş</div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- ============================================================ GENEL (kanban, takvim, pivot…) -->
+    <t t-name="atlas_studio.GenelTuval">
+        <div class="o_as_genel">
+            <div class="alert alert-info small">
+                Bu görünüm türü ağaç olarak düzenlenir: öğeyi seçip özelliklerini değiştirin, alanları sürükleyip bırakın;
+                kök özellikleri (tarih alanları, mod, renk…) <b>Görüntüle</b> sekmesindedir. Tam denetim için <b>XML</b>.
+            </div>
+            <t t-call="atlas_studio.GenelDugum" d="this.kok"/>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.GenelDugum">
+        <div t-att-class="this.sinif(d, 'o_as_agac')" t-on-click="(ev) => this.sec(d, ev)"
+             t-att-draggable="d !== this.kok ? 'true' : 'false'" t-on-dragstart="(ev) => d !== this.kok and this.surukleBasla({kaynak: d}, ev)"
+             t-on-dragover="(ev) => this.uzerinde(d, ev)" t-on-drop="(ev) => this.birak(ev)">
+            <span class="o_as_agac_etiket">
+                <i class="oi me-1" t-att-data-icon="d.tag === 'field' ? 'text_fields' : 'widgets'"/>
+                <b t-out="d.tag"/>
+                <t t-if="d.tag === 'field'"> <t t-out="this.etiket(d)"/> <span class="text-muted" t-out="'(' + d.attrs.name + ')'"/></t>
+                <t t-elif="d.attrs.name or d.attrs['t-name'] or d.attrs.string"> <t t-out="d.attrs.string or d.attrs.name or d.attrs['t-name']"/></t>
+            </span>
+            <div t-if="d.children.length" class="o_as_agac_cocuk">
+                <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.GenelDugum" d="c"/></t>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ PANELLER -->
+    <t t-name="atlas_studio.PanelEkle">
+        <t t-if="this.bilesenler.length">
+            <div class="o_as_baslik">Bileşenler</div>
+            <div class="o_as_kutular mb-3">
+                <t t-foreach="this.bilesenler" t-as="b" t-key="b.k">
+                    <div class="o_as_kutu" draggable="true" t-att-data-bilesen="b.k"
+                         t-on-dragstart="(ev) => this.surukleBasla({bilesen: b.k}, ev)" t-on-click="() => this.bilesenTikla(b)">
+                        <i class="oi" t-att-data-icon="b.simge"/><span t-out="b.ad"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+        <t t-if="this.yeniAlanTurleri.length">
+            <div class="o_as_baslik">Yeni Alanlar</div>
+            <div class="o_as_kutular mb-3">
+                <t t-foreach="this.yeniAlanTurleri" t-as="a" t-key="a.tur">
+                    <div class="o_as_kutu" draggable="true" t-att-data-tur="a.tur"
+                         t-on-dragstart="(ev) => this.surukleBasla({tur: a.tur}, ev)" t-on-click="() => this.ekleTikla({tur: a.tur})">
+                        <i class="oi" t-att-data-icon="a.simge"/><span t-out="a.ad"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+        <div class="o_as_baslik">Mevcut Alanlar</div>
+        <input class="form-control form-control-sm mb-2" placeholder="Alan ara…" t-att-value="this.state.arama" t-on-input="(ev) => this.state.arama = ev.target.value"/>
+        <div class="o_as_alan_listesi">
+            <t t-foreach="this.mevcutAlanlar" t-as="a" t-key="a.ad">
+                <div class="o_as_mevcut" draggable="true" t-att-data-alan="a.ad" t-att-title="a.ad"
+                     t-on-dragstart="(ev) => this.surukleBasla({alan: a.ad}, ev)" t-on-click="() => this.ekleTikla({alan: a.ad})">
+                    <i class="oi me-2 text-muted" t-att-data-icon="a.simge"/><span class="flex-grow-1" t-out="a.etiket"/>
+                    <span t-if="a.ozel" class="badge text-bg-light">Özel</span>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.PanelGoruntule">
+        <t t-if="this.props.tur === 'form'">
+            <div class="o_as_baslik">Form</div>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('create')" t-on-change="(ev) => this.kokSecenekYaz('create', ev)"/> Oluşturmaya izin ver</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('edit')" t-on-change="(ev) => this.kokSecenekYaz('edit', ev)"/> Düzenlemeye izin ver</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('delete')" t-on-change="(ev) => this.kokSecenekYaz('delete', ev)"/> Silmeye izin ver</label>
+            <label t-if="this.state.durum.mail" class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="!!this.chatterVar" t-on-change="(ev) => this.chatterDegistir(ev)"/> Mesajlaşma (chatter)</label>
+        </t>
+        <t t-elif="this.props.tur === 'list'">
+            <div class="o_as_baslik">Liste</div>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('create')" t-on-change="(ev) => this.kokSecenekYaz('create', ev)"/> Oluşturmaya izin ver</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('delete')" t-on-change="(ev) => this.kokSecenekYaz('delete', ev)"/> Silmeye izin ver</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kok.attrs.multi_edit === '1'" t-on-change="(ev) => this.nitelik(this.kok, {multi_edit: ev.target.checked ? '1' : ''})"/> Toplu düzenleme</label>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Satır içi düzenleme</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(this.kok, {editable: ev.target.value})">
+                    <option value="" t-att-selected="!this.kok.attrs.editable">Kapalı (formu aç)</option>
+                    <option value="top" t-att-selected="this.kok.attrs.editable === 'top'">Yeni satır üstte</option>
+                    <option value="bottom" t-att-selected="this.kok.attrs.editable === 'bottom'">Yeni satır altta</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Varsayılan sıralama</label>
+                <div class="d-flex gap-1">
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.siralamaYaz(ev.target.value, this.siralama.yon)">
+                        <option value="">—</option>
+                        <t t-foreach="this.siralanabilirAlanlar" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-att-selected="this.siralama.alan === a[0]" t-out="a[1]"/></t>
+                    </select>
+                    <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.siralamaYaz(this.siralama.alan, ev.target.value)">
+                        <option value="asc" t-att-selected="this.siralama.yon === 'asc'">Artan</option>
+                        <option value="desc" t-att-selected="this.siralama.yon === 'desc'">Azalan</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Sayfa başına kayıt</label>
+                <input type="number" min="1" class="form-control form-control-sm" t-att-value="this.kok.attrs.limit or ''" t-on-change="(ev) => this.nitelik(this.kok, {limit: ev.target.value})"/>
+            </div>
+        </t>
+        <t t-elif="this.props.tur !== 'search'">
+            <div class="o_as_baslik">Görünüm Özellikleri</div>
+            <t t-foreach="this.kokNitelikleri" t-as="n" t-key="n[0]">
+                <div class="mb-2">
+                    <label class="form-label small mb-1 d-flex"><span class="flex-grow-1" t-out="n[0]"/>
+                        <a href="#" class="text-danger" title="Kaldır" t-on-click.prevent="() => this.nitelik(this.kok, {[n[0]]: ''})"><i class="oi" data-icon="close"/></a></label>
+                    <input class="form-control form-control-sm" t-att-value="n[1]" t-on-change="(ev) => this.metinNitelik(this.kok, n[0], ev)"/>
+                </div>
+            </t>
+            <div class="d-flex gap-1 mt-2">
+                <input class="form-control form-control-sm" placeholder="özellik (ör. color)" t-att-value="this.state.yeniNitelik" t-on-input="(ev) => this.state.yeniNitelik = ev.target.value"/>
+                <input class="form-control form-control-sm" placeholder="değer" t-att-value="this.state.yeniNitelikDeger" t-on-input="(ev) => this.state.yeniNitelikDeger = ev.target.value"/>
+                <button class="btn btn-sm btn-secondary" t-on-click="() => this.kokNitelikEkle()"><i class="oi" data-icon="add"/></button>
+            </div>
+        </t>
+        <hr/>
+        <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.state.gorunmezGoster" t-on-change="(ev) => this.state.gorunmezGoster = ev.target.checked"/> Görünmez öğeleri göster</label>
+        <div class="d-flex flex-column gap-2 mt-3">
+            <button class="btn btn-sm btn-light border" t-on-click="() => this.xmlAc()"><i class="oi me-1" data-icon="code"/>XML Düzenle</button>
+            <button class="btn btn-sm btn-light border text-danger" t-on-click="() => this.sifirla()"><i class="oi me-1" data-icon="history"/>Görünümü Sıfırla</button>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.PanelOzellikler">
+        <t t-set="f" t-value="d.tag === 'field' ? this.alan(d.attrs.name) : null"/>
+        <t t-set="liste" t-value="this.props.tur === 'list'"/>
+        <div class="d-flex align-items-center mb-3">
+            <div class="flex-grow-1">
+                <div class="fw-bold" t-out="this.etiket(d)"/>
+                <div class="small text-muted"><t t-out="d.tag"/><t t-if="f"> · <t t-out="d.attrs.name"/> · <t t-out="f.type"/></t></div>
+            </div>
+            <button t-if="d !== this.kok" class="btn btn-sm btn-outline-danger" title="Görünümden kaldır" t-on-click="() => this.kaldir(d)"><i class="oi" data-icon="delete"/></button>
+        </div>
+
+        <!-- etiket / metin -->
+        <div class="mb-2" t-if="['field', 'page', 'group', 'button', 'separator', 'filter'].includes(d.tag)">
+            <label class="form-label small mb-1">Etiket</label>
+            <input class="form-control form-control-sm" t-att-value="d.attrs.string or ''" t-att-placeholder="f ? f.string : ''" t-on-change="(ev) => this.metinNitelik(d, 'string', ev)"/>
+        </div>
+        <t t-if="f">
+            <div class="mb-2">
+                <label class="form-label small mb-1">Yardım ipucu</label>
+                <input class="form-control form-control-sm" t-att-value="d.attrs.help or ''" t-att-placeholder="f.help or ''" t-on-change="(ev) => this.metinNitelik(d, 'help', ev)"/>
+            </div>
+            <div class="mb-2" t-if="!liste and this.props.tur === 'form'">
+                <label class="form-label small mb-1">Yer tutucu</label>
+                <input class="form-control form-control-sm" t-att-value="d.attrs.placeholder or ''" t-on-change="(ev) => this.metinNitelik(d, 'placeholder', ev)"/>
+            </div>
+            <div class="mb-2" t-if="this.props.tur !== 'search'">
+                <label class="form-label small mb-1">Bileşen (widget)</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(d, {widget: ev.target.value})">
+                    <option value="">Varsayılan</option>
+                    <t t-foreach="this.widgetler(d)" t-as="w" t-key="w[0]"><option t-att-value="w[0]" t-att-selected="d.attrs.widget === w[0]" t-out="w[1]"/></t>
+                </select>
+            </div>
+        </t>
+
+        <!-- görünürlük / zorunluluk / salt okunur -->
+        <t t-if="this.props.tur !== 'search' or d.tag !== 'field'">
+            <div class="o_as_baslik mt-3">Davranış</div>
+            <t t-set="gizAd" t-value="liste and d.ust === this.kok ? 'column_invisible' : 'invisible'"/>
+            <t t-foreach="f and this.props.tur !== 'search' ? [[gizAd, 'Görünmez'], ['required', 'Zorunlu'], ['readonly', 'Salt okunur']] : [[gizAd, 'Görünmez']]" t-as="k" t-key="k[0]">
+                <div class="d-flex align-items-center mb-1 o_as_kosul_satir">
+                    <label class="o_as_secenek flex-grow-1 mb-0">
+                        <input type="checkbox" class="form-check-input" t-att-checked="['1','True','true'].includes(d.attrs[k[0]] or '')"
+                               t-att-disabled="d.attrs[k[0]] and !['1','True','true','0','False','false'].includes(d.attrs[k[0]])" t-on-change="(ev) => this.kutuNitelik(d, k[0], ev)"/>
+                        <t t-out="k[1]"/>
+                    </label>
+                    <button t-if="k[0] !== 'column_invisible'" class="btn btn-sm btn-link p-0" t-on-click="() => this.kosulDuzenle(d, k[0])">
+                        <t t-if="d.attrs[k[0]] and !['1','True','true','0','False','false'].includes(d.attrs[k[0]])">Koşullu: <code t-out="d.attrs[k[0]]"/></t>
+                        <t t-else="">Koşullu</t>
+                    </button>
+                </div>
+            </t>
+            <div class="mb-2" t-if="liste and f and d.ust === this.kok">
+                <label class="form-label small mb-1">İsteğe bağlı sütun</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(d, {optional: ev.target.value})">
+                    <option value="" t-att-selected="!d.attrs.optional">Hayır</option>
+                    <option value="show" t-att-selected="d.attrs.optional === 'show'">Evet, görünür</option>
+                    <option value="hide" t-att-selected="d.attrs.optional === 'hide'">Evet, gizli</option>
+                </select>
+            </div>
+            <div class="mb-2" t-if="liste and d.ust === this.kok">
+                <label class="form-label small mb-1">Genişlik</label>
+                <input class="form-control form-control-sm" placeholder="ör. 120px" t-att-value="d.attrs.width or ''" t-on-change="(ev) => this.metinNitelik(d, 'width', ev)"/>
+            </div>
+        </t>
+
+        <!-- ilişkisel seçenekler -->
+        <t t-if="f and f.type === 'many2one' and this.props.tur === 'form'">
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.secenek(d, 'no_create')" t-on-change="(ev) => this.secenekDegistir(d, 'no_create', ev)"/> Oluşturmayı engelle</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.secenek(d, 'no_open')" t-on-change="(ev) => this.secenekDegistir(d, 'no_open', ev)"/> Kaydı açmayı engelle</label>
+        </t>
+        <div t-if="f and ['many2one', 'many2many'].includes(f.type) and this.props.tur !== 'search'" class="mb-2">
+            <button class="btn btn-sm btn-light border w-100 text-start" t-on-click="() => this.alanAlaniDomain(d)">
+                <i class="oi me-1" data-icon="filter_alt"/>Seçenek filtresi<t t-if="d.attrs.domain">: <code t-out="d.attrs.domain"/></t>
+            </button>
+        </div>
+
+        <!-- alan düzeyi -->
+        <t t-if="f and this.state.alanBilgisi">
+            <div class="o_as_baslik mt-3">Alan</div>
+            <div class="mb-2" t-if="!['one2many', 'many2many', 'binary', 'html'].includes(f.type)">
+                <label class="form-label small mb-1">Varsayılan değer</label>
+                <t t-set="vd" t-value="this.state.alanBilgisi.varsayilan"/>
+                <t t-if="f.type === 'boolean'"><input type="checkbox" class="form-check-input ms-1" t-att-checked="!!vd" t-on-change="(ev) => this.varsayilanYaz(ev)"/></t>
+                <select t-elif="f.type === 'selection'" class="form-select form-select-sm" t-on-change="(ev) => this.varsayilanYaz(ev)">
+                    <option value="">—</option>
+                    <t t-foreach="f.selection" t-as="s" t-key="s[0]"><option t-att-value="s[0]" t-att-selected="vd === s[0]" t-out="s[1]"/></t>
+                </select>
+                <input t-else="" class="form-control form-control-sm" t-att-type="f.type === 'date' ? 'date' : 'text'" t-att-value="vd === false or vd === null ? '' : vd"
+                       t-att-placeholder="f.type === 'many2one' ? 'kayıt kimliği (id)' : ''" t-on-change="(ev) => this.varsayilanYaz(ev)"/>
+            </div>
+            <label t-if="this.state.durum.mail and this.state.alanBilgisi.ozel" class="o_as_secenek">
+                <input type="checkbox" class="form-check-input" t-att-checked="this.state.alanBilgisi.takip" t-on-change="(ev) => this.alanOzellik({takip: ev.target.checked})"/> Değişiklikleri izle (chatter)
+            </label>
+            <div class="mb-2" t-if="this.state.alanBilgisi.ozel">
+                <label class="form-label small mb-1">Alan adı (tüm görünümlerde)</label>
+                <input class="form-control form-control-sm" t-att-value="f.string" t-on-change="(ev) => this.alanOzellik({etiket: ev.target.value})"/>
+            </div>
+            <div class="mb-2" t-if="['char', 'text', 'html', 'selection', 'integer', 'float', 'monetary', 'date', 'boolean'].includes(f.type) and f.store !== false">
+                <label class="form-label small mb-1"><i class="oi me-1" data-icon="wand_stars"/>Yapay zekâ ile otomatik doldur</label>
+                <textarea class="form-control form-control-sm" rows="2" placeholder="ör. Açıklamadan ürün kategorisini çıkar"
+                          t-att-value="this.state.alanBilgisi.ai_istem or ''" t-on-change="(ev) => this.alanOzellik({ai_istem: ev.target.value})"/>
+            </div>
+        </t>
+
+        <!-- düğme -->
+        <t t-if="d.tag === 'button'">
+            <div class="mb-2">
+                <label class="form-label small mb-1">Stil</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(d, {class: ev.target.value})">
+                    <t t-foreach="[['btn-primary', 'Birincil'], ['btn-secondary', 'İkincil'], ['btn-link', 'Bağlantı'], ['oe_stat_button', 'Akıllı düğme']]" t-as="s" t-key="s[0]">
+                        <option t-att-value="s[0]" t-att-selected="(d.attrs.class or '').includes(s[0])" t-out="s[1]"/>
+                    </t>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Simge</label>
+                <input class="form-control form-control-sm" placeholder="ör. check" t-att-value="d.attrs.icon or ''" t-on-change="(ev) => this.metinNitelik(d, 'icon', ev)"/>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Onay sorusu</label>
+                <input class="form-control form-control-sm" placeholder="ör. Emin misiniz?" t-att-value="d.attrs.confirm or ''" t-on-change="(ev) => this.metinNitelik(d, 'confirm', ev)"/>
+            </div>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="!!d.attrs.effect" t-on-change="(ev) => this.nitelik(d, {effect: ev.target.checked ? &quot;{'fadeout': 'medium'}&quot; : ''})"/> Gökkuşağı efekti</label>
+            <t t-if="this.state.onaylar">
+                <div class="o_as_baslik mt-3">Onay Adımları</div>
+                <t t-foreach="this.state.onaylar" t-as="o" t-key="o_index">
+                    <div class="o_as_onay border rounded p-2 mb-2">
+                        <div class="d-flex align-items-center mb-1">
+                            <b class="flex-grow-1">Adım <t t-out="o_index + 1"/></b>
+                            <a href="#" class="text-danger" t-on-click.prevent="() => this.state.onaylar.splice(o_index, 1)"><i class="oi" data-icon="close"/></a>
+                        </div>
+                        <div t-if="o.grup" class="mb-1"><span class="badge text-bg-light" t-out="o.grup[1]"/>
+                            <a href="#" class="ms-1" t-on-click.prevent="() => o.grup = false"><i class="oi" data-icon="close_small"/></a></div>
+                        <div t-else="" class="position-relative mb-1">
+                            <input class="form-control form-control-sm" placeholder="Onaylayan grup ara…" t-on-input="(ev) => this.onayGrupAra(o, ev)"/>
+                            <div t-if="o._sonuc and o._sonuc.length" class="o_as_acilir">
+                                <t t-foreach="o._sonuc" t-as="g" t-key="g.id"><a href="#" class="dropdown-item" t-on-click.prevent="() => { o.grup = [g.id, g.ad]; o._sonuc = []; }" t-out="g.ad"/></t>
+                            </div>
+                        </div>
+                        <input class="form-control form-control-sm mb-1" placeholder="Açıklama (ör. Müdür onayı)" t-att-value="o.aciklama" t-on-input="(ev) => o.aciklama = ev.target.value"/>
+                        <label class="o_as_secenek small mb-0"><input type="checkbox" class="form-check-input" t-att-checked="o.bildirim" t-on-change="(ev) => o.bildirim = ev.target.checked"/> Onaylayıcıya aktivite</label>
+                    </div>
+                </t>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-light border" t-on-click="() => this.onayEkle()"><i class="oi me-1" data-icon="add"/>Adım ekle</button>
+                    <button class="btn btn-sm btn-primary" t-on-click="() => this.onaylariKaydet(d)">Kaydet</button>
+                </div>
+            </t>
+        </t>
+
+        <!-- arama öğeleri -->
+        <t t-if="d.tag === 'filter' and !(d.attrs.context or '').includes('group_by')">
+            <div class="mb-2"><label class="form-label small mb-1">Alan adı</label>
+                <code class="d-block small" t-out="d.attrs.domain or ''"/></div>
+        </t>
+        <t t-if="this.props.tur === 'search' and d.tag === 'field'">
+            <div class="mb-2"><label class="form-label small mb-1">Arama ifadesi (filter_domain)</label>
+                <input class="form-control form-control-sm" t-att-value="d.attrs.filter_domain or ''" t-on-change="(ev) => this.metinNitelik(d, 'filter_domain', ev)"/></div>
+        </t>
+
+        <!-- erişim grupları -->
+        <div class="o_as_baslik mt-3">Erişim Grupları</div>
+        <div class="d-flex flex-wrap gap-1 mb-2">
+            <t t-foreach="this.gruplar(d)" t-as="g" t-key="g.xmlid">
+                <span t-att-class="'badge ' + (g.yasak ? 'text-bg-danger' : 'text-bg-light border')">
+                    <t t-if="g.yasak">Hariç: </t><t t-out="g.ad"/>
+                    <a href="#" class="ms-1" t-on-click.prevent="() => this.grupCikar(d, g.xmlid)"><i class="oi" data-icon="close_small"/></a>
+                </span>
+            </t>
+            <span t-if="!this.gruplar(d).length" class="small text-muted">Herkes görür</span>
+        </div>
+        <div class="position-relative">
+            <input class="form-control form-control-sm" placeholder="Grup ara…" t-att-value="this.state.grupArama" t-on-input="(ev) => this.grupAra(ev)"/>
+            <div t-if="this.state.grupSonuc.length" class="o_as_acilir">
+                <t t-foreach="this.state.grupSonuc" t-as="g" t-key="g.id">
+                    <div class="dropdown-item d-flex align-items-center gap-2">
+                        <span class="flex-grow-1" t-out="g.ad"/>
+                        <a href="#" class="small" t-on-click.prevent="() => this.grupEkle(d, g, false)">İzin ver</a>
+                        <a href="#" class="small text-danger" t-on-click.prevent="() => this.grupEkle(d, g, true)">Engelle</a>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ DİYALOGLAR -->
+    <t t-name="atlas_studio.EditorDiyaloglari">
+        <t t-set="dl" t-value="this.state.diyalog"/>
+        <div t-if="dl" class="o_as_ortu" t-on-click.self="() => this.diyalogKapat()">
+            <div class="o_as_modal">
+                <t t-if="dl.tur === 'onayla'">
+                    <div class="o_as_modal_govde" t-out="dl.metin"/>
+                    <div class="o_as_modal_alt"><button class="btn btn-danger" t-on-click="() => this.onaylaCalistir()">Evet</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button></div>
+                </t>
+                <t t-elif="dl.tur === 'alan'">
+                    <h5>Yeni alan: <t t-out="this.alanTurleri.find(t => t.tur === dl.alanTur).ad"/></h5>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Etiket</label>
+                        <input class="form-control mb-2 o_as_alan_etiket" t-att-value="dl.etiket" t-on-input="(ev) => dl.etiket = ev.target.value" placeholder="ör. Teslim Şekli"/>
+                        <t t-if="dl.alanTur === 'selection'">
+                            <label class="form-label small mb-1">Seçenekler (satır başına bir tane; isteğe bağlı <code>anahtar=Etiket</code>)</label>
+                            <textarea class="form-control mb-2" rows="4" t-att-value="dl.secenekler" t-on-input="(ev) => dl.secenekler = ev.target.value"/>
+                        </t>
+                        <t t-if="['many2one', 'many2many', 'one2many'].includes(dl.alanTur)">
+                            <label class="form-label small mb-1">İlişkili model</label>
+                            <input class="form-control mb-1" placeholder="Model ara…" t-on-input="(ev) => this.modelAra(ev)"/>
+                            <select class="form-select mb-2" t-on-change="(ev) => this.iliskiSec(ev)">
+                                <option value="">—</option>
+                                <t t-foreach="dl.modeller" t-as="m" t-key="m.model"><option t-att-value="m.model" t-att-selected="dl.iliski === m.model" t-out="m.ad"/></t>
+                            </select>
+                        </t>
+                        <t t-if="dl.alanTur === 'one2many' and dl.iliski">
+                            <label class="form-label small mb-1">Ters alan (o modelde bu modele işaret eden Many2One)</label>
+                            <select class="form-select mb-2" t-on-change="(ev) => dl.tersAlan = ev.target.value">
+                                <t t-foreach="dl.tersler" t-as="r" t-key="r.id"><option t-att-value="r.alan" t-out="r.ad"/></t>
+                            </select>
+                            <div t-if="!dl.tersler.length" class="small text-danger">Bu modelde ilişki alanı yok; önce o modele Many2One ekleyin.</div>
+                        </t>
+                        <t t-if="dl.alanTur === 'related'">
+                            <label class="form-label small mb-1">Alan yolu</label>
+                            <input class="form-control mb-2" placeholder="ör. partner_id.email" t-att-value="dl.yol" t-on-input="(ev) => dl.yol = ev.target.value"/>
+                        </t>
+                        <label t-if="dl.alanTur === 'image'" class="o_as_secenek"><input type="checkbox" class="form-check-input" t-on-change="(ev) => dl.avatar = ev.target.checked"/> Avatar olarak (başlık yanında)</label>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button class="btn btn-primary o_as_onayla" t-on-click="() => this.alanDiyaloguOnayla()">Oluştur</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button>
+                    </div>
+                </t>
+                <t t-elif="dl.tur === 'dugme'">
+                    <h5 t-out="dl.liste ? 'Satır düğmesi' : 'Üst düğme'"/>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Etiket</label>
+                        <input class="form-control mb-2" t-att-value="dl.etiket" t-on-input="(ev) => dl.etiket = ev.target.value"/>
+                        <div class="d-flex gap-3 mb-2">
+                            <label class="o_as_secenek"><input type="radio" name="dugme_hedef" class="form-check-input" t-att-checked="dl.hedefTur === 'eylem'" t-on-change="() => dl.hedefTur = 'eylem'"/> Sunucu eylemi</label>
+                            <label class="o_as_secenek"><input type="radio" name="dugme_hedef" class="form-check-input" t-att-checked="dl.hedefTur === 'metot'" t-on-change="() => dl.hedefTur = 'metot'"/> Model metodu</label>
+                        </div>
+                        <select t-if="dl.hedefTur === 'eylem'" class="form-select mb-2" t-on-change="(ev) => dl.eylem = parseInt(ev.target.value)">
+                            <t t-foreach="dl.eylemler" t-as="e" t-key="e.id"><option t-att-value="e.id" t-out="e.ad"/></t>
+                        </select>
+                        <div t-if="dl.hedefTur === 'eylem' and !dl.eylemler.length" class="small text-muted mb-2">Bu model için sunucu eylemi yok; Aksiyonlar sekmesinden oluşturabilirsiniz.</div>
+                        <input t-if="dl.hedefTur === 'metot'" class="form-control mb-2" placeholder="ör. action_confirm" t-att-value="dl.metot" t-on-input="(ev) => dl.metot = ev.target.value"/>
+                        <label class="form-label small mb-1">Stil</label>
+                        <select class="form-select" t-on-change="(ev) => dl.stil = ev.target.value">
+                            <option value="btn-primary" t-att-selected="dl.stil === 'btn-primary'">Birincil</option>
+                            <option value="btn-secondary" t-att-selected="dl.stil === 'btn-secondary'">İkincil</option>
+                            <option value="btn-link" t-att-selected="dl.stil === 'btn-link'">Bağlantı</option>
+                        </select>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button class="btn btn-primary" t-on-click="() => dl.liste ? this.listeDugmesiOnayla() : this.dugmeDiyaloguOnayla()">Ekle</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button>
+                    </div>
+                </t>
+                <t t-elif="dl.tur === 'akilli'">
+                    <h5>Akıllı düğme</h5>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Bu kayda bağlı kayıtlar</label>
+                        <select class="form-select mb-2" t-on-change="(ev) => dl.iliski = ev.target.value">
+                            <t t-foreach="dl.iliskiler" t-as="r" t-key="r.id"><option t-att-value="r.id" t-out="r.ad"/></t>
+                        </select>
+                        <div t-if="!dl.iliskiler.length" class="small text-danger mb-2">Başka bir modelde bu modele işaret eden Many2One alanı yok.</div>
+                        <label class="form-label small mb-1">Etiket</label>
+                        <input class="form-control mb-2" t-att-value="dl.etiket" t-on-input="(ev) => dl.etiket = ev.target.value"/>
+                        <label class="form-label small mb-1">Simge</label>
+                        <div class="o_as_simge_secim">
+                            <t t-foreach="this.simgeler" t-as="s" t-key="s">
+                                <span t-att-class="{'o_as_simge_aktif': dl.simge === s}" t-on-click="() => dl.simge = s"><i class="oi" t-att-data-icon="s"/></span>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button class="btn btn-primary" t-on-click="() => this.akilliDiyaloguOnayla()">Ekle</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button>
+                    </div>
+                </t>
+                <t t-elif="dl.tur === 'filtre'">
+                    <h5>Filtre</h5>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Etiket</label>
+                        <input class="form-control mb-2" t-att-value="dl.etiket" t-on-input="(ev) => dl.etiket = ev.target.value"/>
+                        <label class="form-label small mb-1">Koşul</label>
+                        <div class="d-flex gap-2 align-items-center"><code class="flex-grow-1" t-out="dl.domain"/>
+                            <button class="btn btn-sm btn-secondary" t-on-click="() => this.filtreDomain()">Düzenle</button></div>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button class="btn btn-primary" t-on-click="() => this.filtreDiyaloguOnayla()">Ekle</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button>
+                    </div>
+                </t>
+                <t t-elif="dl.tur === 'gruplama'">
+                    <h5>Gruplama</h5>
+                    <div class="o_as_modal_govde">
+                        <select class="form-select" t-on-change="(ev) => dl.alan = ev.target.value">
+                            <option value="">— alan seçin —</option>
+                            <t t-foreach="this.gruplanabilirAlanlar" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-out="a[1]"/></t>
+                        </select>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button class="btn btn-primary" t-on-click="() => this.gruplamaDiyaloguOnayla()">Ekle</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.diyalogKapat()">Vazgeç</button>
+                    </div>
+                </t>
+            </div>
+        </div>
+        <div t-if="this.state.xml" class="o_as_ortu">
+            <div class="o_as_modal o_as_modal_genis">
+                <h5>XML Düzenleyici</h5>
+                <div class="row g-2 o_as_modal_govde">
+                    <div class="col-lg-6">
+                        <div class="small text-muted mb-1">Ana görünüm (salt okunur)</div>
+                        <textarea class="form-control o_as_kod" readonly="1" t-att-value="this.state.xml.ana"/>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="small text-muted mb-1">Studio özelleştirmesi (<code>&lt;data&gt;</code> içinde xpath'ler)</div>
+                        <textarea class="form-control o_as_kod" spellcheck="false" t-att-value="this.state.xml.metin" t-on-input="(ev) => this.xmlYaz(ev)"/>
+                    </div>
+                </div>
+                <div class="o_as_modal_alt">
+                    <button class="btn btn-primary" t-on-click="() => this.xmlKaydet()">Kaydet</button>
+                    <button class="btn btn-secondary" t-on-click="() => this.state.xml = null">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

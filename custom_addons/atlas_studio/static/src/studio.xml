@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_studio.Studio">
+        <div class="o_atlas_studio o_action h-100 d-flex flex-column">
+            <!-- üst çubuk -->
+            <div class="o_as_ust d-flex align-items-center gap-2 px-3">
+                <a href="#" class="o_as_logo d-flex align-items-center gap-2" t-on-click.prevent="() => this.anaEkran()" title="Uygulamalar">
+                    <i class="oi" data-icon="tune"/><span>Studio</span>
+                </a>
+                <t t-if="this.state.baglam">
+                    <span class="o_as_ayrac_dikey"/>
+                    <span class="o_as_uygulama_adi" t-out="this.state.baglam.menu.kok_ad or this.state.baglam.model_adi"/>
+                    <span class="text-white-50 small" t-out="this.state.baglam.eylem.ad"/>
+                    <button class="btn btn-sm o_as_ust_btn" t-on-click="() => this.menuDuzenle()"><i class="oi me-1" data-icon="menu"/>Menü Düzenle</button>
+                    <button class="btn btn-sm o_as_ust_btn" t-on-click="() => this.yeniModel()"><i class="oi me-1" data-icon="add"/>Yeni Model</button>
+                </t>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <span t-if="this.state.kaydedildi" class="o_as_kaydedildi small"><i class="oi me-1" data-icon="check"/>Kaydedildi</span>
+                    <button class="btn btn-sm o_as_kapat" t-on-click="() => this.kapat()"><i class="oi me-1" data-icon="close"/>Kapat</button>
+                </div>
+            </div>
+            <div t-if="this.state.baglam" class="o_as_sekme_cubugu d-flex gap-1 px-3">
+                <t t-foreach="this.sekmeler" t-as="s" t-key="s.k">
+                    <a href="#" class="o_as_ust_sekme" t-att-class="{'active': this.state.sekme === s.k}" t-att-data-sekme="s.k"
+                       t-on-click.prevent="() => this.sekmeSec(s.k)" t-out="s.ad"/>
+                </t>
+            </div>
+
+            <!-- ana ekran -->
+            <div t-if="this.state.ekran === 'ana'" class="o_as_ana flex-grow-1 overflow-auto">
+                <div class="container py-4">
+                    <div class="d-flex align-items-center mb-4 gap-2">
+                        <h3 class="m-0 flex-grow-1">Hangi uygulamayı özelleştirmek istersiniz?</h3>
+                        <button class="btn btn-light border" t-on-click="() => this.disaAktar()"><i class="oi me-1" data-icon="download"/>Dışa Aktar</button>
+                        <button class="btn btn-light border" t-on-click="() => this.iceAktar()"><i class="oi me-1" data-icon="upload"/>İçe Aktar</button>
+                    </div>
+                    <div class="o_as_uygulamalar">
+                        <div class="o_as_uygulama o_as_yeni_uygulama" t-on-click="() => this.yeniUygulama()">
+                            <div class="o_as_uygulama_simge d-flex align-items-center justify-content-center"><i class="oi" data-icon="add"/></div>
+                            <div class="o_as_uygulama_ad">Yeni Uygulama</div>
+                        </div>
+                        <t t-foreach="this.state.uygulamalar" t-as="u" t-key="u.id">
+                            <div class="o_as_uygulama" t-att-data-menu="u.id" t-on-click="() => this.uygulamaAc(u)">
+                                <img class="o_as_uygulama_simge" t-att-src="this.uygulamaSimgeUrl(u)" alt=""/>
+                                <div class="o_as_uygulama_ad" t-out="u.ad"/>
+                                <a href="#" class="o_as_simge_duzenle" title="Simgeyi düzenle" t-on-click.prevent="(ev) => this.simgeDuzenle(u, ev)"><i class="oi" data-icon="edit"/></a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- uygulama içi -->
+            <t t-elif="this.state.baglam">
+                <t t-if="this.state.sekme === 'gorunumler'">
+                    <AtlasStudioEditor t-if="this.state.editorTur" t-key="this.state.editorAnahtar + '_' + this.state.editorTur"
+                                       baglam="this.state.baglam" tur="this.state.editorTur" onKaydedildi="() => this.kaydedildi()"/>
+                    <t t-else="" t-call="atlas_studio.Gorunumler"/>
+                </t>
+                <t t-elif="this.state.sekme === 'raporlar'" t-call="atlas_studio.Raporlar"/>
+            </t>
+            <t t-call="atlas_studio.StudioDiyaloglari"/>
+        </div>
+    </t>
+
+    <!-- ============================================================ GÖRÜNÜMLER -->
+    <t t-name="atlas_studio.Gorunumler">
+        <div class="o_as_gorunumler flex-grow-1 overflow-auto">
+            <div class="container-fluid py-3 px-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="flex-grow-1">
+                        <h4 class="m-0" t-out="this.state.baglam.eylem.ad"/>
+                        <div class="small text-muted"><t t-out="this.state.baglam.model_adi"/> · <code t-out="this.state.baglam.model"/></div>
+                    </div>
+                    <button class="btn btn-light border" t-on-click="() => this.eylemAyarAc()"><i class="oi me-1" data-icon="settings"/>Eylem Ayarları</button>
+                </div>
+                <t t-foreach="this.gorunumKategorileri()" t-as="k" t-key="k.k">
+                    <div class="o_as_baslik mt-3" t-out="k.ad"/>
+                    <div class="o_as_gorunum_kartlari">
+                        <t t-foreach="k.liste" t-as="g" t-key="g.tur">
+                            <div class="o_as_gorunum_karti" t-att-data-tur="g.tur" t-att-class="{'o_as_pasif': !g.aktif, 'o_as_kullanilamaz': !g.kullanilabilir}"
+                                 t-on-click="() => this.gorunumDuzenle(g)">
+                                <div class="d-flex align-items-start">
+                                    <i class="oi o_as_kart_simge" t-att-data-icon="this.gorunumSimgesi(g.tur)"/>
+                                    <span t-if="g.varsayilan" class="badge text-bg-primary ms-auto">Varsayılan</span>
+                                </div>
+                                <div class="fw-bold mt-2" t-out="g.ad"/>
+                                <div class="small text-muted" t-out="!g.kullanilabilir ? 'Bu model için uygun değil' : (g.aktif ? 'Etkin' : 'Etkin değil')"/>
+                                <div class="o_as_kart_eylem d-flex gap-1 mt-2" t-if="g.kullanilabilir and g.tur !== 'search'">
+                                    <button t-if="!g.aktif" class="btn btn-sm btn-light border" t-on-click="(ev) => this.gorunumIslem(g, 'etkinlestir', ev)">Etkinleştir</button>
+                                    <button t-if="g.aktif and !g.varsayilan" class="btn btn-sm btn-light border" t-on-click="(ev) => this.gorunumIslem(g, 'varsayilan', ev)">Varsayılan yap</button>
+                                    <button t-if="g.aktif and !g.varsayilan" class="btn btn-sm btn-light border text-danger" t-on-click="(ev) => this.gorunumIslem(g, 'devre_disi', ev)">Devre dışı</button>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ RAPORLAR -->
+    <t t-name="atlas_studio.Raporlar">
+        <div t-if="!this.state.rapor" class="flex-grow-1 overflow-auto">
+            <div class="container py-4">
+                <div class="d-flex align-items-center mb-3">
+                    <h4 class="m-0 flex-grow-1">Raporlar: <t t-out="this.state.baglam.model_adi"/></h4>
+                    <button class="btn btn-primary" t-on-click="() => this.yeniRapor()"><i class="oi me-1" data-icon="add"/>Yeni Rapor</button>
+                </div>
+                <div class="o_as_gorunum_kartlari">
+                    <t t-foreach="this.state.raporlar" t-as="r" t-key="r.id">
+                        <div class="o_as_gorunum_karti" t-on-click="() => this.raporAc(r.id)">
+                            <i class="oi o_as_kart_simge" data-icon="print"/>
+                            <div class="fw-bold mt-2" t-out="r.ad"/>
+                            <div class="small text-muted" t-out="r.report_name"/>
+                            <span t-if="r.yazdir_menusu" class="badge text-bg-light border mt-1">Yazdır menüsünde</span>
+                        </div>
+                    </t>
+                </div>
+                <div t-if="!this.state.raporlar.length" class="text-muted">Bu model için rapor yok.</div>
+            </div>
+        </div>
+        <div t-else="" class="o_as_rapor d-flex flex-grow-1 overflow-hidden">
+            <div class="o_as_rapor_sol d-flex flex-column border-end">
+                <div class="p-2 border-bottom d-flex flex-wrap gap-2 align-items-center">
+                    <button class="btn btn-sm btn-light border" t-on-click="() => this.state.rapor = null"><i class="oi" data-icon="arrow_back"/></button>
+                    <input class="form-control form-control-sm o_as_rapor_ad" t-att-value="this.state.rapor.ad" t-on-input="(ev) => this.state.rapor.ad = ev.target.value"/>
+                    <label class="o_as_secenek mb-0 small"><input type="checkbox" class="form-check-input" t-att-checked="this.state.rapor.yazdir_menusu"
+                           t-on-change="(ev) => this.state.rapor.yazdir_menusu = ev.target.checked"/> Yazdır menüsünde</label>
+                    <input class="form-control form-control-sm o_as_rapor_dosya" placeholder="Dosya adı ifadesi, ör. 'Teklif - %s' % object.name"
+                           t-att-value="this.state.rapor.dosya_adi" t-on-input="(ev) => this.state.rapor.dosya_adi = ev.target.value"/>
+                    <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.raporAlanEkle(ev)">
+                        <option value="">+ Alan ekle</option>
+                        <t t-foreach="this.state.raporAlanlari" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-out="a[1]"/></t>
+                    </select>
+                    <div class="ms-auto d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-danger" t-on-click="() => this.raporSil()"><i class="oi" data-icon="delete"/></button>
+                        <button class="btn btn-sm btn-primary o_as_rapor_kaydet" t-on-click="() => this.raporKaydet()">Kaydet ve Önizle</button>
+                    </div>
+                </div>
+                <textarea class="o_as_kod o_as_rapor_kod flex-grow-1 border-0" spellcheck="false" t-att-value="this.state.rapor.metin"
+                          t-on-input="(ev) => this.state.rapor.metin = ev.target.value"/>
+            </div>
+            <div class="o_as_rapor_sag flex-grow-1 bg-200 p-3 overflow-auto">
+                <iframe class="o_as_onizleme bg-white shadow-sm" t-att-srcdoc="this.state.onizleme"/>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ DİYALOGLAR -->
+    <t t-name="atlas_studio.Ozellikler">
+        <div class="o_as_ozellikler">
+            <t t-foreach="this.state.ozellikler" t-as="o" t-key="o.anahtar">
+                <label class="o_as_ozellik" t-att-class="{'o_as_ozellik_secili': dl.secili[o.anahtar]}">
+                    <input type="checkbox" class="form-check-input" t-att-checked="dl.secili[o.anahtar]" t-on-change="(ev) => dl.secili[o.anahtar] = ev.target.checked"/>
+                    <span><b t-out="o.ad"/><br/><span class="small text-muted" t-out="o.aciklama"/></span>
+                </label>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.SimgeTasarim">
+        <div class="d-flex gap-3 flex-wrap">
+            <canvas t-ref="this.tuvalRef" width="128" height="128" class="o_as_simge_tuval"/>
+            <div class="flex-grow-1">
+                <div class="small text-muted mb-1">Arka plan</div>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                    <t t-foreach="this.renkler" t-as="r" t-key="r">
+                        <span class="o_as_renk" t-att-class="{'o_as_renk_secili': dl.arkaPlan === r}" t-att-style="'background:' + r" t-on-click="() => this.simgeSec('arkaPlan', r)"/>
+                    </t>
+                </div>
+                <div class="small text-muted mb-1">Simge rengi</div>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                    <t t-foreach="this.renkler" t-as="r" t-key="r">
+                        <span class="o_as_renk" t-att-class="{'o_as_renk_secili': dl.renk === r}" t-att-style="'background:' + r" t-on-click="() => this.simgeSec('renk', r)"/>
+                    </t>
+                </div>
+            </div>
+        </div>
+        <div class="o_as_simge_secim mt-2">
+            <t t-foreach="this.state.gecerliSimgeler" t-as="s" t-key="s">
+                <span t-att-class="{'o_as_simge_aktif': dl.simge === s}" t-att-title="s" t-on-click="() => this.simgeSec('simge', s)"><i class="oi" t-att-data-icon="s"/></span>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="atlas_studio.StudioDiyaloglari">
+        <t t-set="dl" t-value="this.state.diyalog"/>
+        <div t-if="dl" class="o_as_ortu" t-on-click.self="() => this.state.diyalog = null">
+            <div t-att-class="'o_as_modal' + (['model', 'uygulama'].includes(dl.tur) ? ' o_as_modal_genis' : '')">
+                <t t-if="dl.tur === 'onayla'">
+                    <div class="o_as_modal_govde" t-out="dl.metin"/>
+                    <div class="o_as_modal_alt"><button class="btn btn-danger" t-on-click="() => this.onaylaCalistir()">Evet</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.state.diyalog = null">Vazgeç</button></div>
+                </t>
+                <t t-elif="dl.tur === 'rapor'">
+                    <h5>Yeni Rapor</h5>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Rapor adı</label>
+                        <input class="form-control mb-3" t-att-value="dl.ad" t-on-input="(ev) => dl.ad = ev.target.value"/>
+                        <div class="row g-2">
+                            <t t-foreach="[['dis', 'Dış', 'Şirket logosu, adresi ve alt bilgi ile (müşteriye gönderilecek belgeler)'], ['ic', 'İç', 'Sade başlık: tarih, kullanıcı, sayfa numarası'], ['bos', 'Boş', 'Başlık ve alt bilgi olmadan']]" t-as="r" t-key="r[0]">
+                                <div class="col-4"><div class="o_as_gorunum_karti h-100" t-att-class="{'o_as_secili_kart': dl.duzen === r[0]}" t-on-click="() => dl.duzen = r[0]">
+                                    <div class="fw-bold" t-out="r[1]"/><div class="small text-muted" t-out="r[2]"/></div></div>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="o_as_modal_alt"><button class="btn btn-primary" t-on-click="() => this.raporOlustur()">Oluştur</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.state.diyalog = null">Vazgeç</button></div>
+                </t>
+                <t t-elif="dl.tur === 'model'">
+                    <h5>Yeni Model</h5>
+                    <div class="o_as_modal_govde">
+                        <label class="form-label small mb-1">Model adı</label>
+                        <input class="form-control mb-3 o_as_model_ad" placeholder="ör. Araç Bakım Kaydı" t-att-value="dl.ad" t-on-input="(ev) => dl.ad = ev.target.value"/>
+                        <t t-call="atlas_studio.Ozellikler"/>
+                    </div>
+                    <div class="o_as_modal_alt"><button class="btn btn-primary o_as_model_olustur" t-on-click="() => this.modelOlustur()">Oluştur</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.state.diyalog = null">Vazgeç</button></div>
+                </t>
+                <t t-elif="dl.tur === 'uygulama'">
+                    <h5>Yeni Uygulama <span class="small text-muted">· Adım <t t-out="dl.adim"/>/2</span></h5>
+                    <div class="o_as_modal_govde">
+                        <div t-att-class="{'d-none': dl.adim !== 1}">
+                            <label class="form-label small mb-1">Uygulama adı</label>
+                            <input class="form-control mb-3 o_as_uyg_ad" placeholder="ör. Filo Bakım" t-att-value="dl.ad" t-on-input="(ev) => dl.ad = ev.target.value"/>
+                            <t t-call="atlas_studio.SimgeTasarim"/>
+                        </div>
+                        <t t-if="dl.adim === 2">
+                            <label class="form-label small mb-1">İlk modelin adı</label>
+                            <input class="form-control mb-3 o_as_uyg_model" t-att-placeholder="dl.ad" t-att-value="dl.modelAd" t-on-input="(ev) => dl.modelAd = ev.target.value"/>
+                            <t t-call="atlas_studio.Ozellikler"/>
+                        </t>
+                    </div>
+                    <div class="o_as_modal_alt">
+                        <button t-if="dl.adim === 2" class="btn btn-light border" t-on-click="() => dl.adim = 1">Geri</button>
+                        <button class="btn btn-primary o_as_uyg_ileri" t-on-click="() => this.uygulamaOlustur()" t-out="dl.adim === 1 ? 'İleri' : 'Uygulamayı Oluştur'"/>
+                        <button class="btn btn-secondary" t-on-click="() => this.state.diyalog = null">Vazgeç</button>
+                    </div>
+                </t>
+                <t t-elif="dl.tur === 'simge'">
+                    <h5>Simge: <t t-out="dl.ad"/></h5>
+                    <div class="o_as_modal_govde"><t t-call="atlas_studio.SimgeTasarim"/></div>
+                    <div class="o_as_modal_alt"><button class="btn btn-primary" t-on-click="() => this.simgeKaydet()">Kaydet</button>
+                        <button class="btn btn-secondary" t-on-click="() => this.state.diyalog = null">Vazgeç</button></div>
+                </t>
+            </div>
+        </div>
+
+        <!-- eylem ayarları -->
+        <div t-if="this.state.eylemAyar" class="o_as_ortu">
+            <t t-set="a" t-value="this.state.eylemAyar"/>
+            <div class="o_as_modal">
+                <h5>Eylem Ayarları</h5>
+                <div class="o_as_modal_govde">
+                    <label class="form-label small mb-1">Başlık</label>
+                    <input class="form-control mb-2" t-att-value="a.ad" t-on-input="(ev) => a.ad = ev.target.value"/>
+                    <label class="form-label small mb-1">Kayıt yokken gösterilen yardım metni</label>
+                    <textarea class="form-control mb-2" rows="3" t-att-value="a.yardim" t-on-input="(ev) => a.yardim = ev.target.value"/>
+                    <label class="form-label small mb-1">Yalnız şu gruplar erişebilir</label>
+                    <div class="d-flex flex-wrap gap-1 mb-1">
+                        <t t-foreach="a.gruplar" t-as="g" t-key="g[0]">
+                            <span class="badge text-bg-light border"><t t-out="g[1]"/>
+                                <a href="#" class="ms-1" t-on-click.prevent="() => a.gruplar.splice(g_index, 1)"><i class="oi" data-icon="close_small"/></a></span>
+                        </t>
+                    </div>
+                    <div class="position-relative">
+                        <input class="form-control form-control-sm" placeholder="Grup ara…" t-on-input="(ev) => this.eylemGrupAra(ev)"/>
+                        <div t-if="a.sonuc.length" class="o_as_acilir">
+                            <t t-foreach="a.sonuc" t-as="g" t-key="g.id"><a href="#" class="dropdown-item" t-on-click.prevent="() => { a.gruplar.push([g.id, g.ad]); a.sonuc = []; }" t-out="g.ad"/></t>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_as_modal_alt"><button class="btn btn-primary" t-on-click="() => this.eylemAyarKaydet()">Kaydet</button>
+                    <button class="btn btn-secondary" t-on-click="() => this.state.eylemAyar = null">Vazgeç</button></div>
+            </div>
+        </div>
+
+        <!-- menü düzenleyici -->
+        <div t-if="this.state.menuAgaci" class="o_as_ortu">
+            <t t-set="m" t-value="this.state.menuAgaci"/>
+            <div class="o_as_modal o_as_modal_genis">
+                <h5>Menü Düzenle: <t t-out="m.kok.ad"/></h5>
+                <div class="o_as_modal_govde">
+                    <t t-foreach="m.duz" t-as="o" t-key="o.id">
+                        <div class="o_as_menu_satir d-flex align-items-center gap-1 mb-1" t-att-style="'padding-left:' + (o.derinlik * 28) + 'px'">
+                            <i class="oi text-muted" t-att-data-icon="o.eylem ? 'article' : 'folder'"/>
+                            <input class="form-control form-control-sm" t-att-value="o.ad" t-on-input="(ev) => o.ad = ev.target.value"/>
+                            <button class="btn btn-sm btn-light" title="Yukarı" t-on-click="() => this.menuTasi(o_index, -1)"><i class="oi" data-icon="north"/></button>
+                            <button class="btn btn-sm btn-light" title="Aşağı" t-on-click="() => this.menuTasi(o_index, 1)"><i class="oi" data-icon="south"/></button>
+                            <button class="btn btn-sm btn-light" title="Sola" t-on-click="() => this.menuGirinti(o_index, -1)"><i class="oi" data-icon="chevron_left"/></button>
+                            <button class="btn btn-sm btn-light" title="Sağa (alt menü)" t-on-click="() => this.menuGirinti(o_index, 1)"><i class="oi" data-icon="chevron_right"/></button>
+                            <button class="btn btn-sm btn-light text-danger" title="Sil" t-on-click="() => this.menuSil(o_index)"><i class="oi" data-icon="delete"/></button>
+                        </div>
+                    </t>
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted mb-1">Yeni menü</div>
+                        <div class="d-flex flex-wrap gap-1">
+                            <input class="form-control form-control-sm w-auto flex-grow-1" placeholder="Menü adı" t-att-value="m.yeni.ad" t-on-input="(ev) => m.yeni.ad = ev.target.value"/>
+                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => m.yeni.tur = ev.target.value">
+                                <option value="yeni_model">Yeni model</option>
+                                <option value="mevcut_model">Mevcut model</option>
+                                <option value="ust">Üst menü (klasör)</option>
+                            </select>
+                            <t t-if="m.yeni.tur === 'mevcut_model'">
+                                <input class="form-control form-control-sm w-auto" placeholder="Model ara…" t-on-input="(ev) => this.menuModelAra(ev)"/>
+                                <select class="form-select form-select-sm w-auto" t-on-change="(ev) => m.yeni.model = ev.target.value">
+                                    <option value="">—</option>
+                                    <t t-foreach="m.yeni.modeller" t-as="x" t-key="x.model"><option t-att-value="x.model" t-out="x.ad"/></t>
+                                </select>
+                            </t>
+                            <button class="btn btn-sm btn-secondary" t-on-click="() => this.menuEkle()"><i class="oi me-1" data-icon="add"/>Ekle</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_as_modal_alt"><button class="btn btn-primary" t-on-click="() => this.menuKaydet()">Kaydet</button>
+                    <button class="btn btn-secondary" t-on-click="() => this.state.menuAgaci = null">Kapat</button></div>
+            </div>
+        </div>
+    </t>
+</templates>

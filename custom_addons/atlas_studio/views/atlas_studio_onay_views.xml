@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_studio_onay_talep_list" model="ir.ui.view">
+        <field name="name">atlas.studio.onay.talep.list</field>
+        <field name="model">atlas.studio.onay.talep</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-success="durum == 'onaylandi'" decoration-danger="durum == 'reddedildi'" decoration-warning="durum == 'bekliyor'">
+                <field name="create_date" string="Tarih"/>
+                <field name="kural_id"/>
+                <field name="model"/>
+                <field name="kayit_adi"/>
+                <field name="isteyen_id" widget="many2one_avatar_user"/>
+                <field name="onaylayan_id" widget="many2one_avatar_user"/>
+                <field name="durum" widget="badge"/>
+                <button name="action_onayla" type="object" string="Onayla" icon="check" invisible="durum != 'bekliyor'"/>
+                <button name="action_reddet" type="object" string="Reddet" icon="close" invisible="durum != 'bekliyor'"/>
+                <button name="action_kayit" type="object" string="Kayıt" icon="open_in_new"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_studio_onay_talep_search" model="ir.ui.view">
+        <field name="name">atlas.studio.onay.talep.search</field>
+        <field name="model">atlas.studio.onay.talep</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="kayit_adi"/>
+                <field name="model"/>
+                <filter name="bekleyen" string="Bekleyenler" domain="[('durum', '=', 'bekliyor')]"/>
+                <group>
+                    <filter name="grup_durum" string="Durum" context="{'group_by': 'durum'}"/>
+                    <filter name="grup_model" string="Model" context="{'group_by': 'model'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_atlas_studio_onay_kural_list" model="ir.ui.view">
+        <field name="name">atlas.studio.onay.kural.list</field>
+        <field name="model">atlas.studio.onay.kural</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="model"/>
+                <field name="hedef"/>
+                <field name="sira"/>
+                <field name="aciklama"/>
+                <field name="grup_id"/>
+                <field name="kullanici_id"/>
+                <field name="bildirim"/>
+                <field name="active" column_invisible="1"/>
+                <field name="anahtar" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_studio_onay_kural_form" model="ir.ui.view">
+        <field name="name">atlas.studio.onay.kural.form</field>
+        <field name="model">atlas.studio.onay.kural</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="model"/>
+                            <field name="hedef"/>
+                            <field name="anahtar"/>
+                            <field name="sira"/>
+                        </group>
+                        <group>
+                            <field name="aciklama"/>
+                            <field name="grup_id"/>
+                            <field name="kullanici_id"/>
+                            <field name="bildirim"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_atlas_studio_onay_talep" model="ir.actions.act_window">
+        <field name="name">Onay Talepleri</field>
+        <field name="res_model">atlas.studio.onay.talep</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_bekleyen': 1}</field>
+    </record>
+
+    <record id="action_atlas_studio_onay_kural" model="ir.actions.act_window">
+        <field name="name">Onay Kuralları</field>
+        <field name="res_model">atlas.studio.onay.kural</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_atlas_studio" model="ir.actions.client">
+        <field name="name">Studio</field>
+        <field name="tag">atlas_studio.studio</field>
+    </record>
+
+    <menuitem id="menu_atlas_studio_ac" name="Studio Düzenleyici" parent="menu_atlas_studio_root" action="action_atlas_studio" sequence="1"/>
+    <menuitem id="menu_atlas_studio_onay" name="Onaylar" parent="menu_atlas_studio_root" sequence="40">
+        <menuitem id="menu_atlas_studio_onay_talep" name="Onay Talepleri" action="action_atlas_studio_onay_talep" sequence="10"/>
+        <menuitem id="menu_atlas_studio_onay_kural" name="Onay Kuralları" action="action_atlas_studio_onay_kural" sequence="20"/>
+    </menuitem>
+</odoo>

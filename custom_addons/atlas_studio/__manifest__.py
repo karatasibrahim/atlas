@@ -1,6 +1,6 @@
 {
     'name': 'Atlas Studio',
-    'version': '20.0.1.0.0',
+    'version': '20.0.2.0.0',
     'category': 'Productivity/Studio',
     'summary': 'Kod yazmadan özelleştirme: mevcut ekranlara alan ekleme, yeni kayıt türü / uygulama oluşturma, geri alma',
     'description': """
@@ -13,11 +13,17 @@ Studio
 - Özelleştirmeler listesi: yapılan her değişiklik kayıtlı, tek tıkla geri alınır
     """,
     'author': 'Atlas',
-    'depends': ['mail', 'base_setup'],
+    'depends': ['mail', 'base_setup', 'base_automation', 'web'],
     'data': [
         'security/ir.access.csv',
         'views/atlas_studio_views.xml',
+        'views/atlas_studio_onay_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'atlas_studio/static/src/**/*',
+        ],
+    },
     'installable': True,
     'application': True,
     'license': 'LGPL-3',
