@@ -21,6 +21,17 @@ class ProductTemplate(models.Model):
         return action
 
 
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
+
+    # Varyant formu şablon formunu miras alır: ECO düğmesi burada da çalışmalı
+    atlas_eco_sayisi = fields.Integer(related='product_tmpl_id.atlas_eco_sayisi')
+
+    def action_atlas_ecolar(self):
+        self.ensure_one()
+        return self.product_tmpl_id.action_atlas_ecolar()
+
+
 class MrpBom(models.Model):
     _inherit = 'mrp.bom'
 
