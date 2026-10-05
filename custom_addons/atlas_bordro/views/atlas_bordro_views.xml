@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dönem -->
+    <record id="view_atlas_bordro_donem_list" model="ir.ui.view">
+        <field name="name">atlas.bordro.donem.list</field>
+        <field name="model">atlas.bordro.donem</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="calisan_sayisi"/>
+                <field name="toplam_brut" sum="Toplam"/>
+                <field name="toplam_net" sum="Toplam"/>
+                <field name="toplam_gv" optional="show" sum="Toplam"/>
+                <field name="toplam_sgk" optional="show" sum="Toplam"/>
+                <field name="toplam_maliyet" sum="Toplam"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'hesaplandi'" decoration-success="durum == 'onaylandi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_donem_form" model="ir.ui.view">
+        <field name="name">atlas.bordro.donem.form</field>
+        <field name="model">atlas.bordro.donem</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_calisanlari_getir" type="object" string="Çalışanları Getir" invisible="durum == 'onaylandi'"/>
+                    <button name="action_hesapla" type="object" string="Hesapla" class="btn-primary" invisible="durum == 'onaylandi'"/>
+                    <button name="action_onayla" type="object" string="Onayla ve Muhasebeleştir" class="btn-primary" invisible="durum != 'hesaplandi'"
+                            groups="atlas_bordro.group_bordro_manager"
+                            confirm="Bordro onaylanacak ve muhasebe fişi oluşturulacak. Devam edilsin mi?"/>
+                    <button name="action_taslaga_al" type="object" string="Taslağa Al" invisible="durum != 'onaylandi'" groups="atlas_bordro.group_bordro_manager"/>
+                    <button name="action_pusulalar" type="object" string="Pusulalar" icon="print" invisible="durum == 'taslak'"/>
+                    <button name="action_banka_listesi" type="object" string="Banka Listesi" icon="download" invisible="durum == 'taslak'"/>
+                    <button name="action_sgk_listesi" type="object" string="SGK / MUHSGK Listesi" icon="download" invisible="durum == 'taslak'"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="taslak,hesaplandi,onaylandi"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="yil" readonly="durum != 'taslak'" options="{'enable_formatting': false}"/>
+                            <field name="ay" readonly="durum != 'taslak'"/>
+                            <field name="tarih_bas"/>
+                            <field name="tarih_bit"/>
+                            <field name="odeme_tarihi"/>
+                        </group>
+                        <group>
+                            <field name="parametre_id"/>
+                            <field name="move_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Özet" col="4">
+                        <field name="calisan_sayisi"/>
+                        <field name="toplam_brut"/>
+                        <field name="toplam_net"/>
+                        <field name="toplam_gv"/>
+                        <field name="toplam_dv"/>
+                        <field name="toplam_sgk"/>
+                        <field name="toplam_maliyet"/>
+                    </group>
+                    <field name="bordro_ids" readonly="durum == 'onaylandi'">
+                        <list create="false">
+                            <field name="employee_id"/>
+                            <field name="department_id" optional="hide"/>
+                            <field name="gun"/>
+                            <field name="brut_toplam" sum="Toplam"/>
+                            <field name="sgk_isci" optional="show" sum="Toplam"/>
+                            <field name="gv" sum="Toplam"/>
+                            <field name="dv" optional="show" sum="Toplam"/>
+                            <field name="kesinti" optional="show" sum="Toplam"/>
+                            <field name="net" sum="Toplam"/>
+                            <field name="maliyet" optional="show" sum="Toplam"/>
+                            <field name="vergi_dilimi" optional="hide"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Çalışan bordrosu -->
+    <record id="view_atlas_bordro_form" model="ir.ui.view">
+        <field name="name">atlas.bordro.form</field>
+        <field name="model">atlas.bordro</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_yeniden_hesapla" type="object" string="Yeniden Hesapla" class="btn-primary" invisible="durum == 'onaylandi'"/>
+                    <button name="action_pusula" type="object" string="Pusula" icon="print"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h2><field name="employee_id" readonly="1"/></h2>
+                        <field name="donem_id" readonly="1"/>
+                    </div>
+                    <group>
+                        <group string="Günler">
+                            <field name="gun"/>
+                            <field name="eksik_gun"/>
+                            <field name="eksik_gun_nedeni" readonly="durum == 'onaylandi'"/>
+                            <field name="giris_tarihi" invisible="not giris_tarihi"/>
+                            <field name="cikis_tarihi" invisible="not cikis_tarihi"/>
+                            <field name="version_id" readonly="1"/>
+                        </group>
+                        <group string="Kazanç">
+                            <field name="aylik_brut"/>
+                            <field name="brut_ucret"/>
+                            <field name="ek_odeme"/>
+                            <field name="brut_toplam" class="fw-bold"/>
+                        </group>
+                    </group>
+                    <field name="kalem_ids" readonly="durum == 'onaylandi'">
+                        <list editable="bottom">
+                            <field name="tur_id"/>
+                            <field name="yon" readonly="1"/>
+                            <field name="saatlik" column_invisible="1"/>
+                            <field name="saat" invisible="not saatlik"/>
+                            <field name="gun" optional="hide"/>
+                            <field name="tutar" readonly="saatlik"/>
+                            <field name="aciklama"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group>
+                        <group string="SGK">
+                            <field name="sgk_matrah"/>
+                            <field name="sgk_isci"/>
+                            <field name="issizlik_isci"/>
+                            <field name="sgk_isveren"/>
+                            <field name="issizlik_isveren"/>
+                            <field name="tesvik"/>
+                        </group>
+                        <group string="Vergi">
+                            <field name="engelli_indirimi" invisible="not engelli_indirimi"/>
+                            <field name="gv_matrah"/>
+                            <field name="kumulatif_onceki"/>
+                            <field name="kumulatif"/>
+                            <field name="vergi_dilimi"/>
+                            <field name="gv_hesaplanan"/>
+                            <field name="gv_istisna"/>
+                            <field name="gv"/>
+                            <field name="dv_hesaplanan"/>
+                            <field name="dv_istisna"/>
+                            <field name="dv"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Sonuç">
+                            <field name="kesinti"/>
+                            <field name="net" class="fw-bold fs-5"/>
+                            <field name="maliyet"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_list" model="ir.ui.view">
+        <field name="name">atlas.bordro.list</field>
+        <field name="model">atlas.bordro</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="donem_id"/>
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="gun"/>
+                <field name="brut_toplam" sum="Toplam"/>
+                <field name="gv" sum="Toplam"/>
+                <field name="net" sum="Toplam"/>
+                <field name="maliyet" sum="Toplam"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="durum" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_pivot" model="ir.ui.view">
+        <field name="name">atlas.bordro.pivot</field>
+        <field name="model">atlas.bordro</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="department_id" type="row"/>
+                <field name="ay" type="col"/>
+                <field name="maliyet" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_search" model="ir.ui.view">
+        <field name="name">atlas.bordro.search</field>
+        <field name="model">atlas.bordro</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="donem_id"/>
+                <field name="department_id"/>
+                <filter name="bu_yil" string="Bu Yıl" domain="[('yil', '=', context_today().year)]"/>
+                <group>
+                    <filter name="grp_calisan" string="Çalışan" context="{'group_by': 'employee_id'}"/>
+                    <filter name="grp_donem" string="Dönem" context="{'group_by': 'donem_id'}"/>
+                    <filter name="grp_bolum" string="Bölüm" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Parametreler -->
+    <record id="view_atlas_bordro_parametre_list" model="ir.ui.view">
+        <field name="name">atlas.bordro.parametre.list</field>
+        <field name="model">atlas.bordro.parametre</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="not onaylandi">
+                <field name="yil" options="{'enable_formatting': false}"/>
+                <field name="donem_bas"/>
+                <field name="asgari_brut"/>
+                <field name="kidem_tavan"/>
+                <field name="onaylandi"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_parametre_form" model="ir.ui.view">
+        <field name="name">atlas.bordro.parametre.form</field>
+        <field name="model">atlas.bordro.parametre</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_kopyala_yeni_yil" type="object" string="Yeni Yıla Kopyala"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning py-2" role="alert" invisible="onaylandi">
+                        Bu değerler kontrol edilmedi. Resmî kaynaklarla (GİB, SGK, Çalışma Bakanlığı) karşılaştırıp onaylayın;
+                        onaylanmamış parametrelerle bordro hesaplanmaz.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="yil" options="{'enable_formatting': false}"/>
+                            <field name="donem_bas"/>
+                            <field name="onaylandi"/>
+                            <field name="asgari_brut"/>
+                            <field name="sgk_tavan_carpan"/>
+                            <field name="damga_binde"/>
+                        </group>
+                        <group>
+                            <field name="sgk_isci"/>
+                            <field name="issizlik_isci"/>
+                            <field name="sgk_isveren"/>
+                            <field name="issizlik_isveren"/>
+                            <field name="tesvik_puan"/>
+                            <field name="sgdp_isci"/>
+                            <field name="sgdp_isveren"/>
+                        </group>
+                        <group string="İstisna ve İndirimler">
+                            <field name="yemek_istisna_gunluk"/>
+                            <field name="engelli_1"/>
+                            <field name="engelli_2"/>
+                            <field name="engelli_3"/>
+                            <field name="kidem_tavan"/>
+                        </group>
+                        <group string="Gelir Vergisi Dilimleri (Ücret)">
+                            <field name="dilim_ids" nolabel="1" colspan="2">
+                                <list editable="bottom">
+                                    <field name="ust_sinir"/>
+                                    <field name="oran"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                    <field name="aciklama" placeholder="Kaynak, resmî gazete tarihi…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_bordro_kalem_turu_list" model="ir.ui.view">
+        <field name="name">atlas.bordro.kalem.turu.list</field>
+        <field name="model">atlas.bordro.kalem.turu</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="kod"/>
+                <field name="yon"/>
+                <field name="sgk_tabi"/>
+                <field name="gv_tabi"/>
+                <field name="dv_tabi"/>
+                <field name="saatlik"/>
+                <field name="oran" invisible="not saatlik"/>
+                <field name="yemek_istisnasi"/>
+                <field name="hesap_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Kıdem / ihbar -->
+    <record id="view_atlas_bordro_kidem_form" model="ir.ui.view">
+        <field name="name">atlas.bordro.kidem.form</field>
+        <field name="model">atlas.bordro.kidem</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="giris_tarihi"/>
+                        <field name="cikis_tarihi"/>
+                        <field name="giydirilmis_brut"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group>
+                        <field name="kidem_hakki"/>
+                        <field name="ihbar_hakki"/>
+                        <field name="kullanilmayan_izin_gun"/>
+                    </group>
+                </group>
+                <div class="alert alert-warning py-2" role="alert" invisible="not uyari"><field name="uyari"/></div>
+                <group>
+                    <group string="Kıdem">
+                        <label for="hizmet_yil" string="Hizmet Süresi"/>
+                        <div class="o_row"><field name="hizmet_yil"/> yıl <field name="hizmet_ay"/> ay <field name="hizmet_gun"/> gün</div>
+                        <field name="kidem_tavan"/>
+                        <field name="kidem_esas"/>
+                        <field name="kidem_brut"/>
+                        <field name="kidem_dv"/>
+                        <field name="kidem_net" class="fw-bold"/>
+                    </group>
+                    <group string="İhbar ve İzin Ücreti">
+                        <field name="ihbar_hafta"/>
+                        <field name="ihbar_brut"/>
+                        <field name="izin_brut"/>
+                        <field name="ihbar_gv"/>
+                        <field name="ihbar_dv"/>
+                        <field name="ihbar_net" string="İhbar + İzin (Net)" class="fw-bold"/>
+                    </group>
+                </group>
+                <group><field name="toplam_net" class="fw-bold fs-4"/></group>
+                <footer><button special="cancel" string="Kapat"/></footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Çalışan formu: bordro bilgileri -->
+    <record id="view_employee_form_atlas_bordro" model="ir.ui.view">
+        <field name="name">hr.employee.form.atlas.bordro</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Bordro" name="atlas_bordro" groups="atlas_bordro.group_bordro_user">
+                    <group>
+                        <group string="Ücret">
+                            <field name="atlas_ucret_tipi" widget="radio" options="{'horizontal': true}"/>
+                            <field name="atlas_net_ucret" invisible="atlas_ucret_tipi != 'net'" required="atlas_ucret_tipi == 'net'"/>
+                            <field name="atlas_devreden_matrah"/>
+                            <field name="atlas_devreden_yil" invisible="not atlas_devreden_matrah" options="{'enable_formatting': false}"/>
+                        </group>
+                        <group string="SGK">
+                            <field name="atlas_sgk_no"/>
+                            <field name="atlas_meslek_kodu"/>
+                            <field name="atlas_emekli"/>
+                            <field name="atlas_tesvik" invisible="atlas_emekli"/>
+                            <field name="atlas_engelli_derece"/>
+                        </group>
+                    </group>
+                    <field name="atlas_bordro_ids" readonly="1">
+                        <list>
+                            <field name="donem_id"/>
+                            <field name="gun"/>
+                            <field name="brut_toplam"/>
+                            <field name="gv"/>
+                            <field name="net"/>
+                            <field name="kumulatif"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_department_form_atlas_bordro" model="ir.ui.view">
+        <field name="name">hr.department.form.atlas.bordro</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='manager_id']" position="after">
+                <field name="atlas_gider_hesap_id" groups="atlas_bordro.group_bordro_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_work_entry_type_form_atlas_bordro" model="ir.ui.view">
+        <field name="name">hr.work.entry.type.form.atlas.bordro</field>
+        <field name="model">hr.work.entry.type</field>
+        <field name="inherit_id" ref="hr_work_entry.hr_work_entry_type_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="atlas_ucretsiz"/>
+                <field name="atlas_eksik_gun_nedeni" invisible="not atlas_ucretsiz"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Eylemler ve menü -->
+    <record id="action_atlas_bordro_donem" model="ir.actions.act_window">
+        <field name="name">Bordro Dönemleri</field>
+        <field name="res_model">atlas.bordro.donem</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk bordro döneminizi açın</p>
+            <p>Ay seçin, "Hesapla" ile sözleşmeli tüm çalışanların bordrosu oluşur. Ek ödeme ve kesintileri girip onaylayın;
+               muhasebe fişi, pusulalar, banka ve SGK listeleri hazırlanır.</p>
+        </field>
+    </record>
+    <record id="action_atlas_bordro" model="ir.actions.act_window">
+        <field name="name">Bordro Analizi</field>
+        <field name="res_model">atlas.bordro</field>
+        <field name="view_mode">pivot,list,form</field>
+        <field name="context">{'search_default_bu_yil': 1}</field>
+    </record>
+    <record id="action_atlas_bordro_parametre" model="ir.actions.act_window">
+        <field name="name">Yıl Parametreleri</field>
+        <field name="res_model">atlas.bordro.parametre</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_atlas_bordro_kalem_turu" model="ir.actions.act_window">
+        <field name="name">Ek Ödeme / Kesinti Türleri</field>
+        <field name="res_model">atlas.bordro.kalem.turu</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="action_atlas_bordro_kidem" model="ir.actions.act_window">
+        <field name="name">Kıdem / İhbar Hesabı</field>
+        <field name="res_model">atlas.bordro.kidem</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_atlas_bordro_root" name="Bordro" sequence="26" web_icon="atlas_bordro,static/description/icon.png"
+              groups="atlas_bordro.group_bordro_user"/>
+    <menuitem id="menu_atlas_bordro_donem" name="Bordro Dönemleri" parent="menu_atlas_bordro_root" action="action_atlas_bordro_donem" sequence="10"/>
+    <menuitem id="menu_atlas_bordro_analiz" name="Bordro Analizi" parent="menu_atlas_bordro_root" action="action_atlas_bordro" sequence="20"/>
+    <menuitem id="menu_atlas_bordro_kidem" name="Kıdem / İhbar Hesabı" parent="menu_atlas_bordro_root" action="action_atlas_bordro_kidem" sequence="30"/>
+    <menuitem id="menu_atlas_bordro_ayar" name="Yapılandırma" parent="menu_atlas_bordro_root" sequence="90" groups="atlas_bordro.group_bordro_manager"/>
+    <menuitem id="menu_atlas_bordro_parametre" name="Yıl Parametreleri" parent="menu_atlas_bordro_ayar" action="action_atlas_bordro_parametre" sequence="10"/>
+    <menuitem id="menu_atlas_bordro_kalem_turu" name="Ek Ödeme / Kesinti Türleri" parent="menu_atlas_bordro_ayar" action="action_atlas_bordro_kalem_turu" sequence="20"/>
+</odoo>

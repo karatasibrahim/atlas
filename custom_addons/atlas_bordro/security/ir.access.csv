@@ -1,0 +1,12 @@
+id,name,model_id,group_id/id,operation,domain
+access_parametre_user,atlas.bordro.parametre user,atlas.bordro.parametre,group_bordro_user,r,
+access_parametre_manager,atlas.bordro.parametre manager,atlas.bordro.parametre,group_bordro_manager,crud,
+access_dilim_user,atlas.bordro.vergi.dilim user,atlas.bordro.vergi.dilim,group_bordro_user,r,
+access_dilim_manager,atlas.bordro.vergi.dilim manager,atlas.bordro.vergi.dilim,group_bordro_manager,crud,
+access_kalem_turu_user,atlas.bordro.kalem.turu user,atlas.bordro.kalem.turu,group_bordro_user,r,
+access_kalem_turu_manager,atlas.bordro.kalem.turu manager,atlas.bordro.kalem.turu,group_bordro_manager,crud,
+access_donem_user,atlas.bordro.donem user,atlas.bordro.donem,group_bordro_user,cru,
+access_donem_manager,atlas.bordro.donem manager,atlas.bordro.donem,group_bordro_manager,crud,
+access_bordro_user,atlas.bordro user,atlas.bordro,group_bordro_user,crud,
+access_kalem_user,atlas.bordro.kalem user,atlas.bordro.kalem,group_bordro_user,crud,
+access_kidem_user,atlas.bordro.kidem user,atlas.bordro.kidem,group_bordro_user,crud,

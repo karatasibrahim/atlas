@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_pusula" model="ir.actions.report">
+        <field name="name">Ücret Pusulası</field>
+        <field name="model">atlas.bordro</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_bordro.report_pusula</field>
+        <field name="print_report_name">'Ucret Pusulasi - %s' % object.display_name</field>
+        <field name="binding_model_id" ref="model_atlas_bordro"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_pusula_belge">
+        <t t-call="web.external_layout">
+            <t t-set="e" t-value="o.employee_id.sudo()"/>
+            <div class="page" style="font-size: 12px;">
+                <h4 class="mb-1">Ücret Hesap Pusulası — <t t-out="o.donem_id.name"/></h4>
+                <table class="table table-sm table-borderless mb-2">
+                    <tr><td style="width:22%">Ad Soyad</td><td><strong t-out="e.name"/></td><td style="width:22%">TCKN</td><td t-out="e.identification_id or ''"/></tr>
+                    <tr><td>Görev / Bölüm</td><td t-out="(e.job_title or '') + (' / ' + e.department_id.name if e.department_id else '')"/>
+                        <td>SGK No</td><td t-out="e.atlas_sgk_no or ''"/></tr>
+                    <tr><td>Prim Günü</td><td t-out="o.gun"/><td>Eksik Gün</td>
+                        <td><t t-out="o.eksik_gun"/> <t t-if="o.eksik_gun_nedeni">(<t t-out="o.eksik_gun_nedeni"/>)</t></td></tr>
+                </table>
+                <div class="row">
+                    <div class="col-6">
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th colspan="2">Kazançlar</th></tr></thead>
+                            <tr><td>Aylık Brüt Ücret</td><td class="text-end" t-out="o.aylik_brut" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr><td>Dönem Ücreti (<t t-out="o.gun"/> gün)</td><td class="text-end" t-out="o.brut_ucret" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr t-foreach="o.kalem_ids.filtered(lambda k: k.yon == 'ek')" t-as="k">
+                                <td><t t-out="k.tur_id.name"/><t t-if="k.saat"> (<t t-out="k.saat"/> saat)</t></td>
+                                <td class="text-end" t-out="k.tutar" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr class="fw-bold"><td>Brüt Toplam</td><td class="text-end" t-out="o.brut_toplam" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                        </table>
+                    </div>
+                    <div class="col-6">
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th colspan="2">Kesintiler</th></tr></thead>
+                            <tr><td>SGK İşçi Payı</td><td class="text-end" t-out="o.sgk_isci" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr t-if="o.issizlik_isci"><td>İşsizlik Sigortası İşçi Payı</td><td class="text-end" t-out="o.issizlik_isci" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr><td>Gelir Vergisi</td><td class="text-end" t-out="o.gv" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr><td>Damga Vergisi</td><td class="text-end" t-out="o.dv" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr t-foreach="o.kalem_ids.filtered(lambda k: k.yon == 'kesinti')" t-as="k">
+                                <td t-out="k.tur_id.name"/><td class="text-end" t-out="k.tutar" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                            <tr class="fw-bold"><td>NET ÖDENECEK</td><td class="text-end" t-out="o.net" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></tr>
+                        </table>
+                    </div>
+                </div>
+                <table class="table table-sm table-bordered">
+                    <thead><tr><th>SGK Matrahı</th><th>GV Matrahı</th><th>Kümülatif Matrah</th><th>Vergi Dilimi</th>
+                        <th>GV İstisnası</th><th>DV İstisnası</th><th>Engelli İndirimi</th></tr></thead>
+                    <tr>
+                        <td t-out="o.sgk_matrah" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        <td t-out="o.gv_matrah" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        <td t-out="o.kumulatif" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        <td>%<t t-out="int(o.vergi_dilimi)"/></td>
+                        <td t-out="o.gv_istisna" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        <td t-out="o.dv_istisna" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                        <td t-out="o.engelli_indirimi" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                    </tr>
+                </table>
+                <div class="row mt-5">
+                    <div class="col-6 text-center">İşveren<br/><br/>...............................</div>
+                    <div class="col-6 text-center">Yukarıdaki ücreti eksiksiz aldım.<br/><t t-out="e.name"/><br/>...............................</div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_pusula">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="atlas_bordro.report_pusula_belge"/>
+            </t>
+        </t>
+    </template>
+</odoo>

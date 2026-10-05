@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="res.groups.privilege" id="res_groups_privilege_bordro">
+        <field name="name">Bordro</field>
+        <field name="sequence">25</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+    </record>
+    <record id="group_bordro_user" model="res.groups">
+        <field name="name">Bordro Sorumlusu</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_bordro"/>
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_user'))]"/>
+        <field name="comment">Bordroları hazırlar ve hesaplar.</field>
+    </record>
+    <record id="group_bordro_manager" model="res.groups">
+        <field name="name">Bordro Yöneticisi</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_bordro"/>
+        <field name="implied_ids" eval="[(4, ref('group_bordro_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Bordroyu onaylar/muhasebeleştirir, yıl parametrelerini yönetir.</field>
+    </record>
+</odoo>
