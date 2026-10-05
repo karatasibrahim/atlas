@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_ai_ayar_form" model="ir.ui.view">
+        <field name="name">atlas.ai.ayar.form</field>
+        <field name="model">atlas.ai.ayar</field>
+        <field name="arch" type="xml">
+            <form string="Yapay Zekâ Ayarları">
+                <group>
+                    <field name="etkin"/>
+                    <field name="anahtar" password="True" invisible="not etkin"/>
+                    <field name="model" invisible="not etkin"/>
+                    <field name="otomatik_oku" invisible="not etkin"/>
+                </group>
+                <div class="text-muted small">
+                    Belgeler (fatura, masraf fişi, özgeçmiş, kartvizit) Anthropic Claude'a gönderilerek okunur; sonuçlar kayıtta
+                    "AI ile dolduruldu" olarak işaretlenir ve kullanıcı onaylar. Maliyet için daha ekonomik model:
+                    claude-haiku-4-5-20251001.
+                </div>
+                <footer>
+                    <button name="action_kaydet" type="object" string="Kaydet" class="btn-primary"/>
+                    <button string="Vazgeç" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_atlas_ai_ayar" model="ir.actions.act_window">
+        <field name="name">Yapay Zekâ Ayarları</field>
+        <field name="res_model">atlas.ai.ayar</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_atlas_ai_istek_list" model="ir.ui.view">
+        <field name="name">atlas.ai.istek.list</field>
+        <field name="model">atlas.ai.istek</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="durum == 'hata'" decoration-muted="durum == 'tamam'">
+                <field name="create_date"/>
+                <field name="gorev"/>
+                <field name="kayit_adi"/>
+                <field name="model" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="giris_token" optional="show" sum="Toplam"/>
+                <field name="cikis_token" optional="show" sum="Toplam"/>
+                <field name="sure_ms" optional="hide"/>
+                <field name="hata" optional="show"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'tamam'" decoration-danger="durum == 'hata'"
+                       decoration-info="durum == 'bekliyor'"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_atlas_ai_istek_form" model="ir.ui.view">
+        <field name="name">atlas.ai.istek.form</field>
+        <field name="model">atlas.ai.istek</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_yeniden_dene" type="object" string="Yeniden Dene" invisible="durum != 'hata'"/>
+                    <button name="action_kayda_git" type="object" string="Kayda Git"/>
+                    <field name="durum" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="gorev"/>
+                            <field name="kayit_adi"/>
+                            <field name="model"/>
+                            <field name="eylem_id" invisible="not eylem_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="giris_token"/>
+                            <field name="cikis_token"/>
+                            <field name="sure_ms"/>
+                            <field name="deneme"/>
+                        </group>
+                    </group>
+                    <field name="hata" invisible="not hata"/>
+                    <field name="sonuc" widget="code" options="{'mode': 'javascript'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_atlas_ai_istek_search" model="ir.ui.view">
+        <field name="name">atlas.ai.istek.search</field>
+        <field name="model">atlas.ai.istek</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="kayit_adi"/>
+                <field name="gorev"/>
+                <filter name="hata" string="Hatalı" domain="[('durum', '=', 'hata')]"/>
+                <filter name="bekliyor" string="Kuyrukta" domain="[('durum', '=', 'bekliyor')]"/>
+                <group>
+                    <filter name="g_gorev" string="Görev" context="{'group_by': 'gorev'}"/>
+                    <filter name="g_ay" string="Ay" context="{'group_by': 'create_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_atlas_ai_istek" model="ir.actions.act_window">
+        <field name="name">Yapay Zekâ İstekleri</field>
+        <field name="res_model">atlas.ai.istek</field>
+        <field name="view_mode">list,form,pivot</field>
+    </record>
+
+    <record id="view_server_action_form_atlas_ai" model="ir.ui.view">
+        <field name="name">ir.actions.server.form.atlas.ai</field>
+        <field name="model">ir.actions.server</field>
+        <field name="inherit_id" ref="base.view_server_action_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group invisible="state != 'atlas_ai'">
+                    <field name="atlas_ai_alan_id" required="state == 'atlas_ai'" options="{'no_create': True}"/>
+                    <field name="atlas_ai_istem" required="state == 'atlas_ai'" placeholder="{name} ürününün {description} açıklamasına göre kategorisini seç"/>
+                    <div colspan="2" class="text-muted small">Kayıtlar kuyruğa alınır ve birkaç dakika içinde yapay zekâyla doldurulur.</div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_ai" name="Yapay Zekâ" parent="base.menu_administration" sequence="45" groups="base.group_system"/>
+    <menuitem id="menu_atlas_ai_ayar" name="Ayarlar" parent="menu_atlas_ai" action="action_atlas_ai_ayar" sequence="1"/>
+    <menuitem id="menu_atlas_ai_istek" name="İstek Günlüğü" parent="menu_atlas_ai" action="action_atlas_ai_istek" sequence="2"/>
+</odoo>

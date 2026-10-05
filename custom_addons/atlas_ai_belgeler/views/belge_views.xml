@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_belge_form_ai" model="ir.ui.view">
+        <field name="name">atlas.belge.form.ai</field>
+        <field name="model">atlas.belge</field>
+        <field name="inherit_id" ref="atlas_belgeler.view_atlas_belge_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_ai_oku" type="object" string="AI ile Sınıflandır" invisible="tip != 'dosya' or atlas_ai_durum == 'kuyrukta'"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="atlas_ai_durum" invisible="1"/>
+                <div class="alert alert-info mb-0" role="status" invisible="atlas_ai_durum != 'okundu'">Belge yapay zekâyla sınıflandırıldı.</div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="atlas_ai_durum != 'hata'">Sınıflandırılamadı: <field name="atlas_ai_hata_mesaji" class="d-inline" readonly="1"/></div>
+            </xpath>
+        </field>
+    </record>
+    <record id="sa_belge_ai_siniflandir" model="ir.actions.server">
+        <field name="name">AI ile Sınıflandır</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_atlas_ai_oku()</field>
+    </record>
+</odoo>

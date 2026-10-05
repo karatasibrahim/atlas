@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form_atlas_ai" model="ir.ui.view">
+        <field name="name">crm.lead.form.atlas.ai</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_atlas_ai_oku" type="object" string="Kartvizitten Oku" invisible="atlas_ai_durum == 'kuyrukta'"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="atlas_ai_durum" invisible="1"/>
+                <div class="alert alert-info mb-0" role="status" invisible="atlas_ai_durum != 'okundu'">Kartvizit yapay zekâyla okundu.</div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="atlas_ai_durum != 'hata'">Okunamadı: <field name="atlas_ai_hata_mesaji" class="d-inline" readonly="1"/></div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
