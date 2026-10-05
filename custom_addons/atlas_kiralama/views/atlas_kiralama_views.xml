@@ -147,7 +147,7 @@
         <field name="context">{'default_atlas_kiralik': True, 'default_invoice_policy': 'order'}</field>
     </record>
 
-    <menuitem id="menu_atlas_kiralama_root" name="Kiralama" sequence="26" web_icon="sale_management,static/description/icon.png"
+    <menuitem id="menu_atlas_kiralama_root" name="Kiralama" sequence="26" web_icon="atlas_kiralama,static/description/icon.png"
               groups="sales_team.group_sale_salesman"/>
     <menuitem id="menu_atlas_kiralama" name="Siparişler" parent="menu_atlas_kiralama_root" action="action_atlas_kiralama" sequence="10"/>
     <menuitem id="menu_atlas_kiralama_takvim" name="Takvim" parent="menu_atlas_kiralama_root" action="action_atlas_kiralama_takvim" sequence="20"/>
