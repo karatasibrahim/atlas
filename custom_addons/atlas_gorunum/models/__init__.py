@@ -1,1 +1,1 @@
-from . import ir_ui_view, project_task
+from . import ir_ui_view, kohort, project_task

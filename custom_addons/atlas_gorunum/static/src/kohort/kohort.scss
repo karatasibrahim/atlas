@@ -1,0 +1,23 @@
+.o_atlas_kohort_renderer {
+    .o_atlas_kohort_tablo {
+        font-variant-numeric: tabular-nums;
+
+        th {
+            background-color: var(--gray-100, #f8f9fa);
+            white-space: nowrap;
+        }
+
+        td {
+            min-width: 3.6rem;
+        }
+    }
+
+    .o_atlas_kohort_tikla {
+        cursor: pointer;
+
+        &:hover {
+            outline: 2px solid var(--primary, #714b67);
+            outline-offset: -2px;
+        }
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_view_atlas_kohort" model="ir.ui.view">
+        <field name="name">sale.order.atlas.kohort</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <atlas_kohort string="Abonelikler" date_start="atlas_baslangic" date_stop="atlas_bitis" interval="month" mode="retention"/>
+        </field>
+    </record>
+    <record id="atlas_abonelik.action_atlas_abonelik" model="ir.actions.act_window">
+        <field name="view_mode">list,form,pivot,graph,atlas_kohort</field>
+    </record>
+</odoo>

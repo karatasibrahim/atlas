@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_atlas_kohort" model="ir.ui.view">
+        <field name="name">crm.lead.atlas.kohort</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <atlas_kohort string="Fırsatlar" date_start="create_date" date_stop="date_closed" interval="week" mode="churn"/>
+        </field>
+    </record>
+    <record id="crm.crm_lead_action_pipeline" model="ir.actions.act_window">
+        <field name="view_mode">kanban,list,graph,pivot,form,calendar,activity,atlas_kohort</field>
+    </record>
+    <record id="crm.crm_lead_opportunities" model="ir.actions.act_window">
+        <field name="view_mode">kanban,list,graph,pivot,form,calendar,activity,atlas_kohort</field>
+    </record>
+</odoo>

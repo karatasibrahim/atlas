@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_gorunum.KohortButtons"/>
+
+    <t t-name="atlas_gorunum.KohortView">
+        <div class="o_atlas_kohort_view h-100" t-att-class="this.props.className" t-ref="this.rootRef">
+            <Layout className="'o_atlas_kohort_layout'" display="this.props.display">
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu/>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <SearchBar toggler="this.searchBarToggler"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-component="this.searchBarToggler.component" t-props="this.searchBarToggler.props"/>
+                </t>
+                <t t-set-slot="default">
+                    <AtlasKohortRenderer model="this.model" archInfo="this.props.archInfo" hucreAc.bind="this.hucreAc" ayarla.bind="this.ayarla"/>
+                </t>
+            </Layout>
+        </div>
+    </t>
+
+    <t t-name="atlas_gorunum.KohortRenderer">
+        <div class="o_atlas_kohort_renderer o_renderer p-3 overflow-auto h-100">
+            <div class="d-flex flex-wrap gap-2 mb-3 o_atlas_kohort_ayar">
+                        <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.props.ayarla(ev, 'interval')" title="Aralık">
+                            <t t-foreach="[['day', 'Gün'], ['week', 'Hafta'], ['month', 'Ay'], ['year', 'Yıl']]" t-as="a" t-key="a[0]">
+                                <option t-att-value="a[0]" t-att-selected="this.props.model.ayar.interval === a[0]" t-out="a[1]"/>
+                            </t>
+                        </select>
+                        <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.props.ayarla(ev, 'mode')" title="Mod">
+                            <option value="retention" t-att-selected="this.props.model.ayar.mode === 'retention'">Elde tutma</option>
+                            <option value="churn" t-att-selected="this.props.model.ayar.mode === 'churn'">Kayıp</option>
+                        </select>
+                        <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.props.ayarla(ev, 'measure')" title="Ölçü">
+                            <t t-foreach="this.props.archInfo.olculer" t-as="o" t-key="o.ad">
+                                <option t-att-value="o.ad" t-att-selected="this.props.model.ayar.measure === o.ad" t-out="o.etiket"/>
+                            </t>
+                        </select>
+                    </div>
+            <t t-if="this.veri and this.veri.satirlar.length">
+                <div class="text-muted small mb-2">
+                    Satırlar: <b t-out="this.props.archInfo.dateStartEtiket"/> dönemi · Sütunlar: sonraki dönemlerde
+                    <t t-if="this.props.model.ayar.mode === 'churn'">ayrılanlar</t><t t-else="">kalanlar</t>
+                    (<t t-out="this.props.archInfo.dateStopEtiket"/>)
+                </div>
+                <table class="table table-sm table-bordered o_atlas_kohort_tablo mb-0">
+                    <thead>
+                        <tr>
+                            <th>Dönem</th>
+                            <th class="text-end" t-out="this.olcuEtiketi"/>
+                            <t t-foreach="this.sutunlar()" t-as="i" t-key="i">
+                                <th class="text-center" t-out="i"/>
+                            </t>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.veri.satirlar" t-as="satir" t-key="satir.bas">
+                            <tr>
+                                <td class="text-nowrap o_atlas_kohort_tikla" t-on-click="() => this.props.hucreAc(satir, null)" t-out="satir.etiket"/>
+                                <td class="text-end text-nowrap" t-out="this.sayi(satir.deger)"/>
+                                <t t-foreach="satir.hucreler" t-as="h" t-key="h_index">
+                                    <td class="text-center text-nowrap" t-att-class="h ? 'o_atlas_kohort_tikla' : ''" t-att-style="this.hucreStili(h)"
+                                        t-att-title="h ? this.sayi(h.deger) : ''" t-on-click="() => h and this.props.hucreAc(satir, h)" t-out="h ? this.yuzde(h.yuzde) : ''"/>
+                                </t>
+                            </tr>
+                        </t>
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td>Ortalama</td>
+                            <td class="text-end" t-out="this.sayi(this.veri.toplam)"/>
+                            <t t-foreach="this.veri.ortalama" t-as="o" t-key="o_index">
+                                <td class="text-center" t-out="this.yuzde(o)"/>
+                            </t>
+                        </tr>
+                    </tfoot>
+                </table>
+            </t>
+            <div t-elif="this.veri" class="o_view_nocontent"><div class="o_nocontent_help"><p class="o_view_nocontent_empty_folder">Gösterilecek veri yok</p></div></div>
+        </div>
+    </t>
+</templates>

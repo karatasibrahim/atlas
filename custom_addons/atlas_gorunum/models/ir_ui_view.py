@@ -4,6 +4,8 @@ from odoo import fields, models
 
 GANTT_ALANLARI = ('date_start', 'date_stop', 'default_group_by', 'color', 'progress', 'label')
 HARITA_ALANLARI = ('partner', 'lat', 'lng', 'label')
+KOHORT_ALANLARI = ('date_start', 'date_stop')
+KOHORT_NITELIKLERI = {'__validate__', 'string', 'class', 'js_class', 'interval', 'mode', 'measure', 'sample', *KOHORT_ALANLARI}
 GANTT_NITELIKLERI = {'__validate__', 'string', 'class', 'js_class', 'create', 'edit', 'delete', 'default_scale',
                      'precision', *GANTT_ALANLARI}
 HARITA_NITELIKLERI = {'__validate__', 'string', 'class', 'js_class', 'create', 'edit', 'delete', *HARITA_ALANLARI}
@@ -12,11 +14,12 @@ HARITA_NITELIKLERI = {'__validate__', 'string', 'class', 'js_class', 'create', '
 class IrUiView(models.Model):
     _inherit = 'ir.ui.view'
 
-    type = fields.Selection(selection_add=[('atlas_gantt', 'Gantt'), ('atlas_harita', 'Harita')],
-                            ondelete={'atlas_gantt': 'cascade', 'atlas_harita': 'cascade'})
+    type = fields.Selection(selection_add=[('atlas_gantt', 'Gantt'), ('atlas_harita', 'Harita'), ('atlas_kohort', 'Kohort')],
+                            ondelete={'atlas_gantt': 'cascade', 'atlas_harita': 'cascade', 'atlas_kohort': 'cascade'})
 
     def _get_view_info(self):
-        return {'atlas_gantt': {'icon': 'view_timeline'}, 'atlas_harita': {'icon': 'map'}} | super()._get_view_info()
+        return {'atlas_gantt': {'icon': 'view_timeline'}, 'atlas_harita': {'icon': 'map'}, 'atlas_kohort': {'icon': 'table_view'}} \
+            | super()._get_view_info()
 
     def _atlas_alanlari_kaydet(self, node, name_manager, node_info, alanlar):
         for nitelik in alanlar:
@@ -46,6 +49,18 @@ class IrUiView(models.Model):
                 self._raise_view_error(self.env._('<%(tag)s> görünümünde "%(nitelik)s" niteliği zorunlu.',
                                                   tag=node.tag, nitelik=nitelik), node)
 
+    def _postprocess_tag_atlas_kohort(self, node, name_manager, node_info):
+        self._atlas_alanlari_kaydet(node, name_manager, node_info, KOHORT_ALANLARI)
+
+    def _validate_tag_atlas_kohort(self, node, name_manager, node_info):
+        self._atlas_dogrula(node, name_manager, node_info, KOHORT_NITELIKLERI, ('date_start', 'date_stop'))
+        self._atlas_alanlari_kaydet(node, name_manager, node_info, KOHORT_ALANLARI)
+        if node_info['validate']:
+            if node.get('interval') and node.get('interval') not in ('day', 'week', 'month', 'year'):
+                self._raise_view_error(self.env._('interval: day, week, month ya da year olmalı'), node)
+            if node.get('mode') and node.get('mode') not in ('retention', 'churn'):
+                self._raise_view_error(self.env._('mode: retention ya da churn olmalı'), node)
+
     def _validate_tag_atlas_gantt(self, node, name_manager, node_info):
         self._atlas_dogrula(node, name_manager, node_info, GANTT_NITELIKLERI, ('date_start', 'date_stop'))
         self._atlas_alanlari_kaydet(node, name_manager, node_info, GANTT_ALANLARI)
@@ -60,5 +75,5 @@ class IrUiView(models.Model):
 class IrActionsActWindowView(models.Model):
     _inherit = 'ir.actions.act_window.view'
 
-    view_mode = fields.Selection(selection_add=[('atlas_gantt', 'Gantt'), ('atlas_harita', 'Harita')],
-                                 ondelete={'atlas_gantt': 'cascade', 'atlas_harita': 'cascade'})
+    view_mode = fields.Selection(selection_add=[('atlas_gantt', 'Gantt'), ('atlas_harita', 'Harita'), ('atlas_kohort', 'Kohort')],
+                                 ondelete={'atlas_gantt': 'cascade', 'atlas_harita': 'cascade', 'atlas_kohort': 'cascade'})
