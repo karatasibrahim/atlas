@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ randevu türü -->
+    <record id="view_atlas_randevu_tur_form" model="ir.ui.view">
+        <field name="name">atlas.randevu.tur.form</field>
+        <field name="model">atlas.randevu.tur</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_paylas" type="object" string="Paylaş" class="btn-primary" icon="share"/>
+                    <button name="action_sayfa" type="object" string="Randevu Sayfası" icon="open_in_new"/>
+                    <field name="yayinda" widget="boolean_toggle" class="ms-2"/>
+                    <span class="ms-1 align-self-center">Herkese açık</span>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_randevular" type="object" class="oe_stat_button" icon="calendar_today">
+                            <field name="yaklasan_sayisi" widget="statinfo" string="Yaklaşan"/>
+                        </button>
+                        <button name="action_randevular" type="object" class="oe_stat_button" icon="schedule" invisible="not talep_sayisi">
+                            <field name="talep_sayisi" widget="statinfo" string="Bekleyen talep"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Arşiv" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. Ürün Tanıtımı, Servis Kabul, Danışmanlık"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sure" widget="float_time" string="Süre"/>
+                            <field name="planlama" widget="radio" options="{'horizontal': true}"/>
+                            <field name="personel_ids" widget="many2many_avatar_user" invisible="planlama != 'personel'"
+                                   required="planlama == 'personel'"/>
+                            <field name="atama" widget="radio" options="{'horizontal': true}" invisible="planlama != 'personel'"/>
+                            <field name="kaynak_ids" widget="many2many_tags" invisible="planlama != 'kaynak'" required="planlama == 'kaynak'"/>
+                            <field name="kapasite_yonetimi" invisible="planlama != 'kaynak'"/>
+                            <field name="max_kisi" invisible="not kapasite_yonetimi or planlama != 'kaynak'"/>
+                        </group>
+                        <group>
+                            <field name="konum" placeholder="Adres ya da oda"/>
+                            <field name="video"/>
+                            <field name="video_baglanti" invisible="video != 'ozel'" required="video == 'ozel'" widget="url"/>
+                            <field name="otomatik_onay"/>
+                            <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                            <field name="url" widget="CopyClipboardChar" invisible="not yayinda"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Program" name="program">
+                            <group>
+                                <group>
+                                    <field name="kategori" widget="radio"/>
+                                    <field name="baslangic" invisible="kategori != 'donemlik'" required="kategori == 'donemlik'"/>
+                                    <field name="bitis" invisible="kategori != 'donemlik'" required="kategori == 'donemlik'"/>
+                                    <field name="tz"/>
+                                </group>
+                                <group>
+                                    <field name="slot_araligi" widget="float_time" placeholder="randevu süresi"/>
+                                    <field name="calisma_saatleri" invisible="planlama != 'personel'"/>
+                                </group>
+                            </group>
+                            <button name="action_standart_program" type="object" string="Hafta içi 09-18 programını yükle" class="btn-link"
+                                    icon="history" invisible="kategori == 'ozel'"/>
+                            <field name="slot_ids" context="{'default_tip': 'tek' if kategori == 'ozel' else 'haftalik'}">
+                                <list editable="bottom">
+                                    <field name="tip" column_invisible="1"/>
+                                    <field name="gun" column_invisible="parent.kategori == 'ozel'" required="tip == 'haftalik'"/>
+                                    <field name="bas_saat" widget="float_time" column_invisible="parent.kategori == 'ozel'"/>
+                                    <field name="bit_saat" widget="float_time" column_invisible="parent.kategori == 'ozel'"/>
+                                    <field name="bas_zaman" column_invisible="parent.kategori != 'ozel'" required="tip == 'tek'"/>
+                                    <field name="bit_zaman" column_invisible="parent.kategori != 'ozel'" required="tip == 'tek'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Seçenekler" name="secenek">
+                            <group>
+                                <group string="Planlama Sınırları">
+                                    <label for="min_planlama_saat"/>
+                                    <div class="o_row"><field name="min_planlama_saat"/><span>saat önceden</span></div>
+                                    <label for="max_planlama_gun"/>
+                                    <div class="o_row"><field name="max_planlama_gun"/><span>gün sonrasına kadar</span></div>
+                                    <label for="min_iptal_saat"/>
+                                    <div class="o_row"><field name="min_iptal_saat"/><span>saat öncesine kadar iptal</span></div>
+                                </group>
+                                <group string="Bildirimler">
+                                    <field name="hatirlatma_ids" widget="many2many_tags"/>
+                                    <field name="onay_sablon_id"/>
+                                    <field name="talep_sablon_id" invisible="otomatik_onay"/>
+                                    <field name="iptal_sablon_id"/>
+                                    <field name="firsat_olustur"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Sorular" name="sorular">
+                            <field name="soru_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="tip"/>
+                                    <field name="zorunlu"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Mesajlar" name="mesaj">
+                            <label for="aciklama" string="Randevu sayfasında açıklama"/>
+                            <field name="aciklama"/>
+                            <label for="onay_mesaji" string="Onay sonrası mesaj"/>
+                            <field name="onay_mesaji"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_randevu_tur_list" model="ir.ui.view">
+        <field name="name">atlas.randevu.tur.list</field>
+        <field name="model">atlas.randevu.tur</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="sure" widget="float_time"/>
+                <field name="planlama"/>
+                <field name="personel_ids" widget="many2many_avatar_user"/>
+                <field name="yaklasan_sayisi"/>
+                <field name="yayinda" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_randevu_tur_kanban" model="ir.ui.view">
+        <field name="name">atlas.randevu.tur.kanban</field>
+        <field name="model">atlas.randevu.tur</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="renk"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-start">
+                            <field name="name" class="fw-bold fs-5 flex-grow-1"/>
+                            <field name="yayinda" widget="boolean_toggle"/>
+                        </div>
+                        <div class="text-muted small">
+                            <field name="sure" widget="float_time"/> saat · <field name="planlama"/>
+                        </div>
+                        <field name="personel_ids" widget="many2many_avatar_user"/>
+                        <footer class="d-flex gap-2 mt-2">
+                            <button name="action_randevular" type="object" class="btn btn-sm btn-light border">
+                                <field name="yaklasan_sayisi"/> yaklaşan
+                            </button>
+                            <span class="badge text-bg-warning align-self-center" invisible="not talep_sayisi"><field name="talep_sayisi"/> talep</span>
+                            <button name="action_paylas" type="object" class="btn btn-sm btn-primary ms-auto">Paylaş</button>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_atlas_randevu_tur" model="ir.actions.act_window">
+        <field name="name">Randevu Türleri</field>
+        <field name="res_model">atlas.randevu.tur</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk randevu türünü oluşturun</p>
+            <p>Süreyi ve haftalık müsaitliği belirleyin; bağlantıyı müşterilerinizle paylaşın.</p>
+        </field>
+    </record>
+
+    <!-- ============================================================ kaynak, soru, davet -->
+    <record id="view_atlas_randevu_kaynak_list" model="ir.ui.view">
+        <field name="name">atlas.randevu.kaynak.list</field>
+        <field name="model">atlas.randevu.kaynak</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="kapasite"/>
+                <field name="tur_ids" widget="many2many_tags"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_randevu_kaynak" model="ir.actions.act_window">
+        <field name="name">Kaynaklar</field>
+        <field name="res_model">atlas.randevu.kaynak</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Masa, oda, cihaz gibi rezerve edilebilir kaynakları tanımlayın</p>
+        </field>
+    </record>
+
+    <record id="view_atlas_randevu_soru_form" model="ir.ui.view">
+        <field name="name">atlas.randevu.soru.form</field>
+        <field name="model">atlas.randevu.soru</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="tip"/>
+                            <field name="zorunlu"/>
+                            <field name="yer_tutucu" invisible="tip not in ('char', 'text', 'phone')"/>
+                        </group>
+                        <group>
+                            <field name="tur_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <field name="secenek_ids" invisible="tip not in ('select', 'radio', 'checkbox')">
+                        <list editable="bottom">
+                            <field name="sira" widget="handle"/>
+                            <field name="name"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_randevu_soru_list" model="ir.ui.view">
+        <field name="name">atlas.randevu.soru.list</field>
+        <field name="model">atlas.randevu.soru</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="tip"/>
+                <field name="zorunlu"/>
+                <field name="tur_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_randevu_soru" model="ir.actions.act_window">
+        <field name="name">Sorular</field>
+        <field name="res_model">atlas.randevu.soru</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_atlas_randevu_davet_form" model="ir.ui.view">
+        <field name="name">atlas.randevu.davet.form</field>
+        <field name="model">atlas.randevu.davet</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field name="tur_ids" widget="many2many_tags"/>
+                        <field name="personel_ids" widget="many2many_avatar_user"/>
+                        <field name="kaynak_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <field name="name"/>
+                        <field name="kisa_kod" placeholder="ör. satis-ekibi"/>
+                        <field name="url" widget="CopyClipboardChar"/>
+                        <field name="etkinlik_sayisi"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_randevu_davet_list" model="ir.ui.view">
+        <field name="name">atlas.randevu.davet.list</field>
+        <field name="model">atlas.randevu.davet</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="tur_ids" widget="many2many_tags"/>
+                <field name="personel_ids" widget="many2many_avatar_user"/>
+                <field name="url" widget="CopyClipboardChar"/>
+                <field name="etkinlik_sayisi"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_randevu_davet" model="ir.actions.act_window">
+        <field name="name">Davet Bağlantıları</field>
+        <field name="res_model">atlas.randevu.davet</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

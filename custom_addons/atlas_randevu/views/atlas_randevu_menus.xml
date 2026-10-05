@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_randevu_root" name="Randevu" sequence="39" web_icon="atlas_randevu,static/description/icon.png"
+              groups="base.group_user"/>
+    <menuitem id="menu_atlas_randevu_tur" name="Randevu Türleri" parent="menu_atlas_randevu_root" action="action_atlas_randevu_tur" sequence="1"/>
+    <menuitem id="menu_atlas_randevu_etkinlik" name="Randevular" parent="menu_atlas_randevu_root" action="action_atlas_randevu_etkinlik" sequence="5"/>
+    <menuitem id="menu_atlas_randevu_rapor" name="Raporlama" parent="menu_atlas_randevu_root" action="action_atlas_randevu_analiz" sequence="20"/>
+    <menuitem id="menu_atlas_randevu_ayar" name="Yapılandırma" parent="menu_atlas_randevu_root" sequence="90" groups="group_randevu_yonetici">
+        <menuitem id="menu_atlas_randevu_kaynak" name="Kaynaklar" action="action_atlas_randevu_kaynak" sequence="10"/>
+        <menuitem id="menu_atlas_randevu_soru" name="Sorular" action="action_atlas_randevu_soru" sequence="20"/>
+        <menuitem id="menu_atlas_randevu_davet" name="Davet Bağlantıları" action="action_atlas_randevu_davet" sequence="30"/>
+    </menuitem>
+</odoo>

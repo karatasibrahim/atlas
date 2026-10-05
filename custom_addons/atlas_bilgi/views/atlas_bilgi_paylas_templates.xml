@@ -3,15 +3,14 @@
     <template id="paylasim_sayfasi" name="Bilgi Bankası: paylaşılan makale">
         <t t-call="web.layout">
             <t t-set="title" t-value="makale.name"/>
-            <t t-set="head">
-                <t t-call-assets="web.assets_frontend" t-js="false"/>
+            <t t-call-assets="web.assets_frontend" t-js="false"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
                 <style>
                     .o_ab_paylas { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; font-size: 1.05rem; }
                     .o_ab_paylas_kapak { height: 240px; background-size: cover; background-position: center; }
                     .o_ab_paylas h1 { font-size: 2.4rem; font-weight: 700; }
                     .o_ab_paylas img { max-width: 100%; }
                 </style>
-            </t>
             <div t-if="makale.kapak" class="o_ab_paylas_kapak"
                  t-attf-style="background-image: url('/bilgi/paylas/#{makale.id}/#{makale.erisim_anahtari}/kapak'); background-position: center #{makale.kapak_konum}%;"/>
             <div class="o_ab_paylas">

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sayfa_iskelet" name="Randevu: sayfa iskeleti">
+        <t t-call="web.layout">
+            <t t-set="title" t-value="sayfa_basligi or 'Randevu'"/>
+            <t t-call-assets="web.assets_frontend" t-js="false"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <style>
+                    body { background: #f5f6f8; }
+                    .o_ar_kap { max-width: 1040px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+                    .o_ar_kart { background: #fff; border-radius: 0.8rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.6rem; }
+                    .o_ar_ust { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.4rem; }
+                    .o_ar_ust img { max-height: 42px; }
+                    .o_ar_tur { display: block; color: inherit; text-decoration: none; border: 1px solid #e5e7eb; border-radius: 0.6rem; padding: 1rem 1.2rem; margin-bottom: 0.8rem; background: #fff; }
+                    .o_ar_tur:hover { border-color: #714b67; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+                    .o_ar_takvim { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+                    .o_ar_takvim .o_ar_gb { font-size: 0.75rem; color: #6b7280; padding: 0.3rem 0; }
+                    .o_ar_gun { border: 0; background: transparent; border-radius: 50%; width: 40px; height: 40px; margin: 0 auto; color: #c0c4cc; }
+                    .o_ar_gun.o_ar_var { color: #111; font-weight: 600; background: #f1ecf0; cursor: pointer; }
+                    .o_ar_gun.o_ar_var:hover { background: #e4d8e1; }
+                    .o_ar_gun.o_ar_secili { background: #714b67 !important; color: #fff; }
+                    .o_ar_saatler { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 0.5rem; }
+                    .o_ar_saat { border: 1px solid #714b67; color: #714b67; background: #fff; border-radius: 0.4rem; padding: 0.45rem 0; font-weight: 600; }
+                    .o_ar_saat:hover, .o_ar_saat.o_ar_secili { background: #714b67; color: #fff; }
+                    .o_ar_bilgi { color: #4b5563; font-size: 0.95rem; }
+                    .o_ar_bilgi div { margin-bottom: 0.3rem; }
+                </style>
+            <div class="o_ar_kap">
+                <div class="o_ar_ust">
+                    <img t-att-src="'/web/binary/company_logo?company=%s' % (tur.company_id.id if tur else request.env.company.id)" alt=""/>
+                    <span class="fs-5 fw-semibold" t-out="(tur.company_id if tur else request.env.company).name"/>
+                </div>
+                <t t-out="0"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="sayfa_liste" name="Randevu: türler">
+        <t t-call="atlas_randevu.sayfa_iskelet">
+            <t t-set="tur" t-value="False"/>
+            <t t-set="sayfa_basligi">Randevu Al</t>
+            <div class="o_ar_kart">
+                <h2 class="mb-4">Randevu alın</h2>
+                <t t-foreach="turler" t-as="t">
+                    <a class="o_ar_tur" t-attf-href="/randevu/#{t.id}#{'?davet=' + davet if davet else ''}">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="fs-5 fw-semibold" t-out="t.name"/>
+                                <div class="text-muted small">
+                                    <t t-out="'%d dk' % round(t.sure * 60)"/>
+                                    <t t-if="t.konum"> · <t t-out="t.konum"/></t>
+                                    <t t-if="t.video != 'yok'"> · Görüntülü görüşme</t>
+                                </div>
+                            </div>
+                            <span class="fs-4 text-muted">›</span>
+                        </div>
+                    </a>
+                </t>
+                <p t-if="not turler" class="text-muted">Şu anda çevrim içi alınabilecek randevu yok.</p>
+            </div>
+        </t>
+    </template>
+
+    <template id="sayfa_tur" name="Randevu: saat seçimi">
+        <t t-call="atlas_randevu.sayfa_iskelet">
+            <t t-set="sayfa_basligi" t-value="tur.name"/>
+            <div class="o_ar_kart">
+                <div class="row g-4">
+                    <div class="col-lg-4 border-end">
+                        <a t-if="not davet" href="/randevu" class="small text-muted text-decoration-none">‹ Tüm randevular</a>
+                        <h3 class="mt-2" t-out="tur.name"/>
+                        <div class="o_ar_bilgi mt-3">
+                            <div>⏱ <t t-out="'%d dakika' % round(tur.sure * 60)"/></div>
+                            <div t-if="tur.konum">📍 <t t-out="tur.konum"/></div>
+                            <div t-if="tur.video != 'yok'">🎥 Görüntülü görüşme</div>
+                            <div>🌐 <t t-out="tur.tz"/></div>
+                        </div>
+                        <div class="mt-3" t-out="tur.aciklama"/>
+                    </div>
+                    <div class="col-lg-8">
+                        <div t-if="hata" class="alert alert-danger" role="alert" t-out="hata"/>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <select t-if="tur.planlama == 'personel' and tur.atama == 'secim' and len(personel) &gt; 1" id="o_ar_personel" class="form-select w-auto">
+                                <option value="">Herhangi biri</option>
+                                <t t-foreach="personel" t-as="p"><option t-att-value="p.id" t-out="p.name"/></t>
+                            </select>
+                            <select t-if="tur.planlama == 'kaynak' and len(kaynaklar) &gt; 1" id="o_ar_kaynak" class="form-select w-auto">
+                                <option value="">Herhangi biri</option>
+                                <t t-foreach="kaynaklar" t-as="k"><option t-att-value="k.id" t-out="k.name"/></t>
+                            </select>
+                            <div t-if="tur.kapasite_yonetimi" class="d-flex align-items-center gap-2">
+                                <label for="o_ar_kisi" class="small text-muted">Kişi</label>
+                                <input id="o_ar_kisi" type="number" min="1" t-att-max="tur.max_kisi" value="1" class="form-control" style="width: 90px;"/>
+                            </div>
+                        </div>
+                        <div id="o_ar_secim">
+                            <div class="d-flex align-items-center mb-2">
+                                <button type="button" class="btn btn-light" id="o_ar_onceki">‹</button>
+                                <div class="flex-grow-1 text-center fw-semibold" id="o_ar_ay"/>
+                                <button type="button" class="btn btn-light" id="o_ar_sonraki">›</button>
+                            </div>
+                            <div class="o_ar_takvim" id="o_ar_takvim"/>
+                            <div class="mt-4" id="o_ar_saat_kutu" style="display: none;">
+                                <div class="fw-semibold mb-2" id="o_ar_gun_baslik"/>
+                                <div class="o_ar_saatler" id="o_ar_saatler"/>
+                            </div>
+                            <div class="text-muted mt-3" id="o_ar_bos" style="display: none;">Bu ay için uygun saat yok; sonraki aya bakın.</div>
+                        </div>
+                        <form id="o_ar_form" method="post" t-attf-action="/randevu/#{tur.id}/onayla" style="display: none;" class="mt-2">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="bas" id="o_ar_bas"/>
+                            <input type="hidden" name="personel" id="o_ar_f_personel"/>
+                            <input type="hidden" name="kaynak" id="o_ar_f_kaynak"/>
+                            <input type="hidden" name="kisi" id="o_ar_f_kisi" value="1"/>
+                            <input type="hidden" name="davet" t-att-value="davet"/>
+                            <div class="alert alert-light border d-flex align-items-center" role="status">
+                                <span class="flex-grow-1" id="o_ar_ozet"/>
+                                <button type="button" class="btn btn-link" id="o_ar_degistir">Değiştir</button>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Ad Soyad *</label><input name="ad" required="1" class="form-control"/></div>
+                                <div class="col-md-6"><label class="form-label">E-posta *</label><input name="email" type="email" required="1" class="form-control"/></div>
+                                <div class="col-md-6"><label class="form-label">Telefon</label><input name="telefon" type="tel" class="form-control"/></div>
+                                <t t-foreach="tur.soru_ids" t-as="s">
+                                    <div class="col-12">
+                                        <label class="form-label"><t t-out="s.name"/><t t-if="s.zorunlu"> *</t></label>
+                                        <input t-if="s.tip in ('char', 'phone')" t-att-type="'tel' if s.tip == 'phone' else 'text'" t-attf-name="soru_#{s.id}"
+                                               class="form-control" t-att-placeholder="s.yer_tutucu" t-att-required="s.zorunlu or None"/>
+                                        <textarea t-if="s.tip == 'text'" t-attf-name="soru_#{s.id}" class="form-control" rows="3" t-att-placeholder="s.yer_tutucu"
+                                                  t-att-required="s.zorunlu or None"/>
+                                        <select t-if="s.tip == 'select'" t-attf-name="soru_#{s.id}" class="form-select" t-att-required="s.zorunlu or None">
+                                            <option value="">—</option>
+                                            <t t-foreach="s.secenek_ids" t-as="c"><option t-att-value="c.id" t-out="c.name"/></t>
+                                        </select>
+                                        <t t-if="s.tip in ('radio', 'checkbox')">
+                                            <t t-foreach="s.secenek_ids" t-as="c">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" t-att-type="s.tip" t-attf-name="soru_#{s.id}" t-att-value="c.id"
+                                                           t-attf-id="soru_#{s.id}_#{c.id}" t-att-required="(s.zorunlu and s.tip == 'radio') or None"/>
+                                                    <label class="form-check-label" t-attf-for="soru_#{s.id}_#{c.id}" t-out="c.name"/>
+                                                </div>
+                                            </t>
+                                        </t>
+                                    </div>
+                                </t>
+                                <div class="col-12"><label class="form-label">Not</label><textarea name="not" class="form-control" rows="2"/></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg mt-3" id="o_ar_gonder">Randevuyu Onayla</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <script t-att-data-tur="tur.id" t-att-data-davet="davet" t-att-data-bugun="bugun" id="o_ar_veri">
+(function () {
+    const veri = document.getElementById("o_ar_veri").dataset;
+    const AYLAR = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const GUNLER = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+    const $ = (id) => document.getElementById(id);
+    const bugun = new Date(veri.bugun + "T00:00:00");
+    let ay = new Date(bugun.getFullYear(), bugun.getMonth(), 1);
+    let gunler = {};
+    let secGun = null;
+    const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const deger = (id) => ($(id) ? $(id).value : "");
+
+    async function yukle() {
+        const son = new Date(ay.getFullYear(), ay.getMonth() + 1, 0);
+        const p = new URLSearchParams({ bas: iso(ay), bit: iso(son), personel: deger("o_ar_personel"), kaynak: deger("o_ar_kaynak"),
+                                        kisi: deger("o_ar_kisi") || "1", davet: veri.davet || "" });
+        $("o_ar_ay").textContent = AYLAR[ay.getMonth()] + " " + ay.getFullYear() + " …";
+        const yanit = await fetch("/randevu/" + veri.tur + "/slotlar?" + p.toString());
+        gunler = (await yanit.json()).gunler || {};
+        ciz();
+    }
+
+    function ciz() {
+        $("o_ar_ay").textContent = AYLAR[ay.getMonth()] + " " + ay.getFullYear();
+        const t = $("o_ar_takvim");
+        t.innerHTML = "";
+        GUNLER.forEach((g) => { const d = document.createElement("div"); d.className = "o_ar_gb"; d.textContent = g; t.appendChild(d); });
+        const bosluk = (ay.getDay() + 6) % 7;
+        for (let i = 0; i &lt; bosluk; i++) { t.appendChild(document.createElement("div")); }
+        const son = new Date(ay.getFullYear(), ay.getMonth() + 1, 0).getDate();
+        for (let g = 1; g &lt;= son; g++) {
+            const tarih = iso(new Date(ay.getFullYear(), ay.getMonth(), g));
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "o_ar_gun" + (gunler[tarih] ? " o_ar_var" : "") + (secGun === tarih ? " o_ar_secili" : "");
+            b.textContent = g;
+            b.dataset.tarih = tarih;
+            if (gunler[tarih]) { b.onclick = () => gunSec(tarih); } else { b.disabled = true; }
+            const k = document.createElement("div"); k.appendChild(b); t.appendChild(k);
+        }
+        $("o_ar_bos").style.display = Object.keys(gunler).length ? "none" : "block";
+        if (secGun &amp;&amp; gunler[secGun]) { saatleriCiz(); } else { $("o_ar_saat_kutu").style.display = "none"; }
+    }
+
+    function gunSec(tarih) { secGun = tarih; ciz(); }
+
+    function saatleriCiz() {
+        const d = new Date(secGun + "T00:00:00");
+        $("o_ar_gun_baslik").textContent = d.getDate() + " " + AYLAR[d.getMonth()] + " " + d.getFullYear() + ", " + GUNLER[(d.getDay() + 6) % 7];
+        const kutu = $("o_ar_saatler");
+        kutu.innerHTML = "";
+        gunler[secGun].forEach((s) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "o_ar_saat";
+            b.textContent = s.saat;
+            b.onclick = () => saatSec(s);
+            kutu.appendChild(b);
+        });
+        $("o_ar_saat_kutu").style.display = "block";
+    }
+
+    function saatSec(s) {
+        $("o_ar_bas").value = s.bas;
+        $("o_ar_f_personel").value = deger("o_ar_personel") || "";
+        $("o_ar_f_kaynak").value = deger("o_ar_kaynak") || "";
+        $("o_ar_f_kisi").value = deger("o_ar_kisi") || "1";
+        $("o_ar_ozet").textContent = $("o_ar_gun_baslik").textContent + " · " + s.saat;
+        $("o_ar_secim").style.display = "none";
+        $("o_ar_form").style.display = "block";
+    }
+
+    $("o_ar_degistir").onclick = () => { $("o_ar_form").style.display = "none"; $("o_ar_secim").style.display = "block"; };
+    $("o_ar_onceki").onclick = () => { ay = new Date(ay.getFullYear(), ay.getMonth() - 1, 1); if (ay &lt; new Date(bugun.getFullYear(), bugun.getMonth(), 1)) { ay = new Date(bugun.getFullYear(), bugun.getMonth(), 1); } yukle(); };
+    $("o_ar_sonraki").onclick = () => { ay = new Date(ay.getFullYear(), ay.getMonth() + 1, 1); yukle(); };
+    ["o_ar_personel", "o_ar_kaynak", "o_ar_kisi"].forEach((id) => { if ($(id)) { $(id).onchange = () => { secGun = null; yukle(); }; } });
+    $("o_ar_form").onsubmit = () => { $("o_ar_gonder").disabled = true; };
+    yukle().then(() => {
+        const ilk = Object.keys(gunler).sort()[0];
+        if (ilk) { gunSec(ilk); }
+    });
+})();
+            </script>
+        </t>
+    </template>
+
+    <template id="sayfa_etkinlik" name="Randevu: onay">
+        <t t-call="atlas_randevu.sayfa_iskelet">
+            <t t-set="sayfa_basligi" t-value="e.name"/>
+            <div class="o_ar_kart">
+                <t t-if="e.randevu_durum == 'iptal'">
+                    <h2 class="text-danger">Randevu iptal edildi</h2>
+                </t>
+                <t t-elif="e.randevu_durum == 'talep'">
+                    <h2>Talebiniz alındı</h2>
+                    <p class="text-muted">Randevunuz onaylandığında e-posta ile bilgilendirileceksiniz.</p>
+                </t>
+                <t t-else="">
+                    <h2><t t-if="yeni">✅ </t>Randevunuz onaylandı</h2>
+                </t>
+                <div t-if="yeni and e.randevu_durum != 'iptal'" class="mt-2" t-out="tur.onay_mesaji"/>
+                <div class="o_ar_bilgi mt-3">
+                    <div class="fs-5 fw-semibold text-dark" t-out="tur.name"/>
+                    <div>📅 <span t-out="e.start" t-options="{'widget': 'datetime', 'tz_name': tur.tz, 'format': 'dd MMMM yyyy, EEEE HH:mm'}"/>
+                        (<t t-out="tur.tz"/>)</div>
+                    <div>⏱ <t t-out="'%d dakika' % round(tur.sure * 60)"/></div>
+                    <div t-if="e.user_id">👤 <t t-out="e.user_id.name"/></div>
+                    <div t-if="e.randevu_kaynak_ids">🪑 <t t-out="', '.join(e.randevu_kaynak_ids.mapped('name'))"/></div>
+                    <div t-if="e.location">📍 <t t-out="e.location"/></div>
+                    <div t-if="e.videocall_location">🎥 <a t-att-href="e.videocall_location" t-out="e.videocall_location"/></div>
+                    <div t-if="e.randevu_kisi &gt; 1">👥 <t t-out="e.randevu_kisi"/> kişi</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-4" t-if="e.randevu_durum != 'iptal'">
+                    <a class="btn btn-light border" t-attf-href="/randevu/etkinlik/#{e.id}/#{e.access_token}/ics">📥 Takvime ekle (.ics)</a>
+                    <form t-if="iptal_edilebilir" method="post" t-attf-action="/randevu/etkinlik/#{e.id}/#{e.access_token}/iptal">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <button type="submit" class="btn btn-outline-danger">Randevuyu iptal et</button>
+                    </form>
+                </div>
+                <div class="mt-4"><a t-attf-href="/randevu/#{tur.id}" class="small">Yeni randevu al</a></div>
+            </div>
+        </t>
+    </template>
+</odoo>
