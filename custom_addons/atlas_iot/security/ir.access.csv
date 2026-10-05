@@ -1,0 +1,9 @@
+id,name,model_id,group_id/id,operation,domain
+access_cihaz_user,atlas.iot.cihaz user,atlas.iot.cihaz,base.group_user,r,
+access_cihaz_manager,atlas.iot.cihaz manager,atlas.iot.cihaz,mrp.group_mrp_manager,crud,
+access_cihaz_stock_manager,atlas.iot.cihaz stock manager,atlas.iot.cihaz,stock.group_stock_manager,crud,
+access_olcum_user,atlas.iot.olcum user,atlas.iot.olcum,base.group_user,r,
+access_olcum_manager,atlas.iot.olcum manager,atlas.iot.olcum,mrp.group_mrp_manager,crud,
+access_tartim_user,atlas.iot.tartim user,atlas.iot.tartim,stock.group_stock_user,cru,
+access_tartim_manager,atlas.iot.tartim manager,atlas.iot.tartim,stock.group_stock_manager,crud,
+access_etiket_user,atlas.iot.etiket user,atlas.iot.etiket,base.group_user,crud,

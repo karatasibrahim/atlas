@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_iot_cihaz_form" model="ir.ui.view">
+        <field name="name">atlas.iot.cihaz.form</field>
+        <field name="model">atlas.iot.cihaz</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_etiketi" type="object" string="Test Etiketi Bas" invisible="tur != 'yazici'"/>
+                    <button name="action_anahtar_yenile" type="object" string="Anahtarı Yenile" invisible="tur not in ('sayac', 'sensor')"
+                            confirm="Eski anahtarla gelen veriler reddedilecek. Devam edilsin mi?"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="ör. Sevkiyat Terazisi"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="tur" widget="radio"/>
+                            <field name="konum"/>
+                            <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="cevrimici" widget="boolean_toggle" readonly="1"/>
+                            <field name="son_gorulme"/>
+                            <field name="son_deger"/>
+                            <field name="sayac_toplam" invisible="tur != 'sayac'"/>
+                        </group>
+                    </group>
+                    <group string="Terazi (USB / seri port)" invisible="tur != 'terazi'">
+                        <group>
+                            <field name="baud"/>
+                            <field name="kararlilik"/>
+                            <field name="istek_komutu"/>
+                        </group>
+                        <group>
+                            <field name="deger_deseni"/>
+                        </group>
+                        <div class="text-muted small" colspan="2">
+                            Terazi tartım yapılan bilgisayara USB/seri kabloyla bağlanır ve tarayıcıdan okunur (Chrome/Edge, HTTPS).
+                            İlk okumada tarayıcı port seçimi sorar.
+                        </div>
+                    </group>
+                    <group string="Etiket yazıcı (ağ, ZPL)" invisible="tur != 'yazici'">
+                        <group>
+                            <field name="ip" required="tur == 'yazici'"/>
+                            <field name="port"/>
+                        </group>
+                        <field name="zpl_sablonu" colspan="2" class="font-monospace"/>
+                    </group>
+                    <group string="Veri gönderimi (HTTP)" invisible="tur not in ('sayac', 'sensor')">
+                        <group>
+                            <field name="veri_url" widget="CopyClipboardChar"/>
+                            <field name="workcenter_id" invisible="tur != 'sayac'" required="tur == 'sayac'"/>
+                            <field name="durus_nedeni_id" invisible="tur != 'sayac'"/>
+                        </group>
+                        <group invisible="tur != 'sensor'">
+                            <field name="birim"/>
+                            <field name="sinir_aktif"/>
+                            <field name="alt_sinir" invisible="not sinir_aktif"/>
+                            <field name="ust_sinir" invisible="not sinir_aktif"/>
+                        </group>
+                        <div class="text-muted small" colspan="2">
+                            Sayaç: <code>{"adet": 5, "hatali": 1, "durum": "calisiyor"}</code> — adetler çalışan iş emrine eklenir,
+                            "durdu" iş merkezini duruşa alır.<br/>
+                            Sensör: <code>{"deger": 21.5}</code>. JSON gövde, form verisi ya da adres parametresi (?deger=21.5) olabilir.
+                        </div>
+                    </group>
+                    <notebook invisible="tur not in ('sayac', 'sensor')">
+                        <page string="Son Ölçümler" name="olcumler">
+                            <field name="olcum_ids" readonly="1">
+                                <list limit="20">
+                                    <field name="zaman"/>
+                                    <field name="deger"/>
+                                    <field name="hatali" optional="show"/>
+                                    <field name="workorder_id" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_iot_cihaz_kanban" model="ir.ui.view">
+        <field name="name">atlas.iot.cihaz.kanban</field>
+        <field name="model">atlas.iot.cihaz</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="cevrimici"/>
+                <field name="tur"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="name" class="fw-bold"/>
+                            <span t-if="record.cevrimici.raw_value" class="badge text-bg-success">Çevrimiçi</span>
+                            <span t-elif="['sayac', 'sensor'].includes(record.tur.raw_value)" class="badge text-bg-secondary">Veri yok</span>
+                        </div>
+                        <field name="tur" class="text-muted small"/>
+                        <field name="konum" class="small"/>
+                        <div class="mt-1">
+                            <span class="text-muted small">Son değer: </span><field name="son_deger"/> <field name="birim"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_iot_cihaz_list" model="ir.ui.view">
+        <field name="name">atlas.iot.cihaz.list</field>
+        <field name="model">atlas.iot.cihaz</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="tur"/>
+                <field name="konum"/>
+                <field name="workcenter_id" optional="show"/>
+                <field name="son_deger"/>
+                <field name="son_gorulme"/>
+                <field name="cevrimici" widget="boolean_toggle" readonly="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_iot_tartim_form" model="ir.ui.view">
+        <field name="name">atlas.iot.tartim.form</field>
+        <field name="model">atlas.iot.tartim</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_etiket_bas" type="object" string="Etiket Bas" class="btn-primary" icon="print"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <div class="text-muted"><field name="name" readonly="1"/></div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="terazi_id" options="{'no_create': True}"/>
+                            <field name="agirlik" widget="atlas_terazi" options="{'cihaz': 'terazi_id'}" class="fs-4"/>
+                            <field name="dara"/>
+                            <field name="net" class="fw-bold fs-4"/>
+                            <field name="uom_id"/>
+                        </group>
+                        <group>
+                            <field name="lot_id" options="{'no_create': True}"/>
+                            <field name="picking_id" options="{'no_create': True}"/>
+                            <field name="yazici_id" options="{'no_create': True}"/>
+                            <field name="etiket_adedi"/>
+                            <field name="yazdirildi"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_iot_tartim_list" model="ir.ui.view">
+        <field name="name">atlas.iot.tartim.list</field>
+        <field name="model">atlas.iot.tartim</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="create_date" string="Zaman"/>
+                <field name="product_id"/>
+                <field name="lot_id" optional="show"/>
+                <field name="agirlik"/>
+                <field name="dara" optional="show"/>
+                <field name="net" sum="Toplam"/>
+                <field name="uom_id"/>
+                <field name="picking_id" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="yazdirildi"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_iot_etiket_form" model="ir.ui.view">
+        <field name="name">atlas.iot.etiket.form</field>
+        <field name="model">atlas.iot.etiket</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="product_ids" widget="many2many_tags"/>
+                    <field name="yazici_id" options="{'no_create': True}"/>
+                    <field name="adet"/>
+                </group>
+                <footer>
+                    <button name="action_yazdir" type="object" string="Yazdır" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_server_urun_etiket" model="ir.actions.server">
+        <field name="name">Etiket Yazdır (ZPL)</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_atlas_etiket_yazdir()</field>
+    </record>
+
+    <record id="action_atlas_iot_cihaz" model="ir.actions.act_window">
+        <field name="name">IoT Cihazları</field>
+        <field name="res_model">atlas.iot.cihaz</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk cihazınızı ekleyin</p>
+            <p>Terazi, ağ etiket yazıcısı, makine sayacı veya sensör tanımlayın.</p>
+        </field>
+    </record>
+    <record id="action_atlas_iot_tartim" model="ir.actions.act_window">
+        <field name="name">Tartımlar</field>
+        <field name="res_model">atlas.iot.tartim</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="action_atlas_iot_tartim_yeni" model="ir.actions.act_window">
+        <field name="name">Tartım İstasyonu</field>
+        <field name="res_model">atlas.iot.tartim</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+    <record id="action_atlas_iot_olcum" model="ir.actions.act_window">
+        <field name="name">Ölçümler</field>
+        <field name="res_model">atlas.iot.olcum</field>
+        <field name="view_mode">list,graph,pivot</field>
+    </record>
+
+    <menuitem id="menu_atlas_iot_root" name="IoT" sequence="38" web_icon="atlas_iot,static/description/icon.png"
+              groups="stock.group_stock_user,mrp.group_mrp_user"/>
+    <menuitem id="menu_atlas_iot_tartim_yeni" name="Tartım İstasyonu" parent="menu_atlas_iot_root" action="action_atlas_iot_tartim_yeni" sequence="5"/>
+    <menuitem id="menu_atlas_iot_tartim" name="Tartımlar" parent="menu_atlas_iot_root" action="action_atlas_iot_tartim" sequence="10"/>
+    <menuitem id="menu_atlas_iot_olcum" name="Ölçümler" parent="menu_atlas_iot_root" action="action_atlas_iot_olcum" sequence="20"/>
+    <menuitem id="menu_atlas_iot_cihaz" name="Cihazlar" parent="menu_atlas_iot_root" action="action_atlas_iot_cihaz" sequence="30"/>
+</odoo>

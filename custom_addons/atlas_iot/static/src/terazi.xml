@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_iot.TeraziField">
+        <div class="d-flex align-items-center gap-2 o_atlas_terazi">
+            <FloatField t-props="this.floatProps"/>
+            <button t-if="!this.props.readonly" type="button" class="btn btn-secondary btn-sm text-nowrap"
+                    t-att-disabled="this.state.okuyor" t-on-click="() => this.tart()" title="Teraziden oku">
+                <t t-if="this.state.okuyor">Okunuyor…</t>
+                <t t-else="">Tart</t>
+            </button>
+        </div>
+    </t>
+</templates>
