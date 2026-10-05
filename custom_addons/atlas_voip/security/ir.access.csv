@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_saglayici_user,atlas.voip.saglayici user,atlas.voip.saglayici,base.group_user,r,
+access_saglayici_system,atlas.voip.saglayici system,atlas.voip.saglayici,base.group_system,crud,
+access_cagri_user,atlas.voip.cagri user,atlas.voip.cagri,base.group_user,cru,
+access_cagri_system,atlas.voip.cagri system,atlas.voip.cagri,base.group_system,crud,

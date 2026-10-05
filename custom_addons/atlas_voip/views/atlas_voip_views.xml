@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_voip_saglayici_form" model="ir.ui.view">
+        <field name="name">atlas.voip.saglayici.form</field>
+        <field name="model">atlas.voip.saglayici</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Arşivlendi" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title"><h1><field name="name" placeholder="ör. Bulut Santral"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="yontem" widget="radio"/>
+                            <field name="dis_hat_oneki"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Gelen Arama Olayları">
+                            <field name="olay_url" widget="CopyClipboardChar"/>
+                        </group>
+                    </group>
+                    <group string="Santral API (click-to-call)" invisible="yontem != 'http'">
+                        <field name="url_sablonu" required="yontem == 'http'"/>
+                        <field name="http_yontem"/>
+                        <field name="anahtar" password="True"/>
+                        <field name="basliklar" placeholder='{"Authorization": "Bearer {anahtar}"}'/>
+                        <field name="govde_sablonu" invisible="http_yontem != 'POST'" placeholder='{"extension": "{dahili}", "destination": "{numara}"}'/>
+                    </group>
+                    <div class="text-muted small">
+                        Telefon alanlarındaki arama düğmesi bu bağlantıyı kullanır. "tel:" yönteminde bilgisayardaki softphone
+                        (MicroSIP, Zoiper, Teams vb.) açılır. Santralinizi olay adresine çağrı başladı/cevaplandı/kapandı bildirimi
+                        gönderecek şekilde ayarlayın (JSON, form veya sorgu parametresi): event, call_id, from, to, extension,
+                        direction, duration, recording.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_voip_cagri_list" model="ir.ui.view">
+        <field name="name">atlas.voip.cagri.list</field>
+        <field name="model">atlas.voip.cagri</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="durum == 'cevapsiz'" decoration-muted="durum == 'hata'">
+                <field name="baslangic"/>
+                <field name="yon" widget="badge" decoration-info="yon == 'gelen'"/>
+                <field name="partner_id"/>
+                <field name="numara"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="sure_metin"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'tamamlandi'" decoration-danger="durum == 'cevapsiz'"/>
+                <button name="action_geri_ara" type="object" string="Ara" icon="call"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_voip_cagri_form" model="ir.ui.view">
+        <field name="name">atlas.voip.cagri.form</field>
+        <field name="model">atlas.voip.cagri</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_geri_ara" type="object" string="Ara" class="btn-primary" icon="call"/>
+                    <button name="action_kisi_olustur" type="object" string="Kişi Oluştur" invisible="partner_id"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="caliyor,cevaplandi,tamamlandi"/>
+                </header>
+                <sheet>
+                    <h2><field name="name" readonly="1"/></h2>
+                    <group>
+                        <group>
+                            <field name="yon" readonly="1"/>
+                            <field name="numara" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="user_id"/>
+                            <field name="dahili" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="baslangic" readonly="1"/>
+                            <field name="cevaplanma" readonly="1"/>
+                            <field name="bitis" readonly="1"/>
+                            <field name="sure_metin"/>
+                            <field name="kayit_url" widget="url" readonly="1" invisible="not kayit_url"/>
+                            <field name="hata" invisible="not hata" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="notlar" placeholder="Görüşme notları…"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_voip_cagri_search" model="ir.ui.view">
+        <field name="name">atlas.voip.cagri.search</field>
+        <field name="model">atlas.voip.cagri</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="numara"/>
+                <field name="user_id"/>
+                <filter name="benim" string="Aramalarım" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="gelen" string="Gelen" domain="[('yon', '=', 'gelen')]"/>
+                <filter name="giden" string="Giden" domain="[('yon', '=', 'giden')]"/>
+                <filter name="cevapsiz" string="Cevapsız" domain="[('durum', '=', 'cevapsiz')]"/>
+                <filter name="bugun" string="Bugün" domain="[('baslangic', '&gt;=', 'today')]"/>
+                <group>
+                    <filter name="grp_user" string="Kullanıcı" context="{'group_by': 'user_id'}"/>
+                    <filter name="grp_gun" string="Gün" context="{'group_by': 'baslangic:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_partner_form_atlas_voip" model="ir.ui.view">
+        <field name="name">res.partner.form.atlas.voip</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_atlas_aramalar" type="object" class="oe_stat_button" icon="call" invisible="not atlas_cagri_sayisi">
+                    <field name="atlas_cagri_sayisi" widget="statinfo" string="Arama"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_form_atlas_voip" model="ir.ui.view">
+        <field name="name">res.users.form.atlas.voip</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group><field name="atlas_dahili"/></group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_atlas_voip_cagri" model="ir.actions.act_window">
+        <field name="name">Aramalar</field>
+        <field name="res_model">atlas.voip.cagri</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="context">{'search_default_benim': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz görüşme kaydı yok</p>
+            <p>Telefon alanlarındaki arama düğmesiyle yapılan ve santralden bildirilen aramalar burada listelenir.</p>
+        </field>
+    </record>
+    <record id="action_atlas_voip_saglayici" model="ir.actions.act_window">
+        <field name="name">Santral Bağlantıları</field>
+        <field name="res_model">atlas.voip.saglayici</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_atlas_voip_root" name="Telefon" sequence="37" web_icon="atlas_voip,static/description/icon.png" groups="base.group_user"/>
+    <menuitem id="menu_atlas_voip_cagri" name="Aramalar" parent="menu_atlas_voip_root" action="action_atlas_voip_cagri" sequence="10"/>
+    <menuitem id="menu_atlas_voip_saglayici" name="Santral Bağlantıları" parent="menu_atlas_voip_root" action="action_atlas_voip_saglayici"
+              sequence="90" groups="base.group_system"/>
+</odoo>
