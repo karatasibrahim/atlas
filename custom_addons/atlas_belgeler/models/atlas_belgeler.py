@@ -209,6 +209,35 @@ class AtlasBelge(models.Model):
             return False
         return {'type': 'ir.actions.act_window', 'res_model': self.res_model, 'res_id': self.res_id, 'view_mode': 'form'}
 
+    # ------------------------------------------------------------------ köprü modülleri için ortak yardımcılar
+    def _kayda_ekle(self, kayit):
+        """Belgenin dosyasını kaydın ekine kopyalar ve belgeyi kayda bağlar (kural tekrar belge üretmez)."""
+        self.ensure_one()
+        ek = False
+        if self.dosya:
+            ek = self.env['ir.attachment'].with_context(atlas_belge_kural_atla=True).create({
+                'name': self.dosya_adi or self.name, 'raw': self.dosya.content,
+                'res_model': kayit._name, 'res_id': kayit.id})
+            if 'message_main_attachment_id' in kayit._fields:
+                kayit.sudo().message_main_attachment_id = ek
+        self.write({'res_model': kayit._name, 'res_id': kayit.id, 'kaynak_ek_id': ek.id if ek else self.kaynak_ek_id.id})
+        if hasattr(kayit, 'message_post'):
+            kayit.message_post(body=self.env._('Belgeler uygulamasından oluşturuldu: %s', self.name),
+                               attachment_ids=ek.ids if ek else [])
+        return ek
+
+    def _kayit_ac(self, kayitlar, ad):
+        if len(kayitlar) == 1:
+            return {'type': 'ir.actions.act_window', 'res_model': kayitlar._name, 'res_id': kayitlar.id, 'view_mode': 'form',
+                    'views': [[False, 'form']], 'name': ad}
+        return {'type': 'ir.actions.act_window', 'res_model': kayitlar._name, 'domain': [('id', 'in', kayitlar.ids)],
+                'view_mode': 'list,form', 'views': [[False, 'list'], [False, 'form']], 'name': ad}
+
+    def _bagli_degil(self):
+        bagli = self.filtered(lambda b: b.ilgili_kayit)
+        if bagli:
+            raise UserError(self.env._('Bu belge zaten bir kayda bağlı: %s', ', '.join(bagli.mapped('name'))))
+
     def action_paylas(self):
         paylasim = self.env['atlas.belge.paylasim'].create({'belge_ids': [(6, 0, self.ids)]})
         return {'type': 'ir.actions.act_window', 'res_model': 'atlas.belge.paylasim', 'res_id': paylasim.id,
@@ -259,6 +288,8 @@ class IrAttachment(models.Model):
         return ekler
 
     def _atlas_belge_kural_uygula(self):
+        if self.env.context.get('atlas_belge_kural_atla'):
+            return
         modeller = set(self.mapped('res_model')) - {False, 'atlas.belge', 'atlas.belge.surum', 'atlas.belge.yukle', 'mail.compose.message'}
         if not modeller:
             return

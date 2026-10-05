@@ -14,3 +14,4 @@ access_yukle_user,atlas.belge.yukle user,atlas.belge.yukle,group_belge_user,crud
 access_surum_user,Okunabilen sürümler,atlas.belge.surum,group_belge_user,r,"[('belge_id.klasor_id.okuma_kullanici_id', '=', user.id)]"
 access_surum_user_w,Yazılabilen sürümler,atlas.belge.surum,group_belge_user,cud,"[('belge_id.klasor_id.yazma_kullanici_id', '=', user.id)]"
 access_surum_manager,atlas.belge.surum manager,atlas.belge.surum,group_belge_manager,crud,
+access_bagla_user,atlas.belge.bagla user,atlas.belge.bagla,group_belge_user,crud,

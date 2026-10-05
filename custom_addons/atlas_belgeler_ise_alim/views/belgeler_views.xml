@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_belge_form_ise_alim" model="ir.ui.view">
+        <field name="name">atlas.belge.form.ise_alim</field>
+        <field name="model">atlas.belge</field>
+        <field name="inherit_id" ref="atlas_belgeler.view_atlas_belge_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_belge_aday" type="object" string="Aday Oluştur" invisible="ilgili_kayit or tip != 'dosya'"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="sa_action_belge_aday" model="ir.actions.server">
+        <field name="name">Aday Oluştur</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_aday()</field>
+    </record>
+</odoo>

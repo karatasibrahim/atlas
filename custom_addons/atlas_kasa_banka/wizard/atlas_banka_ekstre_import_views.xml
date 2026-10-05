@@ -13,7 +13,7 @@
                     <field name="oner"/>
                 </group>
                 <p class="text-muted">
-                    Bankanızın internet şubesinden indirdiğiniz .xlsx ekstre dosyasını seçin. Daha önce aktarılmış hareketler atlanır.
+                    Bankanızın internet şubesinden indirdiğiniz ekstre dosyasını seçin: Excel (.xlsx), CSV, ISO 20022 CAMT.053 (.xml), OFX ya da SWIFT MT940 (.sta). Daha önce aktarılmış hareketler atlanır.
                 </p>
                 <footer>
                     <button name="action_import" type="object" string="İçe Aktar" class="btn-primary"/>

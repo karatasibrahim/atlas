@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_belge_form_muhasebe" model="ir.ui.view">
+        <field name="name">atlas.belge.form.muhasebe</field>
+        <field name="model">atlas.belge</field>
+        <field name="inherit_id" ref="atlas_belgeler.view_atlas_belge_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_belge_tedarikci_faturasi" type="object" string="Tedarikçi Faturası" invisible="ilgili_kayit or tip != 'dosya'"/>
+                <button name="action_belge_tedarikci_iadesi" type="object" string="Tedarikçi İadesi" invisible="ilgili_kayit or tip != 'dosya'"/>
+                <button name="action_belge_musteri_faturasi" type="object" string="Müşteri Faturası" invisible="ilgili_kayit or tip != 'dosya'"/>
+                <button name="action_belge_musteri_iadesi" type="object" string="Müşteri İadesi" invisible="ilgili_kayit or tip != 'dosya'"/>
+                <button name="action_belge_mahsup" type="object" string="Mahsup Fişi" invisible="ilgili_kayit or tip != 'dosya'"/>
+                <button name="action_belge_ekstre" type="object" string="Banka Ekstresi Aktar" invisible="ilgili_kayit or tip != 'dosya'"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="sa_action_belge_tedarikci_faturasi" model="ir.actions.server">
+        <field name="name">Tedarikçi Faturası</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_tedarikci_faturasi()</field>
+    </record>
+    <record id="sa_action_belge_tedarikci_iadesi" model="ir.actions.server">
+        <field name="name">Tedarikçi İadesi</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_tedarikci_iadesi()</field>
+    </record>
+    <record id="sa_action_belge_musteri_faturasi" model="ir.actions.server">
+        <field name="name">Müşteri Faturası</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_musteri_faturasi()</field>
+    </record>
+    <record id="sa_action_belge_musteri_iadesi" model="ir.actions.server">
+        <field name="name">Müşteri İadesi</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_musteri_iadesi()</field>
+    </record>
+    <record id="sa_action_belge_mahsup" model="ir.actions.server">
+        <field name="name">Mahsup Fişi</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_mahsup()</field>
+    </record>
+    <record id="sa_action_belge_ekstre" model="ir.actions.server">
+        <field name="name">Banka Ekstresi Aktar</field>
+        <field name="model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_model_id" ref="atlas_belgeler.model_atlas_belge"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_belge_ekstre()</field>
+    </record>
+</odoo>

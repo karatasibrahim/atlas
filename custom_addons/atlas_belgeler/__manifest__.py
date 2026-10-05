@@ -20,6 +20,7 @@ Belgeler
         'security/ir.access.csv',
         'data/atlas_belgeler_data.xml',
         'wizard/atlas_belge_yukle_views.xml',
+        'wizard/atlas_belge_bagla_views.xml',
         'views/atlas_belgeler_views.xml',
     ],
     'installable': True,

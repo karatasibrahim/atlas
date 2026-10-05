@@ -4,6 +4,8 @@ import io
 from odoo import fields, models
 from odoo.exceptions import UserError
 
+from . import ekstre_bicim
+
 
 class AtlasBankaEkstreImport(models.TransientModel):
     _name = 'atlas.banka.ekstre.import'
@@ -13,13 +15,14 @@ class AtlasBankaEkstreImport(models.TransientModel):
                                  domain=[('type', '=', 'bank')])
     sablon_id = fields.Many2one('atlas.banka.ekstre.sablon', string='Şablon',
                                 help='Boş bırakılırsa sütunlar başlıklardan otomatik algılanır.')
-    file = fields.Binary(string='Excel Dosyası (.xlsx)', required=True)
+    file = fields.Binary(string='Ekstre Dosyası', required=True,
+                         help='Excel (.xlsx), CSV, ISO 20022 CAMT.053 (.xml), OFX veya SWIFT MT940 (.sta)')
     filename = fields.Char()
     oner = fields.Boolean(string='Eşleştirme Önerilerini Oluştur', default=True)
 
     def action_import(self):
         self.ensure_one()
-        transactions = self.sablon_id._parse_rows(self._read_rows())
+        transactions, dosya_acilis, dosya_kapanis = self._hareketler()
         if not transactions:
             raise UserError(self.env._('Ekstrede aktarılacak hareket bulunamadı.'))
 
@@ -48,6 +51,11 @@ class AtlasBankaEkstreImport(models.TransientModel):
         if first['bakiye'] is not None and last['bakiye'] is not None:
             statement_vals['balance_start'] = first['bakiye'] - first['amount']
             statement_vals['balance_end_real'] = last['bakiye']
+        elif dosya_kapanis is not None and len(new) == len(transactions):
+            # CAMT / OFX / MT940: bakiyeler dosya başında ve sonunda
+            statement_vals['balance_end_real'] = dosya_kapanis
+            statement_vals['balance_start'] = dosya_acilis if dosya_acilis is not None else \
+                dosya_kapanis - sum(t['amount'] for t in transactions)
         statement = self.env['account.bank.statement'].create(statement_vals)
         if self.oner:
             statement.line_ids.action_atlas_oner()
@@ -57,6 +65,21 @@ class AtlasBankaEkstreImport(models.TransientModel):
         action['display_name'] = self.env._('%(name)s — %(new)s hareket aktarıldı, %(skip)s tekrar atlandı',
                                             name=statement.name, new=len(new), skip=len(transactions) - len(new))
         return action
+
+    def _hareketler(self):
+        """(hareketler, açılış, kapanış) — dosya biçimine göre."""
+        icerik = self.file.content
+        try:
+            bicim = ekstre_bicim.bicim_bul(self.filename or getattr(self.file, 'filename', ''), icerik)
+            if bicim == 'xlsx':
+                return self.sablon_id._parse_rows(self._read_rows()), None, None
+            if bicim == 'csv':
+                return self.sablon_id._parse_rows(ekstre_bicim.csv_satirlari(icerik)), None, None
+            hareketler, acilis, kapanis = {'camt': ekstre_bicim.camt, 'ofx': ekstre_bicim.ofx, 'mt940': ekstre_bicim.mt940}[bicim](icerik)
+        except ekstre_bicim.BicimHatasi as e:
+            raise UserError(str(e)) from e
+        hareketler.sort(key=lambda t: t['date'])
+        return hareketler, acilis, kapanis
 
     def _read_rows(self):
         filename = self.filename or self.file.filename
