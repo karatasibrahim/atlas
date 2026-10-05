@@ -5,7 +5,7 @@
         <field name="model">atlas.donem.kapanis</field>
         <field name="arch" type="xml">
             <list>
-                <field name="yil"/>
+                <field name="yil" options="{'enable_formatting': false}"/>
                 <field name="date_end"/>
                 <field name="date_acilis"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -34,7 +34,7 @@
                     <div class="oe_title"><h1><field name="name"/></h1></div>
                     <group>
                         <group>
-                            <field name="yil" readonly="state != 'draft'"/>
+                            <field name="yil" options="{'enable_formatting': false}" readonly="state != 'draft'"/>
                             <field name="date_end"/>
                             <field name="date_acilis"/>
                             <field name="kilitle" readonly="state != 'draft'"/>

@@ -5,7 +5,7 @@
         <field name="model">atlas.butce</field>
         <field name="arch" type="xml">
             <list decoration-muted="durum == 'kapali'" sample="1">
-                <field name="yil"/>
+                <field name="yil" options="{'enable_formatting': false}"/>
                 <field name="name"/>
                 <field name="analytic_account_id" optional="show"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -39,7 +39,7 @@
                     </div>
                     <group>
                         <group>
-                            <field name="yil" options="{'format': false}" readonly="durum != 'taslak'"/>
+                            <field name="yil" options="{'enable_formatting': false}" readonly="durum != 'taslak'"/>
                             <field name="analytic_account_id" readonly="durum != 'taslak'" groups="analytic.group_analytic_accounting"/>
                             <field name="asim_kontrolu"/>
                             <field name="company_id" groups="base.group_multi_company" readonly="durum != 'taslak'"/>
@@ -48,7 +48,7 @@
                             <field name="currency_id" invisible="1"/>
                             <field name="plan_toplam"/>
                             <field name="gerceklesen_toplam"/>
-                            <field name="kaynak_yil" options="{'format': false}" invisible="durum != 'taslak'" placeholder="Önceki yıl"/>
+                            <field name="kaynak_yil" options="{'enable_formatting': false}" invisible="durum != 'taslak'" placeholder="Önceki yıl"/>
                             <field name="artis_orani" invisible="durum != 'taslak'"/>
                         </group>
                     </group>

@@ -7,7 +7,7 @@
             <list decoration-muted="durum == 'onaylandi'" sample="1">
                 <field name="name"/>
                 <field name="tip"/>
-                <field name="yil" options="{'format': false}"/>
+                <field name="yil" options="{'enable_formatting': false}"/>
                 <field name="ay"/>
                 <field name="currency_id" column_invisible="1"/>
                 <field name="beyan_edilen_kdv" optional="show"/>
@@ -44,7 +44,7 @@
                     <group>
                         <group>
                             <field name="tip" readonly="id"/>
-                            <field name="yil" options="{'format': false}" readonly="id"/>
+                            <field name="yil" options="{'enable_formatting': false}" readonly="id"/>
                             <field name="ay" readonly="id"/>
                             <field name="company_id" groups="base.group_multi_company" readonly="id"/>
                             <field name="currency_id" invisible="1"/>
@@ -99,7 +99,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="tip"/>
-                <field name="yil"/>
+                <field name="yil" options="{'enable_formatting': false}"/>
                 <filter name="kdv" string="KDV" domain="[('tip', 'in', ('kdv1', 'kdv2'))]"/>
                 <filter name="babs" string="Ba-Bs" domain="[('tip', 'in', ('ba', 'bs'))]"/>
                 <separator/>
