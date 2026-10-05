@@ -1,13 +1,13 @@
-.o_atlas_radar_panel {
+.o_atlas_mevzuat_panel {
     background-color: var(--body-bg, $o-webclient-background-color);
 
-    .o_atlas_radar_kartlar {
+    .o_atlas_mevzuat_kartlar {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 0.75rem;
     }
 
-    .o_atlas_radar_kart {
+    .o_atlas_mevzuat_kart {
         cursor: pointer;
         transition: box-shadow 0.15s;
 
@@ -16,11 +16,11 @@
         }
     }
 
-    .o_atlas_radar_tikla {
+    .o_atlas_mevzuat_tikla {
         cursor: pointer;
     }
 
-    .o_atlas_radar_hata {
+    .o_atlas_mevzuat_hata {
         max-width: 22rem;
     }
 }

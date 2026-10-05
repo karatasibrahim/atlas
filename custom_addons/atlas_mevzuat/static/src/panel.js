@@ -6,8 +6,8 @@ import { standardActionServiceProps } from "@web/webclient/actions/action_plugin
 
 const ACIK = ["yeni", "inceleniyor", "onaylandi"];
 
-export class AtlasRadarPanel extends Component {
-    static template = "atlas_radar.Panel";
+export class AtlasMevzuatPanel extends Component {
+    static template = "atlas_mevzuat.Panel";
     props = useProps(standardActionServiceProps);
 
     setup() {
@@ -18,7 +18,7 @@ export class AtlasRadarPanel extends Component {
     }
 
     async yukle() {
-        this.state.veri = await this.orm.call("atlas.radar.degisiklik", "panel_verisi", []);
+        this.state.veri = await this.orm.call("atlas.mevzuat.degisiklik", "panel_verisi", []);
     }
 
     get kartlar() {
@@ -67,17 +67,17 @@ export class AtlasRadarPanel extends Component {
 
     kartAc(kart) {
         if (kart.kaynak) {
-            return this.action.doAction("atlas_radar.action_kaynak", { additionalContext: { search_default_sorunlu: 1 } });
+            return this.action.doAction("atlas_mevzuat.action_kaynak", { additionalContext: { search_default_sorunlu: 1 } });
         }
         this.action.doAction({
-            type: "ir.actions.act_window", name: kart.ad, res_model: "atlas.radar.degisiklik",
+            type: "ir.actions.act_window", name: kart.ad, res_model: "atlas.mevzuat.degisiklik",
             views: [[false, "list"], [false, "kanban"], [false, "form"]], domain: kart.alan,
         });
     }
 
     kategoriAc(k) {
         this.action.doAction({
-            type: "ir.actions.act_window", name: k.ad, res_model: "atlas.radar.degisiklik",
+            type: "ir.actions.act_window", name: k.ad, res_model: "atlas.mevzuat.degisiklik",
             views: [[false, "list"], [false, "form"]], domain: [["durum", "in", ACIK], ["kategori_id", "=", k.id || false]],
         });
     }
@@ -91,4 +91,4 @@ export class AtlasRadarPanel extends Component {
     }
 }
 
-registry.category("actions").add("atlas_radar.panel", AtlasRadarPanel);
+registry.category("actions").add("atlas_mevzuat.panel", AtlasMevzuatPanel);

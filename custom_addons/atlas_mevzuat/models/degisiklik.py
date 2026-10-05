@@ -17,25 +17,25 @@ DURUMLAR = [('yeni', 'Yeni'), ('inceleniyor', 'İnceleniyor'), ('onaylandi', 'Ak
 ACIK_DURUMLAR = ('yeni', 'inceleniyor', 'onaylandi')
 
 
-class AtlasRadarDegisiklik(models.Model):
-    _name = 'atlas.radar.degisiklik'
-    _inherit = ['atlas.radar.denetim.mixin', 'mail.thread', 'mail.activity.mixin']
-    _description = 'Radar Değişikliği'
+class AtlasMevzuatDegisiklik(models.Model):
+    _name = 'atlas.mevzuat.degisiklik'
+    _inherit = ['atlas.mevzuat.denetim.mixin', 'mail.thread', 'mail.activity.mixin']
+    _description = 'Mevzuat Değişikliği'
     _order = 'tespit_tarihi desc, id desc'
     _denetim_alanlari = ('durum', 'onem', 'kategori_id', 'yururluk_tarihi', 'modul_ids', 'company_ids', 'kirici',
                          'gelistirme_gerekli', 'ayar_gerekli', 'kullanici_aksiyonu', 'inceleme_notu')
 
     name = fields.Char(string='Başlık', required=True, tracking=True)
-    belge_id = fields.Many2one('atlas.radar.belge', string='Belge', ondelete='restrict', index=True)
-    kaynak_id = fields.Many2one('atlas.radar.kaynak', string='Kaynak', related='belge_id.kaynak_id', store=True, index=True)
+    belge_id = fields.Many2one('atlas.mevzuat.belge', string='Belge', ondelete='restrict', index=True)
+    kaynak_id = fields.Many2one('atlas.mevzuat.kaynak', string='Kaynak', related='belge_id.kaynak_id', store=True, index=True)
     kurum = fields.Char(related='kaynak_id.kurum', store=True)
     ulke_id = fields.Many2one(related='kaynak_id.ulke_id', store=True)
     url = fields.Char(related='belge_id.url')
     tur = fields.Selection([('yeni', 'Yeni Yayın'), ('guncelleme', 'İçerik Güncellendi')], string='Tür', default='yeni', required=True)
     durum = fields.Selection(DURUMLAR, string='Durum', default='yeni', required=True, tracking=True, index=True)
     onem = fields.Selection(ONEMLER, string='Önem', default='dusuk', required=True, tracking=True, index=True)
-    kategori_id = fields.Many2one('atlas.radar.kategori', string='Kategori', tracking=True)
-    etiket_ids = fields.Many2many('atlas.radar.etiket', string='Etiketler')
+    kategori_id = fields.Many2one('atlas.mevzuat.kategori', string='Kategori', tracking=True)
+    etiket_ids = fields.Many2many('atlas.mevzuat.etiket', string='Etiketler')
     yayim_tarihi = fields.Date(string='Yayım Tarihi')
     tespit_tarihi = fields.Datetime(string='Tespit Tarihi', default=fields.Datetime.now, readonly=True, index=True)
     yururluk_tarihi = fields.Date(string='Yürürlük Tarihi', tracking=True, index=True)
@@ -46,7 +46,7 @@ class AtlasRadarDegisiklik(models.Model):
     siniflandirma = fields.Selection([('yok', 'Sınıflandırılmadı'), ('kural', 'Kural'), ('ai', 'AI önerisi (kabul edildi)'),
                                       ('manuel', 'Manuel')], string='Sınıflandırma', default='yok', readonly=True)
     guven = fields.Float(string='Güven (%)', readonly=True, aggregator='avg')
-    kural_ids = fields.Many2many('atlas.radar.kural', string='Eşleşen Kurallar', readonly=True)
+    kural_ids = fields.Many2many('atlas.mevzuat.kural', string='Eşleşen Kurallar', readonly=True)
     kural_aciklama = fields.Char(string='Eşleşmeler', readonly=True)
     kirici = fields.Boolean(string='Kırıcı Değişiklik', tracking=True)
     gelistirme_gerekli = fields.Boolean(string='Geliştirme Gerekli')
@@ -59,23 +59,23 @@ class AtlasRadarDegisiklik(models.Model):
     ai_guven = fields.Float(string='AI Güveni (%)', readonly=True)
     ai_ozet = fields.Text(string='AI Özeti', readonly=True)
     ai_onem = fields.Selection(ONEMLER, string='AI Önemi', readonly=True)
-    ai_kategori_id = fields.Many2one('atlas.radar.kategori', string='AI Kategorisi', readonly=True)
-    ai_modul_ids = fields.Many2many('atlas.radar.modul', 'atlas_radar_degisiklik_ai_modul_rel', string='AI Modülleri', readonly=True)
+    ai_kategori_id = fields.Many2one('atlas.mevzuat.kategori', string='AI Kategorisi', readonly=True)
+    ai_modul_ids = fields.Many2many('atlas.mevzuat.modul', 'atlas_mevzuat_degisiklik_ai_modul_rel', string='AI Modülleri', readonly=True)
     ai_yururluk = fields.Date(string='AI Yürürlük', readonly=True)
     ai_ilgisiz = fields.Boolean(string='AI: İlgisiz', readonly=True)
     ai_hata = fields.Char(string='AI Hatası', readonly=True)
     # Etki
-    modul_ids = fields.Many2many('atlas.radar.modul', string='Etkilenen Modüller', tracking=True)
+    modul_ids = fields.Many2many('atlas.mevzuat.modul', string='Etkilenen Modüller', tracking=True)
     company_ids = fields.Many2many('res.company', string='Etkilenen Şirketler', help='Boşsa tüm şirketler.')
-    etki_ids = fields.One2many('atlas.radar.etki', 'degisiklik_id', string='Etki Analizi')
-    task_ids = fields.One2many('project.task', 'atlas_radar_degisiklik_id', string='Görevler')
+    etki_ids = fields.One2many('atlas.mevzuat.etki', 'degisiklik_id', string='Etki Analizi')
+    task_ids = fields.One2many('project.task', 'atlas_mevzuat_degisiklik_id', string='Görevler')
     task_sayisi = fields.Integer(compute='_compute_task_sayisi')
     sorumlu_id = fields.Many2one('res.users', string='Sorumlu', tracking=True, domain=[('share', '=', False)])
     # İnceleme
     inceleyen_id = fields.Many2one('res.users', string='İnceleyen', readonly=True)
     inceleme_tarihi = fields.Datetime(string='İnceleme Tarihi', readonly=True)
     inceleme_notu = fields.Text(string='İnceleme Notu')
-    mukerrer_id = fields.Many2one('atlas.radar.degisiklik', string='Aynısı', readonly=True, index=True)
+    mukerrer_id = fields.Many2one('atlas.mevzuat.degisiklik', string='Aynısı', readonly=True, index=True)
     renk = fields.Integer(compute='_compute_renk')
     gecikti = fields.Boolean(string='Yürürlük Yaklaştı/Geçti', compute='_compute_gecikti', search='_search_gecikti')
 
@@ -104,7 +104,7 @@ class AtlasRadarDegisiklik(models.Model):
     def _belgeden_olustur(self, belge, tur, onceki_metin=None, zorla=False):
         kaynak = belge.kaynak_id
         metin = belge.icerik or ''
-        sonuc = siniflandir(belge.name, metin, self.env['atlas.radar.kural']._motor_kurallari(kaynak))
+        sonuc = siniflandir(belge.name, metin, self.env['atlas.mevzuat.kural']._motor_kurallari(kaynak))
         if not sonuc and kaynak.sadece_eslesenler and not zorla:
             belge.durum = 'ilgisiz'
             return self.browse()
@@ -113,12 +113,12 @@ class AtlasRadarDegisiklik(models.Model):
             'yayim_tarihi': belge.yayim_tarihi or tarih_bul(belge.name),
             'yururluk_tarihi': yururluk_bul(belge.name + ' ' + metin),
             'kategori_id': kaynak.kategori_id.id, 'etiket_ids': [Command.set(kaynak.etiket_ids.ids)],
-            'sorumlu_id': self.env['atlas.radar.ayar']._ayar('sorumlu').id or False,
+            'sorumlu_id': self.env['atlas.mevzuat.ayar']._ayar('sorumlu').id or False,
         }
         if tur == 'guncelleme' and onceki_metin is not None:
             vals['fark'] = fark(onceki_metin, belge.name + '\n' + metin)
         vals.update(self._siniflandirma_degerleri(sonuc))
-        if self.env['atlas.radar.ayar']._ayar('ai_otomatik'):
+        if self.env['atlas.mevzuat.ayar']._ayar('ai_otomatik'):
             vals['ai_durum'] = 'bekliyor'
         degisiklik = self.create(vals)
         degisiklik._mukerrer_kontrol()
@@ -157,7 +157,7 @@ class AtlasRadarDegisiklik(models.Model):
 
     def _etkileri_guncelle(self):
         """Etkilenen modüller için etki satırı açar (varsa dokunmaz); modülden çıkanlar açıksa silinir."""
-        Etki = self.env['atlas.radar.etki']
+        Etki = self.env['atlas.mevzuat.etki']
         for d in self:
             mevcut = d.etki_ids.mapped('modul_id')
             for m in d.modul_ids - mevcut:
@@ -166,8 +166,8 @@ class AtlasRadarDegisiklik(models.Model):
             d.etki_ids.filtered(lambda e: e.modul_id not in d.modul_ids and e.durum == 'acik' and not e.task_id).unlink()
 
     def _bildir(self):
-        """Ayarlardaki eşik ve üzerindeki önemde: modül sorumlularına ve radar sorumlusuna aktivite."""
-        Ayar = self.env['atlas.radar.ayar']
+        """Ayarlardaki eşik ve üzerindeki önemde: modül sorumlularına ve mevzuat sorumlusuna aktivite."""
+        Ayar = self.env['atlas.mevzuat.ayar']
         esik = ONEM_SIRA.get(Ayar._ayar('bildirim_onem'), 3)
         for d in self:
             if ONEM_SIRA.get(d.onem, 0) < esik:
@@ -177,15 +177,15 @@ class AtlasRadarDegisiklik(models.Model):
                 d.activity_schedule('mail.mail_activity_data_todo', user_id=u.id,
                                     date_deadline=min(d.yururluk_tarihi or fields.Date.today() + timedelta(days=3),
                                                       fields.Date.today() + timedelta(days=3)),
-                                    summary=self.env._('Radar: %(onem)s önemde mevzuat değişikliği', onem=dict(ONEMLER)[d.onem]))
+                                    summary=self.env._('Mevzuat: %(onem)s önemde mevzuat değişikliği', onem=dict(ONEMLER)[d.onem]))
             if kullanicilar:
-                self.env['atlas.radar.denetim'].kaydet(d, 'bildirim', self.env._('Aktivite: %s', ', '.join(kullanicilar.mapped('name'))))
+                self.env['atlas.mevzuat.denetim'].kaydet(d, 'bildirim', self.env._('Aktivite: %s', ', '.join(kullanicilar.mapped('name'))))
 
     # ------------------------------------------------------------------ inceleme akışı
     def _inceleme(self, durum, aciklama):
         for d in self:
             d.write({'durum': durum, 'inceleyen_id': self.env.uid, 'inceleme_tarihi': fields.Datetime.now()})
-            self.env['atlas.radar.denetim'].kaydet(d, 'inceleme', aciklama)
+            self.env['atlas.mevzuat.denetim'].kaydet(d, 'inceleme', aciklama)
             d.activity_ids.filtered(lambda a: a.activity_type_id == self.env.ref('mail.mail_activity_data_todo')).action_feedback(
                 feedback=aciklama)
 
@@ -199,7 +199,7 @@ class AtlasRadarDegisiklik(models.Model):
             if d.siniflandirma == 'yok' and not d.modul_ids:
                 raise UserError(self.env._('"%s": onaylamadan önce etkilenen modülleri belirleyin.', d.name))
         self._inceleme('onaylandi', self.env._('Onaylandı: ERP etkisi var, aksiyon gerekli'))
-        if self.env['atlas.radar.ayar']._ayar('otomatik_gorev'):
+        if self.env['atlas.mevzuat.ayar']._ayar('otomatik_gorev'):
             self.filtered(lambda d: not d.task_ids).action_gorev_olustur()
 
     def action_reddet(self):
@@ -222,15 +222,15 @@ class AtlasRadarDegisiklik(models.Model):
     def action_kurallari_uygula(self):
         """Kuralları yeniden çalıştırır (yerel işlem, dış bağlantı yok)."""
         for d in self:
-            sonuc = siniflandir(d.name, d.icerik or '', self.env['atlas.radar.kural']._motor_kurallari(d.kaynak_id))
+            sonuc = siniflandir(d.name, d.icerik or '', self.env['atlas.mevzuat.kural']._motor_kurallari(d.kaynak_id))
             d.write(d._siniflandirma_degerleri(sonuc) | {'ai_onerisi': False})
             d._etkileri_guncelle()
 
     def action_ai_iste(self):
-        if not self.env['atlas.radar.ayar']._ayar('ai_etkin'):
-            raise UserError(self.env._('Yapay zekâ önerisi Radar ayarlarında kapalı.'))
+        if not self.env['atlas.mevzuat.ayar']._ayar('ai_etkin'):
+            raise UserError(self.env._('Yapay zekâ önerisi Mevzuat Takip ayarlarında kapalı.'))
         self.write({'ai_durum': 'bekliyor', 'ai_hata': False})
-        self.env.ref('atlas_radar.ir_cron_radar_ai')._trigger()
+        self.env.ref('atlas_mevzuat.ir_cron_mevzuat_ai')._trigger()
 
     def action_ai_kabul(self):
         for d in self.filtered(lambda d: d.ai_durum == 'tamam'):
@@ -245,34 +245,34 @@ class AtlasRadarDegisiklik(models.Model):
                 vals['ozet'] = d.ai_ozet
             d.write(vals)
             d._etkileri_guncelle()
-            self.env['atlas.radar.denetim'].kaydet(d, 'ai', self.env._('AI önerisi kabul edildi (güven %%%s)', round(d.ai_guven)))
+            self.env['atlas.mevzuat.denetim'].kaydet(d, 'ai', self.env._('AI önerisi kabul edildi (güven %%%s)', round(d.ai_guven)))
 
     def action_gorev_olustur(self):
         """Açık her etki için (etki yoksa değişiklik için) proje görevi açar."""
-        proje = self.env['atlas.radar.ayar']._ayar('proje')
+        proje = self.env['atlas.mevzuat.ayar']._ayar('proje')
         if not proje:
-            raise UserError(self.env._('Radar ayarlarında görev projesi seçilmemiş.'))
+            raise UserError(self.env._('Mevzuat Takip ayarlarında görev projesi seçilmemiş.'))
         Task = self.env['project.task']
         for d in self:
             aciklama = (f'<p>{d.ozet or d.ai_ozet or ""}</p><p><a href="{d.url or ""}">{d.kurum or ""} — kaynak</a></p>'
                         f'<p>Yürürlük: {d.yururluk_tarihi or "-"}</p>')
-            ortak = {'project_id': proje.id, 'atlas_radar_degisiklik_id': d.id, 'date_deadline': d.yururluk_tarihi,
+            ortak = {'project_id': proje.id, 'atlas_mevzuat_degisiklik_id': d.id, 'date_deadline': d.yururluk_tarihi,
                      'priority': '1' if d.onem in ('yuksek', 'kritik') else '0'}
             etkiler = d.etki_ids.filtered(lambda e: e.durum == 'acik' and not e.task_id)
             if not etkiler and not d.task_ids:
-                Task.create(dict(ortak, name=f'[Radar] {d.name}'[:250], description=aciklama,
+                Task.create(dict(ortak, name=f'[Mevzuat] {d.name}'[:250], description=aciklama,
                                  user_ids=[Command.set((d.sorumlu_id or self.env.user).ids)]))
             for e in etkiler:
-                e.task_id = Task.create(dict(ortak, name=f'[Radar · {e.modul_id.name}] {d.name}'[:250],
+                e.task_id = Task.create(dict(ortak, name=f'[Mevzuat · {e.modul_id.name}] {d.name}'[:250],
                                              description=aciklama + (f'<p>{e.aciklama}</p>' if e.aciklama else ''),
-                                             atlas_radar_etki_id=e.id,
+                                             atlas_mevzuat_etki_id=e.id,
                                              user_ids=[Command.set((e.sorumlu_id or d.sorumlu_id or self.env.user).ids)]))
-            self.env['atlas.radar.denetim'].kaydet(d, 'gorev', self.env._('Görevler oluşturuldu (%s)', len(d.task_ids)))
+            self.env['atlas.mevzuat.denetim'].kaydet(d, 'gorev', self.env._('Görevler oluşturuldu (%s)', len(d.task_ids)))
         return self.action_gorevler() if len(self) == 1 else True
 
     def action_gorevler(self):
-        return {'type': 'ir.actions.act_window', 'name': self.env._('Radar Görevleri'), 'res_model': 'project.task',
-                'view_mode': 'list,form', 'domain': [('atlas_radar_degisiklik_id', 'in', self.ids)]}
+        return {'type': 'ir.actions.act_window', 'name': self.env._('Mevzuat Görevleri'), 'res_model': 'project.task',
+                'view_mode': 'list,form', 'domain': [('atlas_mevzuat_degisiklik_id', 'in', self.ids)]}
 
     def action_kaynagi_ac(self):
         self.ensure_one()
@@ -283,32 +283,32 @@ class AtlasRadarDegisiklik(models.Model):
     # ------------------------------------------------------------------ yapay zekâ
     @api.model
     def _ai_isle(self, limit=10, oturum=None):
-        Ayar = self.env['atlas.radar.ayar']
+        Ayar = self.env['atlas.mevzuat.ayar']
         bekleyen = self.search([('ai_durum', '=', 'bekliyor')], limit=limit, order='id')
         if not bekleyen:
             return
         if not Ayar._ayar('ai_etkin') or not Ayar._ayar('ai_anahtar'):
             bekleyen.write({'ai_durum': 'hata', 'ai_hata': self.env._('Yapay zekâ kapalı veya API anahtarı yok')})
             return
-        kategoriler = {k.kod: k.name for k in self.env['atlas.radar.kategori'].search([])}
-        Modul = self.env['atlas.radar.modul']
+        kategoriler = {k.kod: k.name for k in self.env['atlas.mevzuat.kategori'].search([])}
+        Modul = self.env['atlas.mevzuat.modul']
         moduller = {m.teknik_ad: m.aciklama or m.name for m in Modul.search([])}
         for d in bekleyen:
             istem = ai.istem_olustur(d.name, d.icerik or '', f'{d.kurum} — {d.kaynak_id.name}', kategoriler, moduller)
             try:
                 s = ai.sor(Ayar._ayar('ai_anahtar'), Ayar._ayar('ai_model'), istem, oturum=oturum)
             except Exception as e:  # ağ, kota, ayrıştırma …
-                _logger.warning('Radar AI hatası (%s): %s', d.id, e)
+                _logger.warning('Mevzuat AI hatası (%s): %s', d.id, e)
                 d.write({'ai_durum': 'hata', 'ai_hata': str(e)[:250]})
                 continue
-            kategori = self.env['atlas.radar.kategori'].search([('kod', '=', s['kategori'])], limit=1) if s['kategori'] else None
+            kategori = self.env['atlas.mevzuat.kategori'].search([('kod', '=', s['kategori'])], limit=1) if s['kategori'] else None
             d.write({
                 'ai_durum': 'tamam', 'ai_hata': False, 'ai_guven': s['guven'], 'ai_ozet': s['ozet'], 'ai_onem': s['onem'],
                 'ai_kategori_id': kategori.id if kategori else False, 'ai_ilgisiz': s['ilgisiz'],
                 'ai_modul_ids': [Command.set(Modul.search([('teknik_ad', 'in', s['moduller'])]).ids)],
                 'ai_yururluk': tarih_bul(s['yururluk_tarihi']) if s['yururluk_tarihi'] else False,
             })
-            self.env['atlas.radar.denetim'].kaydet(d, 'ai', self.env._('AI önerisi alındı (güven %%%s)', round(s['guven'])),
+            self.env['atlas.mevzuat.denetim'].kaydet(d, 'ai', self.env._('AI önerisi alındı (güven %%%s)', round(s['guven'])),
                                                    {k: v for k, v in s.items() if k != 'ozet'})
 
     @api.model
@@ -325,25 +325,25 @@ class AtlasRadarDegisiklik(models.Model):
             'yaklasan': self.search([('yururluk_tarihi', '>=', bugun), ('yururluk_tarihi', '<=', bugun + timedelta(days=14)),
                                      ('durum', 'in', ACIK_DURUMLAR)], order='yururluk_tarihi'),
             'bekleyen': self.search_count([('durum', 'in', ('yeni', 'inceleniyor'))]),
-            'sorunlu': self.env['atlas.radar.kaynak'].search([('saglik', 'in', ('hata', 'robots'))]),
+            'sorunlu': self.env['atlas.mevzuat.kaynak'].search([('saglik', 'in', ('hata', 'robots'))]),
         }
 
     @api.model
     def _ozet_gonder(self):
-        alicilar = self.env['atlas.radar.ayar']._ayar('ozet_alicilar').filtered('email')
+        alicilar = self.env['atlas.mevzuat.ayar']._ayar('ozet_alicilar').filtered('email')
         veri = self._ozet_verisi()
         if not alicilar or not (veri['yeniler'] or veri['yaklasan'] or veri['sorunlu']):
             return False
-        govde = self.env['ir.qweb']._render('atlas_radar.ozet_eposta', dict(veri, onemler=dict(ONEMLER),
+        govde = self.env['ir.qweb']._render('atlas_mevzuat.ozet_eposta', dict(veri, onemler=dict(ONEMLER),
                                                                            taban=self.env['ir.config_parameter'].sudo().get_str('web.base.url')))
         mail = self.env['mail.mail'].sudo().create({
-            'subject': self.env._('Atlas Radar günlük özet: %(yeni)s yeni değişiklik, %(bekleyen)s inceleme bekliyor',
+            'subject': self.env._('Mevzuat Takip günlük özet: %(yeni)s yeni değişiklik, %(bekleyen)s inceleme bekliyor',
                                   yeni=len(veri['yeniler']), bekleyen=veri['bekleyen']),
             'body_html': govde,
             'email_to': ','.join(alicilar.mapped('email_formatted')),
             'auto_delete': True,
         })
-        self.env['atlas.radar.denetim'].kaydet(None, 'bildirim', self.env._('Günlük özet: %s alıcı', len(alicilar)))
+        self.env['atlas.mevzuat.denetim'].kaydet(None, 'bildirim', self.env._('Günlük özet: %s alıcı', len(alicilar)))
         return mail
 
     @api.model
@@ -357,7 +357,7 @@ class AtlasRadarDegisiklik(models.Model):
         son = self.search([('durum', '!=', 'mukerrer')], limit=12)
         yaklasan = self.search([('yururluk_tarihi', '>=', bugun - timedelta(days=7)), ('durum', 'in', ACIK_DURUMLAR)],
                                order='yururluk_tarihi', limit=10)
-        kaynaklar = self.env['atlas.radar.kaynak'].with_context(active_test=False).search([])
+        kaynaklar = self.env['atlas.mevzuat.kaynak'].with_context(active_test=False).search([])
         ozet = lambda d: {'id': d.id, 'ad': d.name, 'onem': d.onem, 'onem_ad': dict(ONEMLER)[d.onem], 'durum': d.durum,
                           'durum_ad': dict(DURUMLAR)[d.durum], 'kurum': d.kurum or '', 'kategori': d.kategori_id.name or '',
                           'tarih': fields.Datetime.to_string(d.tespit_tarihi), 'yururluk': fields.Date.to_string(d.yururluk_tarihi) if d.yururluk_tarihi else '',
@@ -390,15 +390,15 @@ class AtlasRadarDegisiklik(models.Model):
             raise UserError(self.env._('Onaylanmış/uygulanmış değişiklik silinemez; denetim izi korunur.'))
 
 
-class AtlasRadarEtki(models.Model):
-    _name = 'atlas.radar.etki'
-    _inherit = ['atlas.radar.denetim.mixin']
-    _description = 'Radar Etki Analizi'
+class AtlasMevzuatEtki(models.Model):
+    _name = 'atlas.mevzuat.etki'
+    _inherit = ['atlas.mevzuat.denetim.mixin']
+    _description = 'Mevzuat Etki Analizi'
     _order = 'degisiklik_id desc, id'
     _denetim_alanlari = ('durum', 'sorumlu_id', 'company_id')
 
-    degisiklik_id = fields.Many2one('atlas.radar.degisiklik', string='Değişiklik', required=True, ondelete='cascade', index=True)
-    modul_id = fields.Many2one('atlas.radar.modul', string='Modül', required=True)
+    degisiklik_id = fields.Many2one('atlas.mevzuat.degisiklik', string='Değişiklik', required=True, ondelete='cascade', index=True)
+    modul_id = fields.Many2one('atlas.mevzuat.modul', string='Modül', required=True)
     company_id = fields.Many2one('res.company', string='Şirket', help='Boşsa tüm şirketler')
     aciklama = fields.Text(string='Etki')
     sorumlu_id = fields.Many2one('res.users', string='Sorumlu', domain=[('share', '=', False)])
@@ -413,15 +413,15 @@ class AtlasRadarEtki(models.Model):
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
-    atlas_radar_degisiklik_id = fields.Many2one('atlas.radar.degisiklik', string='Radar Değişikliği', index='btree_not_null',
+    atlas_mevzuat_degisiklik_id = fields.Many2one('atlas.mevzuat.degisiklik', string='Mevzuat Değişikliği', index='btree_not_null',
                                                 ondelete='set null', groups='base.group_system')
-    atlas_radar_etki_id = fields.Many2one('atlas.radar.etki', string='Radar Etkisi', ondelete='set null', groups='base.group_system')
+    atlas_mevzuat_etki_id = fields.Many2one('atlas.mevzuat.etki', string='Mevzuat Etkisi', ondelete='set null', groups='base.group_system')
 
     def write(self, vals):
         sonuc = super().write(vals)
         if 'state' in vals:
-            gorevler = self.sudo().filtered('atlas_radar_etki_id')
+            gorevler = self.sudo().filtered('atlas_mevzuat_etki_id')
             for t in gorevler.filtered('is_closed'):
-                if t.atlas_radar_etki_id.durum == 'acik':
-                    t.atlas_radar_etki_id.durum = 'tamam'
+                if t.atlas_mevzuat_etki_id.durum == 'acik':
+                    t.atlas_mevzuat_etki_id.durum = 'tamam'
         return sonuc

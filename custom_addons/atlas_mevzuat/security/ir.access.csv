@@ -1,0 +1,11 @@
+id,name,model_id,group_id/id,operation,domain
+access_mevzuat_denetim,atlas.mevzuat.denetim admin,atlas.mevzuat.denetim,base.group_system,cr,
+access_mevzuat_kategori,atlas.mevzuat.kategori admin,atlas.mevzuat.kategori,base.group_system,crud,
+access_mevzuat_etiket,atlas.mevzuat.etiket admin,atlas.mevzuat.etiket,base.group_system,crud,
+access_mevzuat_modul,atlas.mevzuat.modul admin,atlas.mevzuat.modul,base.group_system,crud,
+access_mevzuat_kural,atlas.mevzuat.kural admin,atlas.mevzuat.kural,base.group_system,crud,
+access_mevzuat_kaynak,atlas.mevzuat.kaynak admin,atlas.mevzuat.kaynak,base.group_system,crud,
+access_mevzuat_belge,atlas.mevzuat.belge admin,atlas.mevzuat.belge,base.group_system,crud,
+access_mevzuat_degisiklik,atlas.mevzuat.degisiklik admin,atlas.mevzuat.degisiklik,base.group_system,crud,
+access_mevzuat_etki,atlas.mevzuat.etki admin,atlas.mevzuat.etki,base.group_system,crud,
+access_mevzuat_ayar,atlas.mevzuat.ayar admin,atlas.mevzuat.ayar,base.group_system,crud,

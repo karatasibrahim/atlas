@@ -14,7 +14,7 @@ from .guvenlik import GuvenlikHatasi, cozumle, url_dogrula
 
 _logger = logging.getLogger(__name__)
 
-KULLANICI_AJANI = 'AtlasRadar/1.0 (ERP regulatory change monitor)'  # yalnız ASCII: bazı sunucular aksi halde yanıt vermiyor
+KULLANICI_AJANI = 'AtlasMevzuat/1.0 (ERP regulatory change monitor)'  # yalnız ASCII: bazı sunucular aksi halde yanıt vermiyor
 EN_FAZLA_BOYUT = 5 * 1024 * 1024
 EN_FAZLA_YONLENDIRME = 5
 TEKRAR_DURUMLARI = {429, 500, 502, 503, 504}

@@ -8,10 +8,10 @@ from ..services.siniflandirici import Kural, kelimeler
 ONEMLER = [('dusuk', 'Düşük'), ('orta', 'Orta'), ('yuksek', 'Yüksek'), ('kritik', 'Kritik')]
 
 
-class AtlasRadarDenetim(models.Model):
+class AtlasMevzuatDenetim(models.Model):
     """Silinemez ve değiştirilemez denetim günlüğü."""
-    _name = 'atlas.radar.denetim'
-    _description = 'Radar Denetim Günlüğü'
+    _name = 'atlas.mevzuat.denetim'
+    _description = 'Mevzuat Denetim Günlüğü'
     _order = 'id desc'
     _rec_name = 'aciklama'
 
@@ -55,10 +55,10 @@ class AtlasRadarDenetim(models.Model):
         })
 
 
-class AtlasRadarDenetimMixin(models.AbstractModel):
+class AtlasMevzuatDenetimMixin(models.AbstractModel):
     """Oluşturma, izlenen alanlardaki değişiklik ve silme işlemlerini denetim günlüğüne yazar."""
-    _name = 'atlas.radar.denetim.mixin'
-    _description = 'Radar Denetim Karışımı'
+    _name = 'atlas.mevzuat.denetim.mixin'
+    _description = 'Mevzuat Denetim Karışımı'
     _denetim_alanlari = ()
 
     def _denetim_deger(self, ad):
@@ -75,7 +75,7 @@ class AtlasRadarDenetimMixin(models.AbstractModel):
     @api.model_create_multi
     def create(self, vals_list):
         kayitlar = super().create(vals_list)
-        Denetim = self.env['atlas.radar.denetim']
+        Denetim = self.env['atlas.mevzuat.denetim']
         for k in kayitlar:
             Denetim.kaydet(k, 'olustur', self.env._('%(model)s oluşturuldu', model=self._description))
         return kayitlar
@@ -85,7 +85,7 @@ class AtlasRadarDenetimMixin(models.AbstractModel):
         once = {k.id: {a: k._denetim_deger(a) for a in izlenen} for k in self} if izlenen else {}
         sonuc = super().write(vals)
         if izlenen:
-            Denetim = self.env['atlas.radar.denetim']
+            Denetim = self.env['atlas.mevzuat.denetim']
             for k in self:
                 fark = {a: [once[k.id][a], k._denetim_deger(a)] for a in izlenen if once[k.id][a] != k._denetim_deger(a)}
                 if fark:
@@ -94,15 +94,15 @@ class AtlasRadarDenetimMixin(models.AbstractModel):
         return sonuc
 
     def unlink(self):
-        Denetim = self.env['atlas.radar.denetim']
+        Denetim = self.env['atlas.mevzuat.denetim']
         for k in self:
             Denetim.kaydet(k, 'sil', self.env._('%(model)s silindi: %(ad)s', model=self._description, ad=k.display_name))
         return super().unlink()
 
 
-class AtlasRadarKategori(models.Model):
-    _name = 'atlas.radar.kategori'
-    _description = 'Radar Kategorisi'
+class AtlasMevzuatKategori(models.Model):
+    _name = 'atlas.mevzuat.kategori'
+    _description = 'Mevzuat Kategorisi'
     _order = 'sira, name'
 
     name = fields.Char(string='Kategori', required=True, translate=True)
@@ -115,9 +115,9 @@ class AtlasRadarKategori(models.Model):
     _kod_benzersiz = models.Constraint('unique(kod)', 'Kategori kodu benzersiz olmalı.')
 
 
-class AtlasRadarEtiket(models.Model):
-    _name = 'atlas.radar.etiket'
-    _description = 'Radar Etiketi'
+class AtlasMevzuatEtiket(models.Model):
+    _name = 'atlas.mevzuat.etiket'
+    _description = 'Mevzuat Etiketi'
     _order = 'name'
 
     name = fields.Char(string='Etiket', required=True)
@@ -126,10 +126,10 @@ class AtlasRadarEtiket(models.Model):
     _ad_benzersiz = models.Constraint('unique(name)', 'Etiket adı benzersiz olmalı.')
 
 
-class AtlasRadarModul(models.Model):
+class AtlasMevzuatModul(models.Model):
     """Değişikliklerin etkileyebileceği Atlas/Odoo modülleri ve sorumluları."""
-    _name = 'atlas.radar.modul'
-    _description = 'Radar ERP Modülü'
+    _name = 'atlas.mevzuat.modul'
+    _description = 'Mevzuat ERP Modülü'
     _order = 'sira, name'
 
     name = fields.Char(string='Modül', required=True)
@@ -139,7 +139,7 @@ class AtlasRadarModul(models.Model):
     sorumlu_id = fields.Many2one('res.users', string='Sorumlu', domain=[('share', '=', False)],
                                  help='Bu modülü etkileyen değişikliklerde aktivite atanır ve görev sorumlusu olur.')
     kurulu = fields.Boolean(string='Kurulu', compute='_compute_kurulu')
-    etki_ids = fields.One2many('atlas.radar.etki', 'modul_id', string='Etkiler')
+    etki_ids = fields.One2many('atlas.mevzuat.etki', 'modul_id', string='Etkiler')
     acik_etki_sayisi = fields.Integer(string='Açık Etki', compute='_compute_acik_etki_sayisi')
     active = fields.Boolean(default=True)
 
@@ -152,16 +152,16 @@ class AtlasRadarModul(models.Model):
             m.kurulu = m.teknik_ad in kurulu
 
     def _compute_acik_etki_sayisi(self):
-        veri = dict(self.env['atlas.radar.etki']._read_group([('modul_id', 'in', self.ids), ('durum', '=', 'acik')],
+        veri = dict(self.env['atlas.mevzuat.etki']._read_group([('modul_id', 'in', self.ids), ('durum', '=', 'acik')],
                                                              ['modul_id'], ['__count']))
         for m in self:
             m.acik_etki_sayisi = veri.get(m, 0)
 
 
-class AtlasRadarKural(models.Model):
-    _name = 'atlas.radar.kural'
-    _inherit = ['atlas.radar.denetim.mixin']
-    _description = 'Radar Sınıflandırma Kuralı'
+class AtlasMevzuatKural(models.Model):
+    _name = 'atlas.mevzuat.kural'
+    _inherit = ['atlas.mevzuat.denetim.mixin']
+    _description = 'Mevzuat Sınıflandırma Kuralı'
     _order = 'sira, id'
     _denetim_alanlari = ('anahtar_kelimeler', 'haric_kelimeler', 'birlikte_kelimeler', 'yalniz_baslik', 'kategori_id', 'onem', 'modul_ids', 'active', 'agirlik')
 
@@ -176,14 +176,14 @@ class AtlasRadarKural(models.Model):
                                                                      '(ör. "teknik kılavuz" yalnız e-belge bağlamında).')
     yalniz_baslik = fields.Boolean(string='Yalnız Başlıkta Ara', help='Detay metnindeki menü/yan liste gibi gürültüden etkilenmemek için.')
     agirlik = fields.Float(string='Ağırlık', default=1.0)
-    kategori_id = fields.Many2one('atlas.radar.kategori', string='Kategori')
+    kategori_id = fields.Many2one('atlas.mevzuat.kategori', string='Kategori')
     onem = fields.Selection(ONEMLER, string='Önem', default='orta', required=True)
-    modul_ids = fields.Many2many('atlas.radar.modul', string='Etkilenen Modüller')
+    modul_ids = fields.Many2many('atlas.mevzuat.modul', string='Etkilenen Modüller')
     gelistirme_gerekli = fields.Boolean(string='Geliştirme Gerekebilir')
     ayar_gerekli = fields.Boolean(string='Ayar/Parametre Gerekebilir')
     kullanici_aksiyonu = fields.Boolean(string='Kullanıcı Aksiyonu')
     kirici = fields.Boolean(string='Kırıcı Değişiklik', help='Mevcut entegrasyonu bozabilecek değişiklik (şema, zorunlu alan …)')
-    kaynak_ids = fields.Many2many('atlas.radar.kaynak', string='Yalnız Bu Kaynaklar', help='Boşsa tüm kaynaklarda uygulanır.')
+    kaynak_ids = fields.Many2many('atlas.mevzuat.kaynak', string='Yalnız Bu Kaynaklar', help='Boşsa tüm kaynaklarda uygulanır.')
 
     @api.model
     def _motor_kurallari(self, kaynak=None):

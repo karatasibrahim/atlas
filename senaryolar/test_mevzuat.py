@@ -2,9 +2,9 @@ import json
 from datetime import date
 
 from odoo.exceptions import UserError
-from odoo.addons.atlas_radar.services import ayristirici, metin, siniflandirici
-from odoo.addons.atlas_radar.services.guvenlik import GuvenlikHatasi, alan_adlari, url_dogrula
-from odoo.addons.atlas_radar.services.tarayici import EN_FAZLA_BOYUT, TaramaHatasi, Tarayici
+from odoo.addons.atlas_mevzuat.services import ayristirici, metin, siniflandirici
+from odoo.addons.atlas_mevzuat.services.guvenlik import GuvenlikHatasi, alan_adlari, url_dogrula
+from odoo.addons.atlas_mevzuat.services.tarayici import EN_FAZLA_BOYUT, TaramaHatasi, Tarayici
 
 ok = lambda cond, msg: print(("  OK  " if cond else "  HATA"), msg)
 GENEL_IP = lambda host, port: {'93.184.216.34'}
@@ -46,20 +46,20 @@ def tarayici(kaynak, yollar, **kw):
 
 
 env = env(context=dict(env.context, tz='Europe/Istanbul'))
-Kaynak = env['atlas.radar.kaynak']
-Degisiklik = env['atlas.radar.degisiklik']
-Denetim = env['atlas.radar.denetim']
+Kaynak = env['atlas.mevzuat.kaynak']
+Degisiklik = env['atlas.mevzuat.degisiklik']
+Denetim = env['atlas.mevzuat.denetim']
 
 # --- Kurulum verisi
 tum = Kaynak.with_context(active_test=False).search([])
-ebelge = env.ref('atlas_radar.kaynak_ebelge')
+ebelge = env.ref('atlas_mevzuat.kaynak_ebelge')
 ok(len(tum) >= 7 and not ebelge.active and 'robots' in (ebelge.notlar or ''), "7 kaynak kuruldu; e-Belge portalı robots.txt nedeniyle pasif")
-ok(env['atlas.radar.kural'].search_count([]) >= 16 and env['atlas.radar.modul'].search_count([]) >= 11, "kurallar ve ERP modülleri kuruldu")
-menu = env.ref('atlas_radar.menu_radar_root')
-ok(menu.group_ids == env.ref('base.group_system'), "Radar menüsü yalnız sistem yöneticisine açık")
-erisim = env['ir.access'].search([('model_id.model', 'like', 'atlas.radar.%')])
-ok(erisim and all(a.group_id == env.ref('base.group_system') for a in erisim), "tüm Radar modellerine yalnız yönetici erişir")
-ok(env['atlas.radar.ayar']._ayar('sorumlu') == env.ref('base.user_admin') and env['atlas.radar.ayar']._ayar('proje'), "varsayılan sorumlu ve görev projesi")
+ok(env['atlas.mevzuat.kural'].search_count([]) >= 16 and env['atlas.mevzuat.modul'].search_count([]) >= 11, "kurallar ve ERP modülleri kuruldu")
+menu = env.ref('atlas_mevzuat.menu_mevzuat_root')
+ok(menu.group_ids == env.ref('base.group_system'), "Mevzuat Takip menüsü yalnız sistem yöneticisine açık")
+erisim = env['ir.access'].search([('model_id.model', 'like', 'atlas.mevzuat.%')])
+ok(erisim and all(a.group_id == env.ref('base.group_system') for a in erisim), "tüm Mevzuat Takip modellerine yalnız yönetici erişir")
+ok(env['atlas.mevzuat.ayar']._ayar('sorumlu') == env.ref('base.user_admin') and env['atlas.mevzuat.ayar']._ayar('proje'), "varsayılan sorumlu ve görev projesi")
 
 # --- Metin yardımcıları ve sınıflandırıcı
 ok(metin.tarih_bul('5 Ekim 2026 Gayrimenkul') == date(2026, 10, 5) and metin.tarih_bul('02/10/2026 tarihli') == date(2026, 10, 2)
@@ -67,9 +67,9 @@ ok(metin.tarih_bul('5 Ekim 2026 Gayrimenkul') == date(2026, 10, 5) and metin.tar
 ok(metin.yururluk_bul('Bu tebliğ 01.01.2027 tarihinden itibaren uygulanır.') == date(2027, 1, 1)
    and metin.yururluk_bul('1 Şubat 2027 tarihinde yürürlüğe girer') == date(2027, 2, 1), "yürürlük tarihi ifadeleri")
 ok(metin.ozet('a  b\n\n c ') == metin.ozet('a b\nc') and metin.ozet('a') != metin.ozet('b'), "içerik özeti boşluklara duyarsız, içeriğe duyarlı")
-kurallar = env['atlas.radar.kural']._motor_kurallari()
+kurallar = env['atlas.mevzuat.kural']._motor_kurallari()
 s = siniflandirici.siniflandir('E-FATURALARIN düzenlenmesine ilişkin duyuru', '', kurallar)
-ok(s and s['kategori_id'] == env.ref('atlas_radar.kat_ebelge').id and env.ref('atlas_radar.mod_ebelge').id in s['modul_ids']
+ok(s and s['kategori_id'] == env.ref('atlas_mevzuat.kat_ebelge').id and env.ref('atlas_mevzuat.mod_ebelge').id in s['modul_ids']
    and s['guven'] >= 60, f"Türkçe ek ve büyük harf: 'E-FATURALARIN' e-Belge kuralına uydu (güven {s and s['guven']})")
 s2 = siniflandirici.siniflandir('UBL-TR Şematron dosyaları güncellendi', 'e-Fatura teknik kılavuz', kurallar)
 ok(s2 and s2['onem'] == 'kritik' and s2['kirici'] and s2['gelistirme'], "şema değişikliği: kritik, kırıcı, geliştirme gerekli")
@@ -132,7 +132,7 @@ sonuc = k._tara(t)
 ok(not sonuc and len(k.belge_ids) == 2 and set(k.belge_ids.mapped('durum')) == {'temel'} and k.ilk_tarama_tamam and k.saglik == 'iyi',
    "ilk tarama temel alındı: 2 belge, değişiklik açılmadı, kaynak sağlıklı")
 istek = [i for i in oturum.istekler if i[1].endswith('/duyuru')][0]
-ok(istek[0] == 'POST' and istek[2] == b'{"type": 1}' and istek[3].startswith('AtlasRadar/') and istek[3].isascii(),
+ok(istek[0] == 'POST' and istek[2] == b'{"type": 1}' and istek[3].startswith('AtlasMevzuat/') and istek[3].isascii(),
    "POST gövdesi ve ASCII User-Agent gönderildi")
 ok(k.belge_ids.filtered(lambda b: b.dis_kimlik == '1').url == 'https://www.ornek.gov.tr/duyuru/1-ilk', "bağlantı şablonundan adres")
 
@@ -144,7 +144,7 @@ sonuc = k._tara(t)
 yeni = sonuc.filtered(lambda d: d.tur == 'yeni')
 guncel = sonuc.filtered(lambda d: d.tur == 'guncelleme')
 ok(len(sonuc) == 2 and len(yeni) == 1 and len(guncel) == 1, "ikinci tarama: 1 yeni yayın, 1 içerik güncellemesi")
-ok(yeni.kategori_id == env.ref('atlas_radar.kat_ebelge') and yeni.onem == 'yuksek' and yeni.siniflandirma == 'kural'
+ok(yeni.kategori_id == env.ref('atlas_mevzuat.kat_ebelge') and yeni.onem == 'yuksek' and yeni.siniflandirma == 'kural'
    and yeni.yururluk_tarihi == date(2027, 1, 1) and yeni.yayim_tarihi == date(2026, 10, 1),
    f"yeni: e-Belge, yüksek, yürürlük 01.01.2027 ({yeni.yururluk_tarihi})")
 ok(set(yeni.modul_ids.mapped('teknik_ad')) >= {'atlas_ebelge', 'atlas_mysoft'} and len(yeni.etki_ids) == len(yeni.modul_ids),
@@ -152,7 +152,7 @@ ok(set(yeni.modul_ids.mapped('teknik_ad')) >= {'atlas_ebelge', 'atlas_mysoft'} a
 ok(yeni.activity_ids and env.ref('base.user_admin') in yeni.activity_ids.mapped('user_id'), "yüksek önem: sorumluya aktivite")
 belge1 = guncel.belge_id
 ok(belge1.surum == 2 and belge1.onceki_ozet and '+' in (guncel.fark or '') and 'tevkifat' in guncel.fark
-   and guncel.kategori_id == env.ref('atlas_radar.kat_kdv'), "güncelleme: sürüm 2, önceki özet, fark, KDV kuralı")
+   and guncel.kategori_id == env.ref('atlas_mevzuat.kat_kdv'), "güncelleme: sürüm 2, önceki özet, fark, KDV kuralı")
 t, _ = tarayici(k, {'https://api.ornek.gov.tr/robots.txt': robots, 'https://api.ornek.gov.tr/duyuru': SahteYanit(200, json_govde(d1b, d2, d3), 'application/json')})
 ok(not k._tara(t), "aynı içerik tekrar tarandığında değişiklik yok")
 d4 = {'id': 4, 'slug': '4', 'title': '10995 Sayılı Karar Uyarınca Uygulanacak ÖTV Tutarları (12.09.2026)', 'tarih': '2026-09-12', 'aciklama': 'Eylül'}
@@ -229,7 +229,7 @@ ok(k.ardisik_hata == 4 and 'öğe bulunamadı' in k.son_hata, "boş liste hata s
 yeni.action_incele()
 ok(yeni.durum == 'inceleniyor' and yeni.inceleyen_id == env.user, "incelemeye alındı")
 yeni.action_onayla()
-proje = env['atlas.radar.ayar']._ayar('proje')
+proje = env['atlas.mevzuat.ayar']._ayar('proje')
 ok(yeni.durum == 'onaylandi' and len(yeni.task_ids) == len(yeni.etki_ids) and set(yeni.task_ids.mapped('project_id')) == {proje}
    and all(e.task_id for e in yeni.etki_ids) and yeni.task_ids[0].date_deadline.date() == date(2027, 1, 1),
    f"onay: her etki için görev açıldı ({len(yeni.task_ids)}), son tarih = yürürlük")
@@ -263,9 +263,9 @@ except UserError:
 ok(not onaylandi, "sınıflandırılmamış ve modülsüz değişiklik onaylanamaz")
 
 # --- Denetim günlüğü
-kayit = Denetim.search([('model', '=', 'atlas.radar.degisiklik'), ('res_id', '=', yeni.id)])
+kayit = Denetim.search([('model', '=', 'atlas.mevzuat.degisiklik'), ('res_id', '=', yeni.id)])
 ok({'olustur', 'inceleme', 'gorev', 'guncelle', 'bildirim'} <= set(kayit.mapped('islem')), "denetim: oluşturma, bildirim, inceleme, görev, alan değişikliği")
-ok(Denetim.search_count([('model', '=', 'atlas.radar.kaynak'), ('res_id', '=', k.id), ('islem', '=', 'tarama')]) >= 5, "her tarama günlüğe yazıldı")
+ok(Denetim.search_count([('model', '=', 'atlas.mevzuat.kaynak'), ('res_id', '=', k.id), ('islem', '=', 'tarama')]) >= 5, "her tarama günlüğe yazıldı")
 for islem in ('write', 'unlink'):
     try:
         with env.cr.savepoint():
@@ -282,9 +282,9 @@ try:
 except UserError:
     kapali = True
 ok(kapali, "AI kapalıyken öneri istenemez")
-ayar = env['atlas.radar.ayar'].create({'ai_etkin': True, 'ai_anahtar': 'sk-test', 'ai_model': 'claude-sonnet-5'})
+ayar = env['atlas.mevzuat.ayar'].create({'ai_etkin': True, 'ai_anahtar': 'sk-test', 'ai_model': 'claude-sonnet-5'})
 ayar.action_kaydet()
-ok(env['atlas.radar.ayar']._ayar('ai_etkin') and 'sk-test' not in (Denetim.search([('islem', '=', 'ayar')], limit=1).aciklama or ''),
+ok(env['atlas.mevzuat.ayar']._ayar('ai_etkin') and 'sk-test' not in (Denetim.search([('islem', '=', 'ayar')], limit=1).aciklama or ''),
    "ayar kaydedildi; API anahtarı günlüğe yazılmadı")
 asgari.action_ai_iste()
 
@@ -318,15 +318,15 @@ ok(mail and 'Asgari' in mail.body_html and env.ref('base.user_admin').email in m
 p = Degisiklik.panel_verisi()
 ok({'yeni', 'aksiyon', 'kritik', 'yaklasan', 'sorunlu_kaynak'} <= set(p['kpi']) and p['son'] and p['kaynaklar']
    and p['kpi']['sorunlu_kaynak'] >= 2, "panel verisi: KPI, son değişiklikler, kaynak sağlığı")
-from odoo.addons.atlas_radar.controllers.api import _degisiklik
+from odoo.addons.atlas_mevzuat.controllers.api import _degisiklik
 v = _degisiklik(asgari, ayrinti=True)
 ok(v['onem'] == 'kritik' and v['ai_onerisi'] and v['etkiler'] and json.dumps(v, default=str), "API: değişiklik JSON'a dönüştü")
 ok(Degisiklik.search_count([('gecikti', '=', True)]) >= 0, "yürürlüğü yaklaşan araması çalışıyor")
 
 # --- Şimdi tara: kullanıcı isteğinde dış bağlantı yok, görev tetiklenir
-onceki = env['ir.cron.trigger'].search_count([('cron_id', '=', env.ref('atlas_radar.ir_cron_radar_tara').id)])
+onceki = env['ir.cron.trigger'].search_count([('cron_id', '=', env.ref('atlas_mevzuat.ir_cron_mevzuat_tara').id)])
 k.action_simdi_tara()
-ok(env['ir.cron.trigger'].search_count([('cron_id', '=', env.ref('atlas_radar.ir_cron_radar_tara').id)]) == onceki + 1 and not k.son_kontrol,
+ok(env['ir.cron.trigger'].search_count([('cron_id', '=', env.ref('atlas_mevzuat.ir_cron_mevzuat_tara').id)]) == onceki + 1 and not k.son_kontrol,
    "Şimdi Tara: tarama arka plan görevine bırakıldı")
-ok(not env['account.move'].search_count([('create_date', '>=', yeni.create_date), ('ref', 'ilike', 'radar')]), "Radar ERP kaydı oluşturmadı")
+ok(not env['account.move'].search_count([('create_date', '>=', yeni.create_date), ('ref', 'ilike', 'mevzuat')]), "Mevzuat Takip ERP kaydı oluşturmadı")
 env.cr.rollback(); print("(geri alındı)")

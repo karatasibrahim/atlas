@@ -3,15 +3,15 @@ from odoo import api, fields, models
 from ..services.ai import VARSAYILAN_MODEL
 from .temel import ONEMLER
 
-ON_EK = 'atlas_radar.'
+ON_EK = 'atlas_mevzuat.'
 
 
-class AtlasRadarAyar(models.TransientModel):
-    """Radar ayarları (ir.config_parameter içinde saklanır; yalnız sistem yöneticisi)."""
-    _name = 'atlas.radar.ayar'
-    _description = 'Radar Ayarları'
+class AtlasMevzuatAyar(models.TransientModel):
+    """Mevzuat Takip ayarları (ir.config_parameter içinde saklanır; yalnız sistem yöneticisi)."""
+    _name = 'atlas.mevzuat.ayar'
+    _description = 'Mevzuat Takip Ayarları'
 
-    sorumlu_id = fields.Many2one('res.users', string='Radar Sorumlusu', domain=[('share', '=', False)],
+    sorumlu_id = fields.Many2one('res.users', string='Mevzuat Sorumlusu', domain=[('share', '=', False)],
                                  help='Yeni değişikliklerin varsayılan sorumlusu; kaynak hatalarında aktivite alır.')
     ozet_alici_ids = fields.Many2many('res.users', string='Günlük Özet Alıcıları', domain=[('share', '=', False)])
     bildirim_onem = fields.Selection(ONEMLER, string='Aktivite Eşiği', default='yuksek',
@@ -73,7 +73,7 @@ class AtlasRadarAyar(models.TransientModel):
                 ICP.set_str(ON_EK + anahtar, ham)
         if degisen:
             # API anahtarı günlüğe yazılmaz
-            self.env['atlas.radar.denetim'].kaydet(None, 'ayar', self.env._('Ayarlar değişti: %s', ', '.join(degisen)))
+            self.env['atlas.mevzuat.denetim'].kaydet(None, 'ayar', self.env._('Ayarlar değişti: %s', ', '.join(degisen)))
         return {'type': 'ir.actions.client', 'tag': 'display_notification',
-                'params': {'type': 'success', 'message': self.env._('Radar ayarları kaydedildi.'),
+                'params': {'type': 'success', 'message': self.env._('Mevzuat Takip ayarları kaydedildi.'),
                            'next': {'type': 'ir.actions.act_window_close'}}}

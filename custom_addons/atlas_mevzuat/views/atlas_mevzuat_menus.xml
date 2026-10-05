@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_mevzuat_root" name="Mevzuat Takip" sequence="95" groups="base.group_system"
+              web_icon="atlas_mevzuat,static/description/icon.png"/>
+    <menuitem id="menu_mevzuat_panel" name="Panel" parent="menu_mevzuat_root" action="action_panel" sequence="1"/>
+    <menuitem id="menu_mevzuat_degisiklik" name="Değişiklikler" parent="menu_mevzuat_root" action="action_degisiklik" sequence="10"/>
+    <menuitem id="menu_mevzuat_takvim" name="Yürürlük Takvimi" parent="menu_mevzuat_root" action="action_takvim" sequence="20"/>
+    <menuitem id="menu_mevzuat_etki" name="Etki Analizi" parent="menu_mevzuat_root" action="action_etki" sequence="30"/>
+    <menuitem id="menu_mevzuat_kaynak_ust" name="Kaynaklar" parent="menu_mevzuat_root" sequence="40"/>
+    <menuitem id="menu_mevzuat_kaynak" name="Kaynaklar" parent="menu_mevzuat_kaynak_ust" action="action_kaynak" sequence="1"/>
+    <menuitem id="menu_mevzuat_belge" name="Belgeler" parent="menu_mevzuat_kaynak_ust" action="action_belge" sequence="2"/>
+    <menuitem id="menu_mevzuat_ayar_ust" name="Yapılandırma" parent="menu_mevzuat_root" sequence="90"/>
+    <menuitem id="menu_mevzuat_ayar" name="Ayarlar" parent="menu_mevzuat_ayar_ust" action="action_ayar" sequence="1"/>
+    <menuitem id="menu_mevzuat_kural" name="Sınıflandırma Kuralları" parent="menu_mevzuat_ayar_ust" action="action_kural" sequence="10"/>
+    <menuitem id="menu_mevzuat_modul" name="ERP Modülleri" parent="menu_mevzuat_ayar_ust" action="action_modul" sequence="20"/>
+    <menuitem id="menu_mevzuat_kategori" name="Kategoriler" parent="menu_mevzuat_ayar_ust" action="action_kategori" sequence="30"/>
+    <menuitem id="menu_mevzuat_etiket" name="Etiketler" parent="menu_mevzuat_ayar_ust" action="action_etiket" sequence="40"/>
+    <menuitem id="menu_mevzuat_denetim" name="Denetim Günlüğü" parent="menu_mevzuat_ayar_ust" action="action_denetim" sequence="90"/>
+</odoo>

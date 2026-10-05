@@ -2,8 +2,8 @@
 <odoo>
     <!-- ============================== Değişiklik ============================== -->
     <record id="view_degisiklik_list" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.list</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.list</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <list decoration-danger="onem == 'kritik' and durum in ('yeni', 'inceleniyor', 'onaylandi')"
                   decoration-warning="onem == 'yuksek' and durum in ('yeni', 'inceleniyor')"
@@ -30,8 +30,8 @@
     </record>
 
     <record id="view_degisiklik_kanban" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.kanban</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.kanban</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <kanban default_group_by="durum" create="false" highlight_color="renk" sample="1">
                 <field name="kirici"/>
@@ -61,8 +61,8 @@
     </record>
 
     <record id="view_degisiklik_calendar" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.calendar</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.calendar</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <calendar string="Yürürlük Takvimi" date_start="yururluk_tarihi" color="kategori_id" mode="month" quick_create="0"
                       create="0" event_open_popup="1">
@@ -75,8 +75,8 @@
     </record>
 
     <record id="view_degisiklik_pivot" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.pivot</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.pivot</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <pivot string="Değişiklik Analizi">
                 <field name="kategori_id" type="row"/>
@@ -86,8 +86,8 @@
     </record>
 
     <record id="view_degisiklik_graph" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.graph</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.graph</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <graph string="Değişiklikler" type="bar" stacked="1">
                 <field name="tespit_tarihi" interval="week"/>
@@ -97,8 +97,8 @@
     </record>
 
     <record id="view_degisiklik_form" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.form</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.form</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <form string="Değişiklik">
                 <header>
@@ -221,8 +221,8 @@
     </record>
 
     <record id="view_degisiklik_search" model="ir.ui.view">
-        <field name="name">atlas.radar.degisiklik.search</field>
-        <field name="model">atlas.radar.degisiklik</field>
+        <field name="name">atlas.mevzuat.degisiklik.search</field>
+        <field name="model">atlas.mevzuat.degisiklik</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
@@ -257,25 +257,25 @@
 
     <record id="action_degisiklik" model="ir.actions.act_window">
         <field name="name">Değişiklikler</field>
-        <field name="res_model">atlas.radar.degisiklik</field>
+        <field name="res_model">atlas.mevzuat.degisiklik</field>
         <field name="view_mode">list,kanban,form,calendar,pivot,graph</field>
         <field name="context">{'search_default_acik': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Henüz değişiklik tespit edilmedi</p>
-            <p>Radar, kaynakları zamanlanmış görevle tarar. İlk taramada bulunanlar temel kabul edilir; sonraki yayınlar burada listelenir.</p>
+            <p>Mevzuat Takip, kaynakları zamanlanmış görevle tarar. İlk taramada bulunanlar temel kabul edilir; sonraki yayınlar burada listelenir.</p>
         </field>
     </record>
     <record id="action_takvim" model="ir.actions.act_window">
         <field name="name">Yürürlük Takvimi</field>
-        <field name="res_model">atlas.radar.degisiklik</field>
+        <field name="res_model">atlas.mevzuat.degisiklik</field>
         <field name="view_mode">calendar,list,form</field>
         <field name="domain">[('yururluk_tarihi', '!=', False), ('durum', 'not in', ('reddedildi', 'mukerrer'))]</field>
     </record>
 
     <!-- ============================== Etki ============================== -->
     <record id="view_etki_list" model="ir.ui.view">
-        <field name="name">atlas.radar.etki.list</field>
-        <field name="model">atlas.radar.etki</field>
+        <field name="name">atlas.mevzuat.etki.list</field>
+        <field name="model">atlas.mevzuat.etki</field>
         <field name="arch" type="xml">
             <list editable="bottom" create="false" decoration-muted="durum != 'acik'">
                 <field name="degisiklik_id" readonly="1"/>
@@ -291,8 +291,8 @@
         </field>
     </record>
     <record id="view_etki_search" model="ir.ui.view">
-        <field name="name">atlas.radar.etki.search</field>
-        <field name="model">atlas.radar.etki</field>
+        <field name="name">atlas.mevzuat.etki.search</field>
+        <field name="model">atlas.mevzuat.etki</field>
         <field name="arch" type="xml">
             <search>
                 <field name="modul_id"/>
@@ -308,15 +308,15 @@
     </record>
     <record id="action_etki" model="ir.actions.act_window">
         <field name="name">Etki Analizi</field>
-        <field name="res_model">atlas.radar.etki</field>
+        <field name="res_model">atlas.mevzuat.etki</field>
         <field name="view_mode">list,pivot</field>
         <field name="context">{'search_default_acik': 1, 'search_default_g_modul': 1}</field>
     </record>
 
     <!-- ============================== Kaynak ============================== -->
     <record id="view_kaynak_list" model="ir.ui.view">
-        <field name="name">atlas.radar.kaynak.list</field>
-        <field name="model">atlas.radar.kaynak</field>
+        <field name="name">atlas.mevzuat.kaynak.list</field>
+        <field name="model">atlas.mevzuat.kaynak</field>
         <field name="arch" type="xml">
             <list decoration-danger="saglik in ('hata', 'robots')" decoration-warning="saglik == 'uyari'" decoration-muted="not active">
                 <field name="sira" widget="handle"/>
@@ -338,8 +338,8 @@
     </record>
 
     <record id="view_kaynak_form" model="ir.ui.view">
-        <field name="name">atlas.radar.kaynak.form</field>
-        <field name="model">atlas.radar.kaynak</field>
+        <field name="name">atlas.mevzuat.kaynak.form</field>
+        <field name="model">atlas.mevzuat.kaynak</field>
         <field name="arch" type="xml">
             <form string="Kaynak">
                 <header>
@@ -438,8 +438,8 @@
     </record>
 
     <record id="view_kaynak_search" model="ir.ui.view">
-        <field name="name">atlas.radar.kaynak.search</field>
-        <field name="model">atlas.radar.kaynak</field>
+        <field name="name">atlas.mevzuat.kaynak.search</field>
+        <field name="model">atlas.mevzuat.kaynak</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
@@ -458,14 +458,14 @@
 
     <record id="action_kaynak" model="ir.actions.act_window">
         <field name="name">Kaynaklar</field>
-        <field name="res_model">atlas.radar.kaynak</field>
+        <field name="res_model">atlas.mevzuat.kaynak</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <!-- ============================== Belge ============================== -->
     <record id="view_belge_list" model="ir.ui.view">
-        <field name="name">atlas.radar.belge.list</field>
-        <field name="model">atlas.radar.belge</field>
+        <field name="name">atlas.mevzuat.belge.list</field>
+        <field name="model">atlas.mevzuat.belge</field>
         <field name="arch" type="xml">
             <list create="false" decoration-muted="durum != 'yeni'">
                 <field name="yayim_tarihi"/>
@@ -479,8 +479,8 @@
         </field>
     </record>
     <record id="view_belge_form" model="ir.ui.view">
-        <field name="name">atlas.radar.belge.form</field>
-        <field name="model">atlas.radar.belge</field>
+        <field name="name">atlas.mevzuat.belge.form</field>
+        <field name="model">atlas.mevzuat.belge</field>
         <field name="arch" type="xml">
             <form string="Belge" create="false">
                 <header>
@@ -516,8 +516,8 @@
         </field>
     </record>
     <record id="view_belge_search" model="ir.ui.view">
-        <field name="name">atlas.radar.belge.search</field>
-        <field name="model">atlas.radar.belge</field>
+        <field name="name">atlas.mevzuat.belge.search</field>
+        <field name="model">atlas.mevzuat.belge</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
@@ -533,14 +533,14 @@
     </record>
     <record id="action_belge" model="ir.actions.act_window">
         <field name="name">Belgeler</field>
-        <field name="res_model">atlas.radar.belge</field>
+        <field name="res_model">atlas.mevzuat.belge</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <!-- ============================== Kural, kategori, modül, etiket ============================== -->
     <record id="view_kural_list" model="ir.ui.view">
-        <field name="name">atlas.radar.kural.list</field>
-        <field name="model">atlas.radar.kural</field>
+        <field name="name">atlas.mevzuat.kural.list</field>
+        <field name="model">atlas.mevzuat.kural</field>
         <field name="arch" type="xml">
             <list>
                 <field name="sira" widget="handle"/>
@@ -555,8 +555,8 @@
         </field>
     </record>
     <record id="view_kural_form" model="ir.ui.view">
-        <field name="name">atlas.radar.kural.form</field>
-        <field name="model">atlas.radar.kural</field>
+        <field name="name">atlas.mevzuat.kural.form</field>
+        <field name="model">atlas.mevzuat.kural</field>
         <field name="arch" type="xml">
             <form string="Kural">
                 <sheet>
@@ -591,13 +591,13 @@
     </record>
     <record id="action_kural" model="ir.actions.act_window">
         <field name="name">Sınıflandırma Kuralları</field>
-        <field name="res_model">atlas.radar.kural</field>
+        <field name="res_model">atlas.mevzuat.kural</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <record id="view_kategori_list" model="ir.ui.view">
-        <field name="name">atlas.radar.kategori.list</field>
-        <field name="model">atlas.radar.kategori</field>
+        <field name="name">atlas.mevzuat.kategori.list</field>
+        <field name="model">atlas.mevzuat.kategori</field>
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="sira" widget="handle"/>
@@ -610,13 +610,13 @@
     </record>
     <record id="action_kategori" model="ir.actions.act_window">
         <field name="name">Kategoriler</field>
-        <field name="res_model">atlas.radar.kategori</field>
+        <field name="res_model">atlas.mevzuat.kategori</field>
         <field name="view_mode">list</field>
     </record>
 
     <record id="view_etiket_list" model="ir.ui.view">
-        <field name="name">atlas.radar.etiket.list</field>
-        <field name="model">atlas.radar.etiket</field>
+        <field name="name">atlas.mevzuat.etiket.list</field>
+        <field name="model">atlas.mevzuat.etiket</field>
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="name"/>
@@ -626,13 +626,13 @@
     </record>
     <record id="action_etiket" model="ir.actions.act_window">
         <field name="name">Etiketler</field>
-        <field name="res_model">atlas.radar.etiket</field>
+        <field name="res_model">atlas.mevzuat.etiket</field>
         <field name="view_mode">list</field>
     </record>
 
     <record id="view_modul_list" model="ir.ui.view">
-        <field name="name">atlas.radar.modul.list</field>
-        <field name="model">atlas.radar.modul</field>
+        <field name="name">atlas.mevzuat.modul.list</field>
+        <field name="model">atlas.mevzuat.modul</field>
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="sira" widget="handle"/>
@@ -647,14 +647,14 @@
     </record>
     <record id="action_modul" model="ir.actions.act_window">
         <field name="name">ERP Modülleri</field>
-        <field name="res_model">atlas.radar.modul</field>
+        <field name="res_model">atlas.mevzuat.modul</field>
         <field name="view_mode">list</field>
     </record>
 
     <!-- ============================== Denetim günlüğü ============================== -->
     <record id="view_denetim_list" model="ir.ui.view">
-        <field name="name">atlas.radar.denetim.list</field>
-        <field name="model">atlas.radar.denetim</field>
+        <field name="name">atlas.mevzuat.denetim.list</field>
+        <field name="model">atlas.mevzuat.denetim</field>
         <field name="arch" type="xml">
             <list create="false" edit="false" delete="false">
                 <field name="tarih"/>
@@ -667,8 +667,8 @@
         </field>
     </record>
     <record id="view_denetim_form" model="ir.ui.view">
-        <field name="name">atlas.radar.denetim.form</field>
-        <field name="model">atlas.radar.denetim</field>
+        <field name="name">atlas.mevzuat.denetim.form</field>
+        <field name="model">atlas.mevzuat.denetim</field>
         <field name="arch" type="xml">
             <form create="false" edit="false" delete="false">
                 <header>
@@ -694,8 +694,8 @@
         </field>
     </record>
     <record id="view_denetim_search" model="ir.ui.view">
-        <field name="name">atlas.radar.denetim.search</field>
-        <field name="model">atlas.radar.denetim</field>
+        <field name="name">atlas.mevzuat.denetim.search</field>
+        <field name="model">atlas.mevzuat.denetim</field>
         <field name="arch" type="xml">
             <search>
                 <field name="aciklama"/>
@@ -714,16 +714,16 @@
     </record>
     <record id="action_denetim" model="ir.actions.act_window">
         <field name="name">Denetim Günlüğü</field>
-        <field name="res_model">atlas.radar.denetim</field>
+        <field name="res_model">atlas.mevzuat.denetim</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <!-- ============================== Ayarlar ============================== -->
     <record id="view_ayar_form" model="ir.ui.view">
-        <field name="name">atlas.radar.ayar.form</field>
-        <field name="model">atlas.radar.ayar</field>
+        <field name="name">atlas.mevzuat.ayar.form</field>
+        <field name="model">atlas.mevzuat.ayar</field>
         <field name="arch" type="xml">
-            <form string="Radar Ayarları">
+            <form string="Mevzuat Takip Ayarları">
                 <group>
                     <group string="Bildirim ve Görev">
                         <field name="sorumlu_id"/>
@@ -751,25 +751,25 @@
         </field>
     </record>
     <record id="action_ayar" model="ir.actions.act_window">
-        <field name="name">Radar Ayarları</field>
-        <field name="res_model">atlas.radar.ayar</field>
+        <field name="name">Mevzuat Takip Ayarları</field>
+        <field name="res_model">atlas.mevzuat.ayar</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
     <record id="action_panel" model="ir.actions.client">
-        <field name="name">Radar Paneli</field>
-        <field name="tag">atlas_radar.panel</field>
+        <field name="name">Mevzuat Takip Paneli</field>
+        <field name="tag">atlas_mevzuat.panel</field>
     </record>
 
-    <!-- Görev formunda Radar bağlantısı -->
-    <record id="view_task_form_radar" model="ir.ui.view">
-        <field name="name">project.task.form.atlas.radar</field>
+    <!-- Görev formunda Mevzuat bağlantısı -->
+    <record id="view_task_form_mevzuat" model="ir.ui.view">
+        <field name="name">project.task.form.atlas.mevzuat</field>
         <field name="model">project.task</field>
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_ids']" position="after">
-                <field name="atlas_radar_degisiklik_id" groups="base.group_system" invisible="not atlas_radar_degisiklik_id" readonly="1"/>
+                <field name="atlas_mevzuat_degisiklik_id" groups="base.group_system" invisible="not atlas_mevzuat_degisiklik_id" readonly="1"/>
             </xpath>
         </field>
     </record>

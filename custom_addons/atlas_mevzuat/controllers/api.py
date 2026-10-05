@@ -1,11 +1,11 @@
-"""Salt okunur Radar REST API.
+"""Salt okunur Mevzuat Takip REST API.
 
 Kimlik doğrulama: Authorization: Bearer <API anahtarı> (Tercihler → Hesap Güvenliği → API Anahtarları).
 Yalnız sistem yöneticisi kullanıcıların anahtarları kabul edilir.
 
-GET /atlas_radar/api/v1/degisiklikler?durum=yeni&onem=kritik&kategori=ebelge&tarih_bas=2026-01-01&limit=50&offset=0
-GET /atlas_radar/api/v1/degisiklikler/<id>
-GET /atlas_radar/api/v1/kaynaklar
+GET /atlas_mevzuat/api/v1/degisiklikler?durum=yeni&onem=kritik&kategori=ebelge&tarih_bas=2026-01-01&limit=50&offset=0
+GET /atlas_mevzuat/api/v1/degisiklikler/<id>
+GET /atlas_mevzuat/api/v1/kaynaklar
 """
 import json
 
@@ -42,12 +42,12 @@ def _degisiklik(d, ayrinti=False):
     return veri
 
 
-class AtlasRadarApi(http.Controller):
+class AtlasMevzuatApi(http.Controller):
 
     def _yetkili(self):
         return request.env.user.has_group('base.group_system')
 
-    @http.route('/atlas_radar/api/v1/degisiklikler', type='http', auth='bearer', bearer_scope='rpc', methods=['GET'],
+    @http.route('/atlas_mevzuat/api/v1/degisiklikler', type='http', auth='bearer', bearer_scope='rpc', methods=['GET'],
                 csrf=False, readonly=True, sitemap=False)
     def degisiklikler(self, durum=None, onem=None, kategori=None, tarih_bas=None, limit=50, offset=0, **kw):
         if not self._yetkili():
@@ -68,27 +68,27 @@ class AtlasRadarApi(http.Controller):
             limit, offset = min(max(int(limit), 1), AZAMI_LIMIT), max(int(offset), 0)
         except ValueError:
             return _yanit({'hata': 'limit/offset sayı olmalı'}, 400)
-        Degisiklik = request.env['atlas.radar.degisiklik']
+        Degisiklik = request.env['atlas.mevzuat.degisiklik']
         kayitlar = Degisiklik.search(alan, limit=limit, offset=offset)
         return _yanit({'toplam': Degisiklik.search_count(alan), 'limit': limit, 'offset': offset,
                        'kayitlar': [_degisiklik(d) for d in kayitlar]})
 
-    @http.route('/atlas_radar/api/v1/degisiklikler/<int:kayit_id>', type='http', auth='bearer', bearer_scope='rpc',
+    @http.route('/atlas_mevzuat/api/v1/degisiklikler/<int:kayit_id>', type='http', auth='bearer', bearer_scope='rpc',
                 methods=['GET'], csrf=False, readonly=True, sitemap=False)
     def degisiklik(self, kayit_id, **kw):
         if not self._yetkili():
             return _yanit({'hata': 'Yetkisiz'}, 403)
-        d = request.env['atlas.radar.degisiklik'].browse(kayit_id).exists()
+        d = request.env['atlas.mevzuat.degisiklik'].browse(kayit_id).exists()
         if not d:
             return _yanit({'hata': 'Bulunamadı'}, 404)
         return _yanit(_degisiklik(d, ayrinti=True))
 
-    @http.route('/atlas_radar/api/v1/kaynaklar', type='http', auth='bearer', bearer_scope='rpc', methods=['GET'],
+    @http.route('/atlas_mevzuat/api/v1/kaynaklar', type='http', auth='bearer', bearer_scope='rpc', methods=['GET'],
                 csrf=False, readonly=True, sitemap=False)
     def kaynaklar(self, **kw):
         if not self._yetkili():
             return _yanit({'hata': 'Yetkisiz'}, 403)
-        kaynaklar = request.env['atlas.radar.kaynak'].with_context(active_test=False).search([])
+        kaynaklar = request.env['atlas.mevzuat.kaynak'].with_context(active_test=False).search([])
         return _yanit({'kayitlar': [{
             'id': k.id, 'ad': k.name, 'kurum': k.kurum, 'url': k.url, 'etkin': k.active, 'tur': k.tur, 'ulke': k.ulke_id.code or None,
             'yetki_alani': k.yetki_alani, 'saglik': k.saglik, 'robots': k.robots_durumu,

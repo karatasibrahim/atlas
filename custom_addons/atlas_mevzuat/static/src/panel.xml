@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates>
-    <t t-name="atlas_radar.Panel">
-        <div class="o_atlas_radar_panel o_action h-100 overflow-auto p-3">
+    <t t-name="atlas_mevzuat.Panel">
+        <div class="o_atlas_mevzuat_panel o_action h-100 overflow-auto p-3">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                <h3 class="m-0 me-2"><i class="oi me-2" data-icon="near_me"/>Atlas Radar</h3>
+                <h3 class="m-0 me-2"><i class="oi me-2" data-icon="description"/>Mevzuat Takip</h3>
                 <span class="text-muted small">Resmî kurum ve mevzuat değişiklik izleme</span>
                 <div class="ms-auto d-flex flex-wrap gap-2">
                     <button class="btn btn-secondary" type="button" t-on-click="() => this.yukle()">
                         <i class="oi me-1" data-icon="refresh"/>Yenile
                     </button>
-                    <button class="btn btn-secondary" type="button" t-on-click="() => this.git('atlas_radar.action_takvim')">
+                    <button class="btn btn-secondary" type="button" t-on-click="() => this.git('atlas_mevzuat.action_takvim')">
                         <i class="oi me-1" data-icon="schedule"/>Yürürlük Takvimi
                     </button>
-                    <button class="btn btn-primary" type="button" t-on-click="() => this.git('atlas_radar.action_degisiklik')">
+                    <button class="btn btn-primary" type="button" t-on-click="() => this.git('atlas_mevzuat.action_degisiklik')">
                         <i class="oi me-1" data-icon="view_list"/>Değişiklikler
                     </button>
                 </div>
             </div>
             <t t-if="this.state.veri">
-                <div class="o_atlas_radar_kartlar mb-3">
+                <div class="o_atlas_mevzuat_kartlar mb-3">
                     <t t-foreach="this.kartlar" t-as="kart" t-key="kart_index">
-                        <button type="button" class="card o_atlas_radar_kart text-start" t-on-click="() => this.kartAc(kart)">
+                        <button type="button" class="card o_atlas_mevzuat_kart text-start" t-on-click="() => this.kartAc(kart)">
                             <div class="card-body p-3">
                                 <div class="fs-2 fw-bold" t-att-class="kart.sinif" t-out="kart.sayi"/>
                                 <div class="text-muted small" t-out="kart.ad"/>
@@ -34,7 +34,7 @@
                             <div class="card-header fw-semibold">Son Tespit Edilenler</div>
                             <div class="list-group list-group-flush">
                                 <t t-foreach="this.state.veri.son" t-as="d" t-key="d.id">
-                                    <button type="button" class="list-group-item list-group-item-action" t-on-click="() => this.ac('atlas.radar.degisiklik', d.id)">
+                                    <button type="button" class="list-group-item list-group-item-action" t-on-click="() => this.ac('atlas.mevzuat.degisiklik', d.id)">
                                         <div class="d-flex gap-2 align-items-start">
                                             <span class="badge flex-shrink-0" t-att-class="this.onemSinif(d.onem)" t-out="d.onem_ad"/>
                                             <div class="flex-grow-1 min-w-0">
@@ -59,7 +59,7 @@
                             <div class="card-header fw-semibold">Yaklaşan Yürürlükler</div>
                             <ul class="list-group list-group-flush">
                                 <t t-foreach="this.state.veri.yaklasan" t-as="d" t-key="d.id">
-                                    <li class="list-group-item list-group-item-action o_atlas_radar_tikla" t-on-click="() => this.ac('atlas.radar.degisiklik', d.id)">
+                                    <li class="list-group-item list-group-item-action o_atlas_mevzuat_tikla" t-on-click="() => this.ac('atlas.mevzuat.degisiklik', d.id)">
                                         <div class="d-flex gap-2">
                                             <div class="text-nowrap fw-semibold" t-out="this.gun(d.yururluk)"/>
                                             <div class="flex-grow-1 text-truncate" t-out="d.ad"/>
@@ -74,7 +74,7 @@
                             <div class="card-header fw-semibold">Açık Değişiklikler — Kategori</div>
                             <ul class="list-group list-group-flush">
                                 <t t-foreach="this.state.veri.kategoriler" t-as="k" t-key="k_index">
-                                    <li class="list-group-item list-group-item-action d-flex o_atlas_radar_tikla" t-on-click="() => this.kategoriAc(k)">
+                                    <li class="list-group-item list-group-item-action d-flex o_atlas_mevzuat_tikla" t-on-click="() => this.kategoriAc(k)">
                                         <span t-out="k.ad"/><span class="ms-auto badge text-bg-primary" t-out="k.sayi"/>
                                     </li>
                                 </t>
@@ -89,14 +89,14 @@
                                     <thead><tr><th>Kaynak</th><th>Kurum</th><th>Durum</th><th>Son Başarılı</th><th class="text-end">Yanıt</th><th class="text-end">Öğe</th><th>Son Hata</th></tr></thead>
                                     <tbody>
                                         <t t-foreach="this.state.veri.kaynaklar" t-as="k" t-key="k.id">
-                                            <tr class="o_atlas_radar_tikla" t-on-click="() => this.ac('atlas.radar.kaynak', k.id)">
+                                            <tr class="o_atlas_mevzuat_tikla" t-on-click="() => this.ac('atlas.mevzuat.kaynak', k.id)">
                                                 <td t-out="k.ad"/>
                                                 <td class="text-muted" t-out="k.kurum"/>
                                                 <td><span class="badge" t-att-class="this.saglikSinif(k.saglik)" t-out="k.saglik_ad"/></td>
                                                 <td t-out="this.tarih(k.son_basari)"/>
                                                 <td class="text-end"><t t-if="k.sure" t-out="k.sure + ' ms'"/></td>
                                                 <td class="text-end" t-out="k.oge or ''"/>
-                                                <td class="small text-danger text-truncate o_atlas_radar_hata" t-out="k.hata"/>
+                                                <td class="small text-danger text-truncate o_atlas_mevzuat_hata" t-out="k.hata"/>
                                             </tr>
                                         </t>
                                     </tbody>
