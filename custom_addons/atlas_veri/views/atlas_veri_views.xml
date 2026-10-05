@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_veri_grup_list" model="ir.ui.view">
+        <field name="name">atlas.veri.grup.list</field>
+        <field name="model">atlas.veri.grup</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="vmodel_id"/>
+                <field name="ad"/>
+                <field name="kayit_sayisi"/>
+                <field name="benzerlik" widget="progressbar"/>
+                <field name="farkli_alanlar" optional="show"/>
+                <button name="action_birlestir" type="object" string="Birleştir" class="btn-link"
+                        confirm="Grup ana kayıtta birleştirilecek. Devam edilsin mi?"/>
+                <button name="action_yoksay" type="object" string="Mükerrer Değil" icon="close" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_veri_grup_form" model="ir.ui.view">
+        <field name="name">atlas.veri.grup.form</field>
+        <field name="model">atlas.veri.grup</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_birlestir" type="object" string="Birleştir" class="btn-primary"
+                            confirm="Grup ana kayıtta birleştirilecek; diğer kayıtlara bağlı belgeler ana kayda taşınır. Devam edilsin mi?"/>
+                    <button name="action_yoksay" type="object" string="Mükerrer Değil"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="vmodel_id" readonly="1"/>
+                        <field name="benzerlik" widget="progressbar" readonly="1"/>
+                        <field name="farkli_alanlar" readonly="1"/>
+                    </group>
+                    <field name="kayit_ids">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="ana" widget="boolean_toggle"/>
+                            <field name="ad" readonly="1"/>
+                            <field name="res_id" readonly="1"/>
+                            <field name="olusturma" readonly="1"/>
+                            <field name="guncelleme" readonly="1" optional="hide"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="kullanim"/>
+                            <field name="model" column_invisible="1"/>
+                            <button name="action_kayit_ac" type="object" icon="open_in_new" title="Kaydı aç"/>
+                        </list>
+                    </field>
+                    <div class="text-muted small">Ana kayıt seçilmezse en eski kayıt korunur.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_veri_grup_search" model="ir.ui.view">
+        <field name="name">atlas.veri.grup.search</field>
+        <field name="model">atlas.veri.grup</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="vmodel_id"/>
+                <filter name="yuksek" string="Benzerlik ≥ %80" domain="[('benzerlik', '>=', 80)]"/>
+                <filter name="arsiv" string="Birleştirilmiş / Yoksayılmış" domain="[('active', '=', False)]"/>
+                <group><filter name="g_model" string="Model" context="{'group_by': 'vmodel_id'}"/></group>
+            </search>
+        </field>
+    </record>
+    <record id="action_veri_grup" model="ir.actions.act_window">
+        <field name="name">Mükerrer Kayıtlar</field>
+        <field name="res_model">atlas.veri.grup</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_g_model': 1}</field>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">Mükerrer kayıt bulunamadı</p>
+            <p>Tarama her gün yapılır; Yapılandırma › Tekilleştirme Kuralları'ndan hemen tarayabilirsiniz.</p></field>
+    </record>
+
+    <record id="view_veri_model_list" model="ir.ui.view">
+        <field name="name">atlas.veri.model.list</field>
+        <field name="model">atlas.veri.model</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="kosul"/>
+                <field name="mod"/>
+                <field name="grup_sayisi"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_veri_model_form" model="ir.ui.view">
+        <field name="name">atlas.veri.model.form</field>
+        <field name="model">atlas.veri.model</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_tara" type="object" string="Şimdi Tara" class="btn-primary"/>
+                    <button name="action_eylem_ekle" type="object" string="Listeye 'Birleştir' Eylemi Ekle" invisible="eylem_id"/>
+                    <button name="action_eylem_kaldir" type="object" string="'Birleştir' Eylemini Kaldır" invisible="not eylem_id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_gruplar" type="object" class="oe_stat_button" icon="content_copy">
+                            <field name="grup_sayisi" widget="statinfo" string="Grup"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="alan"/>
+                            <field name="kosul"/>
+                            <field name="benzerlik_esigi"/>
+                        </group>
+                        <group>
+                            <field name="mod"/>
+                            <field name="kaldirma"/>
+                            <field name="sirketler_arasi"/>
+                            <field name="bildirim_user_ids" widget="many2many_tags"/>
+                            <field name="eylem_id" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="kural_ids">
+                        <list editable="bottom">
+                            <field name="sira" widget="handle"/>
+                            <field name="field_id" options="{'no_create': True}"/>
+                            <field name="eslesme"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="action_veri_model" model="ir.actions.act_window">
+        <field name="name">Tekilleştirme Kuralları</field>
+        <field name="res_model">atlas.veri.model</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_veri_temizlik_kayit_list" model="ir.ui.view">
+        <field name="name">atlas.veri.temizlik.kayit.list</field>
+        <field name="model">atlas.veri.temizlik.kayit</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="temizlik_id"/>
+                <field name="ad"/>
+                <field name="field_id"/>
+                <field name="mevcut"/>
+                <field name="onerilen" decoration-success="1"/>
+                <field name="eylem" optional="show"/>
+                <button name="action_uygula" type="object" string="Uygula" icon="check" class="btn-link"/>
+                <button name="action_yoksay" type="object" string="Yoksay" icon="close" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_veri_temizlik_kayit" model="ir.actions.act_window">
+        <field name="name">Biçim Önerileri</field>
+        <field name="res_model">atlas.veri.temizlik.kayit</field>
+        <field name="view_mode">list</field>
+    </record>
+    <record id="sa_veri_temizlik_uygula" model="ir.actions.server">
+        <field name="name">Önerileri Uygula</field>
+        <field name="model_id" ref="model_atlas_veri_temizlik_kayit"/>
+        <field name="binding_model_id" ref="model_atlas_veri_temizlik_kayit"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_uygula()</field>
+    </record>
+
+    <record id="view_veri_temizlik_form" model="ir.ui.view">
+        <field name="name">atlas.veri.temizlik.form</field>
+        <field name="model">atlas.veri.temizlik</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_tara" type="object" string="Şimdi Tara" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_oneriler" type="object" class="oe_stat_button" icon="edit_square">
+                            <field name="oneri_sayisi" widget="statinfo" string="Öneri"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <field name="model_id" options="{'no_create': True}"/>
+                        <field name="mod"/>
+                    </group>
+                    <field name="kural_ids">
+                        <list editable="bottom">
+                            <field name="sira" widget="handle"/>
+                            <field name="field_id" options="{'no_create': True}"/>
+                            <field name="eylem"/>
+                            <field name="bosluk" invisible="eylem != 'bosluk'"/>
+                            <field name="harf" invisible="eylem != 'harf'"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_veri_temizlik_list" model="ir.ui.view">
+        <field name="name">atlas.veri.temizlik.list</field>
+        <field name="model">atlas.veri.temizlik</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="mod"/>
+                <field name="oneri_sayisi"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_veri_temizlik" model="ir.actions.act_window">
+        <field name="name">Biçim Temizliği Kuralları</field>
+        <field name="res_model">atlas.veri.temizlik</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_veri_grup" name="Mükerrer Kayıtlar" parent="data_recycle.menu_data_cleaning_root" action="action_veri_grup" sequence="1"/>
+    <menuitem id="menu_veri_temizlik_kayit" name="Biçim Önerileri" parent="data_recycle.menu_data_cleaning_root" action="action_veri_temizlik_kayit" sequence="5"/>
+    <menuitem id="menu_veri_model" name="Tekilleştirme" parent="data_recycle.menu_data_cleaning_config_rules" action="action_veri_model" sequence="1"/>
+    <menuitem id="menu_veri_temizlik" name="Biçim Temizliği" parent="data_recycle.menu_data_cleaning_config_rules" action="action_veri_temizlik" sequence="5"/>
+</odoo>

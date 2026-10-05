@@ -1,0 +1,10 @@
+id,name,model_id,group_id/id,operation,domain
+access_vmodel,atlas.veri.model,atlas.veri.model,base.group_system,crud,
+access_kural,atlas.veri.kural,atlas.veri.kural,base.group_system,crud,
+access_yoksay,atlas.veri.yoksay,atlas.veri.yoksay,base.group_system,crud,
+access_grup,atlas.veri.grup,atlas.veri.grup,base.group_system,crud,
+access_grup_kayit,atlas.veri.grup.kayit,atlas.veri.grup.kayit,base.group_system,crud,
+access_birlestir,atlas.veri.birlestir,atlas.veri.birlestir,base.group_system,crud,
+access_temizlik,atlas.veri.temizlik,atlas.veri.temizlik,base.group_system,crud,
+access_temizlik_kural,atlas.veri.temizlik.kural,atlas.veri.temizlik.kural,base.group_system,crud,
+access_temizlik_kayit,atlas.veri.temizlik.kayit,atlas.veri.temizlik.kayit,base.group_system,crud,

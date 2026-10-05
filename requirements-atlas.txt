@@ -1,3 +1,4 @@
 # Atlas ERP: Odoo 20 bağımlılıklarına (odoo/requirements.txt) ek paketler
 rl_renderPM==4.0.3      # QR/barkod görseli (macOS'ta gerekli; Debian/Ubuntu paketinde hazır gelir)
 websocket-client        # Arayüz testleri (headless Chrome)
+phonenumbers>=8.13  # telefon doğrulama/biçimlendirme (phone_validation, atlas_veri)
