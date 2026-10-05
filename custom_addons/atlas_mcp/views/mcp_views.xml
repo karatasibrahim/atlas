@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mcp_ayar_form" model="ir.ui.view">
+        <field name="name">atlas.mcp.ayar.form</field>
+        <field name="model">atlas.mcp.ayar</field>
+        <field name="arch" type="xml">
+            <form string="MCP Sunucusu">
+                <group>
+                    <field name="etkin"/>
+                    <field name="yazma" invisible="not etkin"/>
+                    <field name="adres" readonly="1" widget="CopyClipboardChar" invisible="not etkin"/>
+                </group>
+                <div class="text-muted small" invisible="not etkin">
+                    <p>Bağlanmak için: kullanıcı menüsü › Tercihler › Hesap Güvenliği › <b>Yeni API Anahtarı</b> oluşturun.
+                    MCP istemcisinde (ör. Claude) sunucu adresi olarak yukarıdaki adresi, kimlik doğrulama olarak
+                    <code>Authorization: Bearer &lt;API anahtarı&gt;</code> başlığını girin.</p>
+                    <p>Yapay zekâ yalnız anahtarın sahibi kullanıcının görebildiği verilere erişir. Yazma araçları açılırsa kayıt oluşturup güncelleyebilir.</p>
+                </div>
+                <footer>
+                    <button name="action_kaydet" type="object" string="Kaydet" class="btn-primary"/>
+                    <button string="Vazgeç" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_mcp_ayar" model="ir.actions.act_window">
+        <field name="name">MCP Sunucusu</field>
+        <field name="res_model">atlas.mcp.ayar</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <record id="view_mcp_gunluk_list" model="ir.ui.view">
+        <field name="name">atlas.mcp.gunluk.list</field>
+        <field name="model">atlas.mcp.gunluk</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-danger="not basarili">
+                <field name="create_date"/>
+                <field name="user_id"/>
+                <field name="arac"/>
+                <field name="model"/>
+                <field name="basarili"/>
+                <field name="hata"/>
+                <field name="parametreler" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_mcp_gunluk" model="ir.actions.act_window">
+        <field name="name">MCP Çağrı Günlüğü</field>
+        <field name="res_model">atlas.mcp.gunluk</field>
+        <field name="view_mode">list</field>
+    </record>
+    <menuitem id="menu_mcp_ayar" name="MCP Sunucusu" parent="atlas_ai.menu_atlas_ai" action="action_mcp_ayar" sequence="10"/>
+    <menuitem id="menu_mcp_gunluk" name="MCP Çağrı Günlüğü" parent="atlas_ai.menu_atlas_ai" action="action_mcp_gunluk" sequence="11"/>
+</odoo>
