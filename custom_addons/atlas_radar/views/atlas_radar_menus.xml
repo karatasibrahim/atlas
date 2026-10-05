@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_radar_root" name="Radar" sequence="95" groups="base.group_system"
+              web_icon="atlas_radar,static/description/icon.png"/>
+    <menuitem id="menu_radar_panel" name="Panel" parent="menu_radar_root" action="action_panel" sequence="1"/>
+    <menuitem id="menu_radar_degisiklik" name="Değişiklikler" parent="menu_radar_root" action="action_degisiklik" sequence="10"/>
+    <menuitem id="menu_radar_takvim" name="Yürürlük Takvimi" parent="menu_radar_root" action="action_takvim" sequence="20"/>
+    <menuitem id="menu_radar_etki" name="Etki Analizi" parent="menu_radar_root" action="action_etki" sequence="30"/>
+    <menuitem id="menu_radar_kaynak_ust" name="Kaynaklar" parent="menu_radar_root" sequence="40"/>
+    <menuitem id="menu_radar_kaynak" name="Kaynaklar" parent="menu_radar_kaynak_ust" action="action_kaynak" sequence="1"/>
+    <menuitem id="menu_radar_belge" name="Belgeler" parent="menu_radar_kaynak_ust" action="action_belge" sequence="2"/>
+    <menuitem id="menu_radar_ayar_ust" name="Yapılandırma" parent="menu_radar_root" sequence="90"/>
+    <menuitem id="menu_radar_ayar" name="Ayarlar" parent="menu_radar_ayar_ust" action="action_ayar" sequence="1"/>
+    <menuitem id="menu_radar_kural" name="Sınıflandırma Kuralları" parent="menu_radar_ayar_ust" action="action_kural" sequence="10"/>
+    <menuitem id="menu_radar_modul" name="ERP Modülleri" parent="menu_radar_ayar_ust" action="action_modul" sequence="20"/>
+    <menuitem id="menu_radar_kategori" name="Kategoriler" parent="menu_radar_ayar_ust" action="action_kategori" sequence="30"/>
+    <menuitem id="menu_radar_etiket" name="Etiketler" parent="menu_radar_ayar_ust" action="action_etiket" sequence="40"/>
+    <menuitem id="menu_radar_denetim" name="Denetim Günlüğü" parent="menu_radar_ayar_ust" action="action_denetim" sequence="90"/>
+</odoo>

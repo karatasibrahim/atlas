@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================== Değişiklik ============================== -->
+    <record id="view_degisiklik_list" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.list</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="onem == 'kritik' and durum in ('yeni', 'inceleniyor', 'onaylandi')"
+                  decoration-warning="onem == 'yuksek' and durum in ('yeni', 'inceleniyor')"
+                  decoration-muted="durum in ('reddedildi', 'mukerrer', 'uygulandi')" decoration-bf="durum == 'yeni'">
+                <field name="tespit_tarihi"/>
+                <field name="name"/>
+                <field name="kurum" optional="show"/>
+                <field name="kaynak_id" optional="hide"/>
+                <field name="kategori_id" optional="show"/>
+                <field name="onem" widget="badge" decoration-danger="onem == 'kritik'" decoration-warning="onem == 'yuksek'"
+                       decoration-info="onem == 'orta'"/>
+                <field name="modul_ids" widget="many2many_tags" optional="show"/>
+                <field name="yururluk_tarihi" optional="show"/>
+                <field name="kirici" optional="hide"/>
+                <field name="siniflandirma" optional="hide"/>
+                <field name="guven" optional="hide"/>
+                <field name="ai_durum" optional="hide"/>
+                <field name="sorumlu_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
+                <field name="durum" widget="badge" decoration-info="durum == 'yeni'" decoration-warning="durum in ('inceleniyor', 'onaylandi')"
+                       decoration-success="durum == 'uygulandi'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_kanban" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.kanban</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="durum" create="false" highlight_color="renk" sample="1">
+                <field name="kirici"/>
+                <field name="ai_durum"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="kurum" class="small text-muted"/>
+                        <field name="name" class="fw-bold"/>
+                        <div class="d-flex flex-wrap gap-1 my-1">
+                            <field name="onem" widget="badge" decoration-danger="onem == 'kritik'" decoration-warning="onem == 'yuksek'"
+                                   decoration-info="onem == 'orta'"/>
+                            <span t-if="record.kirici.raw_value" class="badge text-bg-danger">Kırıcı</span>
+                            <span t-if="record.ai_durum.raw_value == 'tamam'" class="badge text-bg-secondary">AI önerisi</span>
+                        </div>
+                        <field name="modul_ids" widget="many2many_tags"/>
+                        <footer>
+                            <div class="d-flex small text-muted">
+                                <span invisible="not yururluk_tarihi">Yürürlük: <field name="yururluk_tarihi"/></span>
+                                <field name="activity_ids" widget="kanban_activity" class="ms-2"/>
+                            </div>
+                            <div class="ms-auto"><field name="sorumlu_id" widget="many2one_avatar_user"/></div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_calendar" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.calendar</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <calendar string="Yürürlük Takvimi" date_start="yururluk_tarihi" color="kategori_id" mode="month" quick_create="0"
+                      create="0" event_open_popup="1">
+                <field name="kurum"/>
+                <field name="onem"/>
+                <field name="durum"/>
+                <field name="modul_ids" widget="many2many_tags"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_pivot" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.pivot</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <pivot string="Değişiklik Analizi">
+                <field name="kategori_id" type="row"/>
+                <field name="onem" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_graph" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.graph</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <graph string="Değişiklikler" type="bar" stacked="1">
+                <field name="tespit_tarihi" interval="week"/>
+                <field name="onem"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_form" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.form</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <form string="Değişiklik">
+                <header>
+                    <button name="action_incele" type="object" string="İncelemeye Al" class="btn-primary" invisible="durum != 'yeni'"/>
+                    <button name="action_onayla" type="object" string="Onayla: Aksiyon Gerekli" class="btn-primary"
+                            invisible="durum not in ('yeni', 'inceleniyor')"
+                            confirm="ERP'yi etkilediği onaylanacak; ayarlara göre görevler açılır. Devam edilsin mi?"/>
+                    <button name="action_reddet" type="object" string="İlgisiz / Reddet" invisible="durum not in ('yeni', 'inceleniyor', 'onaylandi')"/>
+                    <button name="action_gorev_olustur" type="object" string="Görev Oluştur" invisible="durum != 'onaylandi'"/>
+                    <button name="action_uygulandi" type="object" string="Uygulandı" class="btn-primary" invisible="durum != 'onaylandi'"/>
+                    <button name="action_yeniden_ac" type="object" string="Yeniden Aç" invisible="durum in ('yeni', 'inceleniyor')"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="yeni,inceleniyor,onaylandi,uygulandi"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_gorevler" type="object" class="oe_stat_button" icon="check_box" invisible="not task_sayisi">
+                            <field name="task_sayisi" widget="statinfo" string="Görev"/>
+                        </button>
+                        <button name="action_kaynagi_ac" type="object" class="oe_stat_button" icon="open_in_new" invisible="not url">
+                            <div class="o_stat_info"><span class="o_stat_text">Kaynağı Aç</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Kırıcı" bg_color="text-bg-danger" invisible="not kirici"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" widget="text" class="w-100"/></h1>
+                    </div>
+                    <div class="alert alert-info mb-2" role="alert" invisible="not mukerrer_id">
+                        Bu kayıt mükerrer: <field name="mukerrer_id" class="d-inline"/>
+                    </div>
+                    <group>
+                        <group string="Kaynak">
+                            <field name="kaynak_id"/>
+                            <field name="kurum"/>
+                            <field name="ulke_id"/>
+                            <field name="url" widget="url"/>
+                            <field name="tur"/>
+                            <field name="yayim_tarihi"/>
+                            <field name="tespit_tarihi"/>
+                        </group>
+                        <group string="Değerlendirme">
+                            <field name="onem"/>
+                            <field name="kategori_id"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'renk'}"/>
+                            <field name="yururluk_tarihi"/>
+                            <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                            <field name="kirici"/>
+                            <field name="gelistirme_gerekli"/>
+                            <field name="ayar_gerekli"/>
+                            <field name="kullanici_aksiyonu"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Etki Analizi" name="etki">
+                            <group>
+                                <field name="modul_ids" widget="many2many_tags"/>
+                                <field name="company_ids" widget="many2many_tags" groups="base.group_multi_company"/>
+                            </group>
+                            <field name="etki_ids">
+                                <list editable="bottom" decoration-muted="durum != 'acik'">
+                                    <field name="modul_id"/>
+                                    <field name="company_id" groups="base.group_multi_company"/>
+                                    <field name="aciklama"/>
+                                    <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                                    <field name="task_id"/>
+                                    <field name="durum"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Özet ve İçerik" name="icerik">
+                            <field name="ozet" placeholder="ERP'ye etkisi, yapılması gerekenler …"/>
+                            <separator string="Kaynak Metni"/>
+                            <field name="icerik" readonly="1"/>
+                        </page>
+                        <page string="Fark" name="fark" invisible="not fark">
+                            <field name="fark" widget="code" options="{'mode': 'text'}" readonly="1"/>
+                        </page>
+                        <page string="Sınıflandırma" name="siniflandirma">
+                            <group>
+                                <group string="Kural">
+                                    <field name="siniflandirma"/>
+                                    <field name="guven"/>
+                                    <field name="kural_ids" widget="many2many_tags"/>
+                                    <field name="kural_aciklama"/>
+                                    <button name="action_kurallari_uygula" type="object" string="Kuralları Yeniden Uygula" class="btn-secondary" colspan="2"/>
+                                </group>
+                                <group string="Yapay Zekâ Önerisi">
+                                    <field name="ai_durum"/>
+                                    <field name="ai_onerisi" invisible="not ai_onerisi"/>
+                                    <field name="ai_guven" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_onem" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_kategori_id" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_modul_ids" widget="many2many_tags" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_yururluk" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_ilgisiz" invisible="ai_durum != 'tamam'"/>
+                                    <field name="ai_hata" invisible="ai_durum != 'hata'"/>
+                                    <field name="ai_ozet" invisible="ai_durum != 'tamam'"/>
+                                    <div colspan="2" class="d-flex gap-2">
+                                        <button name="action_ai_iste" type="object" string="AI Önerisi İste" class="btn-secondary"
+                                                invisible="ai_durum == 'bekliyor'"/>
+                                        <button name="action_ai_kabul" type="object" string="Öneriyi Uygula" class="btn-primary"
+                                                invisible="ai_durum != 'tamam'"/>
+                                    </div>
+                                    <div colspan="2" class="text-muted small">AI önerisi yalnız öneridir; uygulanan değerler yine insan onayından geçer.</div>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="İnceleme" name="inceleme">
+                            <group>
+                                <field name="inceleyen_id"/>
+                                <field name="inceleme_tarihi"/>
+                                <field name="inceleme_notu"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_degisiklik_search" model="ir.ui.view">
+        <field name="name">atlas.radar.degisiklik.search</field>
+        <field name="model">atlas.radar.degisiklik</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="kurum"/>
+                <field name="kaynak_id"/>
+                <field name="kategori_id"/>
+                <field name="modul_ids"/>
+                <field name="icerik"/>
+                <filter name="acik" string="Açık" domain="[('durum', 'in', ('yeni', 'inceleniyor', 'onaylandi'))]"/>
+                <filter name="yeni" string="Yeni" domain="[('durum', '=', 'yeni')]"/>
+                <filter name="inceleme" string="İnceleme Bekleyen" domain="[('durum', 'in', ('yeni', 'inceleniyor'))]"/>
+                <filter name="aksiyon" string="Aksiyon Gerekli" domain="[('durum', '=', 'onaylandi')]"/>
+                <separator/>
+                <filter name="onemli" string="Yüksek / Kritik" domain="[('onem', 'in', ('yuksek', 'kritik'))]"/>
+                <filter name="kirici" string="Kırıcı" domain="[('kirici', '=', True)]"/>
+                <filter name="yaklasan" string="Yürürlüğü Yaklaşan" domain="[('gecikti', '=', True)]"/>
+                <filter name="ai" string="AI Önerisi Hazır" domain="[('ai_durum', '=', 'tamam')]"/>
+                <filter name="siniflandirilmamis" string="Sınıflandırılmamış" domain="[('siniflandirma', '=', 'yok')]"/>
+                <separator/>
+                <filter name="benim" string="Sorumlusu Benim" domain="[('sorumlu_id', '=', uid)]"/>
+                <filter name="tespit" string="Tespit Tarihi" date="tespit_tarihi"/>
+                <group>
+                    <filter name="g_durum" string="Durum" context="{'group_by': 'durum'}"/>
+                    <filter name="g_onem" string="Önem" context="{'group_by': 'onem'}"/>
+                    <filter name="g_kategori" string="Kategori" context="{'group_by': 'kategori_id'}"/>
+                    <filter name="g_kurum" string="Kurum" context="{'group_by': 'kurum'}"/>
+                    <filter name="g_tespit" string="Tespit Ayı" context="{'group_by': 'tespit_tarihi:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_degisiklik" model="ir.actions.act_window">
+        <field name="name">Değişiklikler</field>
+        <field name="res_model">atlas.radar.degisiklik</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph</field>
+        <field name="context">{'search_default_acik': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz değişiklik tespit edilmedi</p>
+            <p>Radar, kaynakları zamanlanmış görevle tarar. İlk taramada bulunanlar temel kabul edilir; sonraki yayınlar burada listelenir.</p>
+        </field>
+    </record>
+    <record id="action_takvim" model="ir.actions.act_window">
+        <field name="name">Yürürlük Takvimi</field>
+        <field name="res_model">atlas.radar.degisiklik</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="domain">[('yururluk_tarihi', '!=', False), ('durum', 'not in', ('reddedildi', 'mukerrer'))]</field>
+    </record>
+
+    <!-- ============================== Etki ============================== -->
+    <record id="view_etki_list" model="ir.ui.view">
+        <field name="name">atlas.radar.etki.list</field>
+        <field name="model">atlas.radar.etki</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false" decoration-muted="durum != 'acik'">
+                <field name="degisiklik_id" readonly="1"/>
+                <field name="modul_id" readonly="1"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="onem" widget="badge" decoration-danger="onem == 'kritik'" decoration-warning="onem == 'yuksek'"/>
+                <field name="yururluk_tarihi"/>
+                <field name="aciklama"/>
+                <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                <field name="task_id"/>
+                <field name="durum"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_etki_search" model="ir.ui.view">
+        <field name="name">atlas.radar.etki.search</field>
+        <field name="model">atlas.radar.etki</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="modul_id"/>
+                <field name="degisiklik_id"/>
+                <field name="company_id"/>
+                <filter name="acik" string="Açık" domain="[('durum', '=', 'acik')]"/>
+                <group>
+                    <filter name="g_modul" string="Modül" context="{'group_by': 'modul_id'}"/>
+                    <filter name="g_sirket" string="Şirket" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_etki" model="ir.actions.act_window">
+        <field name="name">Etki Analizi</field>
+        <field name="res_model">atlas.radar.etki</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="context">{'search_default_acik': 1, 'search_default_g_modul': 1}</field>
+    </record>
+
+    <!-- ============================== Kaynak ============================== -->
+    <record id="view_kaynak_list" model="ir.ui.view">
+        <field name="name">atlas.radar.kaynak.list</field>
+        <field name="model">atlas.radar.kaynak</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="saglik in ('hata', 'robots')" decoration-warning="saglik == 'uyari'" decoration-muted="not active">
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="kurum"/>
+                <field name="tur" optional="show"/>
+                <field name="oncelik" optional="hide"/>
+                <field name="kontrol_araligi" optional="show"/>
+                <field name="son_kontrol" optional="show"/>
+                <field name="son_basari" optional="show"/>
+                <field name="yanit_suresi" optional="hide"/>
+                <field name="son_oge_sayisi" optional="hide"/>
+                <field name="ardisik_hata" optional="hide"/>
+                <field name="saglik" widget="badge" decoration-success="saglik == 'iyi'" decoration-warning="saglik == 'uyari'"
+                       decoration-danger="saglik in ('hata', 'robots')"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_kaynak_form" model="ir.ui.view">
+        <field name="name">atlas.radar.kaynak.form</field>
+        <field name="model">atlas.radar.kaynak</field>
+        <field name="arch" type="xml">
+            <form string="Kaynak">
+                <header>
+                    <button name="action_simdi_tara" type="object" string="Şimdi Tara" class="btn-primary" invisible="not active"/>
+                    <button name="action_temeli_sifirla" type="object" string="Temeli Sıfırla" invisible="not ilk_tarama_tamam"
+                            confirm="Sonraki taramada bulunan öğeler temel kabul edilecek ve değişiklik açılmayacak. Devam edilsin mi?"/>
+                    <field name="saglik" widget="statusbar" statusbar_visible="bekliyor,iyi,uyari,hata"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_belgeler" type="object" class="oe_stat_button" icon="description">
+                            <field name="belge_sayisi" widget="statinfo" string="Belge"/>
+                        </button>
+                        <button name="action_degisiklikler" type="object" class="oe_stat_button" icon="history">
+                            <field name="degisiklik_sayisi" widget="statinfo" string="Değişiklik"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Pasif" bg_color="text-bg-secondary" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="not son_hata">
+                        <strong>Son hata: </strong><field name="son_hata" class="d-inline"/>
+                    </div>
+                    <group>
+                        <group string="Kaynak">
+                            <field name="kurum"/>
+                            <field name="url" widget="url"/>
+                            <field name="tur"/>
+                            <field name="ulke_id"/>
+                            <field name="yetki_alani"/>
+                            <field name="oncelik" widget="priority"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Tarama">
+                            <field name="kontrol_araligi"/>
+                            <field name="izinli_alanlar"/>
+                            <field name="sadece_eslesenler"/>
+                            <field name="kategori_id"/>
+                            <field name="etiket_ids" widget="many2many_tags" options="{'color_field': 'renk'}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Ayrıştırma" name="ayristirma">
+                            <group>
+                                <group string="İstek">
+                                    <field name="http_metot"/>
+                                    <field name="istek_govdesi" invisible="http_metot != 'POST'" widget="code" options="{'mode': 'javascript'}"/>
+                                </group>
+                                <group string="HTML" invisible="tur not in ('html_liste', 'sayfa')">
+                                    <field name="xpath"/>
+                                    <field name="link_deseni" invisible="tur != 'html_liste'"/>
+                                    <field name="en_az_uzunluk" invisible="tur != 'html_liste'"/>
+                                </group>
+                                <group string="JSON" invisible="tur != 'json_api'">
+                                    <field name="json_liste_yolu"/>
+                                    <field name="json_kimlik"/>
+                                    <field name="json_baslik"/>
+                                    <field name="json_tarih"/>
+                                    <field name="json_icerik"/>
+                                    <field name="json_url"/>
+                                    <field name="link_sablonu"/>
+                                </group>
+                                <group string="Detay Sayfası" invisible="tur == 'sayfa'">
+                                    <field name="detay_getir"/>
+                                    <field name="detay_xpath" invisible="not detay_getir"/>
+                                    <field name="detay_sinir" invisible="not detay_getir"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Sağlık" name="saglik">
+                            <group>
+                                <group>
+                                    <field name="son_kontrol"/>
+                                    <field name="son_basari"/>
+                                    <field name="sonraki_kontrol"/>
+                                    <field name="ilk_tarama_tamam"/>
+                                </group>
+                                <group>
+                                    <field name="robots_durumu"/>
+                                    <field name="ardisik_hata"/>
+                                    <field name="yanit_suresi"/>
+                                    <field name="son_oge_sayisi"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Notlar" name="notlar">
+                            <field name="notlar"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kaynak_search" model="ir.ui.view">
+        <field name="name">atlas.radar.kaynak.search</field>
+        <field name="model">atlas.radar.kaynak</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="kurum"/>
+                <field name="url"/>
+                <filter name="sorunlu" string="Sorunlu" domain="[('saglik', 'in', ('hata', 'robots', 'uyari'))]"/>
+                <separator/>
+                <filter name="pasif" string="Pasif" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="g_kurum" string="Kurum" context="{'group_by': 'kurum'}"/>
+                    <filter name="g_saglik" string="Sağlık" context="{'group_by': 'saglik'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kaynak" model="ir.actions.act_window">
+        <field name="name">Kaynaklar</field>
+        <field name="res_model">atlas.radar.kaynak</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================== Belge ============================== -->
+    <record id="view_belge_list" model="ir.ui.view">
+        <field name="name">atlas.radar.belge.list</field>
+        <field name="model">atlas.radar.belge</field>
+        <field name="arch" type="xml">
+            <list create="false" decoration-muted="durum != 'yeni'">
+                <field name="yayim_tarihi"/>
+                <field name="name"/>
+                <field name="kaynak_id"/>
+                <field name="surum" optional="show"/>
+                <field name="kesif_tarihi" optional="show"/>
+                <field name="durum" optional="show"/>
+                <field name="icerik_ozeti" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_belge_form" model="ir.ui.view">
+        <field name="name">atlas.radar.belge.form</field>
+        <field name="model">atlas.radar.belge</field>
+        <field name="arch" type="xml">
+            <form string="Belge" create="false">
+                <header>
+                    <button name="action_degisiklik_olustur" type="object" string="Değişiklik Kaydı Aç" class="btn-primary"
+                            invisible="durum == 'yeni'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="kaynak_id" readonly="1"/>
+                            <field name="url" widget="url" readonly="1"/>
+                            <field name="dis_kimlik" readonly="1"/>
+                            <field name="durum"/>
+                        </group>
+                        <group>
+                            <field name="yayim_tarihi" readonly="1"/>
+                            <field name="kesif_tarihi"/>
+                            <field name="surum"/>
+                            <field name="icerik_ozeti"/>
+                            <field name="onceki_ozet" invisible="not onceki_ozet"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="İçerik"><field name="icerik" readonly="1"/></page>
+                        <page string="Önceki Sürüm" invisible="not onceki_icerik"><field name="onceki_icerik"/></page>
+                        <page string="Değişiklikler"><field name="degisiklik_ids" readonly="1">
+                            <list><field name="tespit_tarihi"/><field name="name"/><field name="tur"/><field name="durum"/></list>
+                        </field></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_belge_search" model="ir.ui.view">
+        <field name="name">atlas.radar.belge.search</field>
+        <field name="model">atlas.radar.belge</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="icerik"/>
+                <field name="kaynak_id"/>
+                <field name="icerik_ozeti"/>
+                <filter name="ilgisiz" string="Kurala Uymayan" domain="[('durum', '=', 'ilgisiz')]"/>
+                <filter name="temel" string="Temel" domain="[('durum', '=', 'temel')]"/>
+                <filter name="surumlu" string="Güncellenmiş" domain="[('surum', '>', 1)]"/>
+                <group><filter name="g_kaynak" string="Kaynak" context="{'group_by': 'kaynak_id'}"/></group>
+            </search>
+        </field>
+    </record>
+    <record id="action_belge" model="ir.actions.act_window">
+        <field name="name">Belgeler</field>
+        <field name="res_model">atlas.radar.belge</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================== Kural, kategori, modül, etiket ============================== -->
+    <record id="view_kural_list" model="ir.ui.view">
+        <field name="name">atlas.radar.kural.list</field>
+        <field name="model">atlas.radar.kural</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="kategori_id"/>
+                <field name="onem" widget="badge" decoration-danger="onem == 'kritik'" decoration-warning="onem == 'yuksek'"/>
+                <field name="modul_ids" widget="many2many_tags"/>
+                <field name="agirlik" optional="hide"/>
+                <field name="kirici" optional="show"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_kural_form" model="ir.ui.view">
+        <field name="name">atlas.radar.kural.form</field>
+        <field name="model">atlas.radar.kural</field>
+        <field name="arch" type="xml">
+            <form string="Kural">
+                <sheet>
+                    <widget name="web_ribbon" title="Arşiv" bg_color="text-bg-secondary" invisible="active"/>
+                    <div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="kategori_id"/>
+                            <field name="onem"/>
+                            <field name="agirlik"/>
+                            <field name="modul_ids" widget="many2many_tags"/>
+                            <field name="kaynak_ids" widget="many2many_tags"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="gelistirme_gerekli"/>
+                            <field name="ayar_gerekli"/>
+                            <field name="kullanici_aksiyonu"/>
+                            <field name="kirici"/>
+                            <field name="yalniz_baslik"/>
+                        </group>
+                    </group>
+                    <label for="anahtar_kelimeler"/>
+                    <field name="anahtar_kelimeler" placeholder="e-fatura, e-arşiv, ubl-tr"/>
+                    <label for="haric_kelimeler"/>
+                    <field name="haric_kelimeler"/>
+                    <label for="birlikte_kelimeler"/>
+                    <field name="birlikte_kelimeler" placeholder="e-fatura, e-arşiv, ubl"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_kural" model="ir.actions.act_window">
+        <field name="name">Sınıflandırma Kuralları</field>
+        <field name="res_model">atlas.radar.kural</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_kategori_list" model="ir.ui.view">
+        <field name="name">atlas.radar.kategori.list</field>
+        <field name="model">atlas.radar.kategori</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="kod"/>
+                <field name="renk" widget="color_picker"/>
+                <field name="aciklama" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_kategori" model="ir.actions.act_window">
+        <field name="name">Kategoriler</field>
+        <field name="res_model">atlas.radar.kategori</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_etiket_list" model="ir.ui.view">
+        <field name="name">atlas.radar.etiket.list</field>
+        <field name="model">atlas.radar.etiket</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="renk" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_etiket" model="ir.actions.act_window">
+        <field name="name">Etiketler</field>
+        <field name="res_model">atlas.radar.etiket</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="view_modul_list" model="ir.ui.view">
+        <field name="name">atlas.radar.modul.list</field>
+        <field name="model">atlas.radar.modul</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="teknik_ad"/>
+                <field name="kurulu"/>
+                <field name="sorumlu_id" widget="many2one_avatar_user"/>
+                <field name="acik_etki_sayisi"/>
+                <field name="aciklama" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_modul" model="ir.actions.act_window">
+        <field name="name">ERP Modülleri</field>
+        <field name="res_model">atlas.radar.modul</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- ============================== Denetim günlüğü ============================== -->
+    <record id="view_denetim_list" model="ir.ui.view">
+        <field name="name">atlas.radar.denetim.list</field>
+        <field name="model">atlas.radar.denetim</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="tarih"/>
+                <field name="kullanici_id" widget="many2one_avatar_user"/>
+                <field name="islem" widget="badge"/>
+                <field name="model" optional="hide"/>
+                <field name="kayit_adi"/>
+                <field name="aciklama"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_denetim_form" model="ir.ui.view">
+        <field name="name">atlas.radar.denetim.form</field>
+        <field name="model">atlas.radar.denetim</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <header>
+                    <button name="action_kayda_git" type="object" string="Kayda Git" invisible="not res_id"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="tarih"/>
+                            <field name="kullanici_id"/>
+                            <field name="islem"/>
+                        </group>
+                        <group>
+                            <field name="model"/>
+                            <field name="res_id"/>
+                            <field name="kayit_adi"/>
+                        </group>
+                    </group>
+                    <field name="aciklama"/>
+                    <field name="degerler" widget="code" options="{'mode': 'javascript'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_denetim_search" model="ir.ui.view">
+        <field name="name">atlas.radar.denetim.search</field>
+        <field name="model">atlas.radar.denetim</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="aciklama"/>
+                <field name="kayit_adi"/>
+                <field name="kullanici_id"/>
+                <filter name="tarama" string="Tarama" domain="[('islem', '=', 'tarama')]"/>
+                <filter name="inceleme" string="İnceleme" domain="[('islem', '=', 'inceleme')]"/>
+                <filter name="degisim" string="Değişiklik/Silme" domain="[('islem', 'in', ('guncelle', 'sil', 'ayar'))]"/>
+                <filter name="tarih" string="Tarih" date="tarih"/>
+                <group>
+                    <filter name="g_islem" string="İşlem" context="{'group_by': 'islem'}"/>
+                    <filter name="g_kullanici" string="Kullanıcı" context="{'group_by': 'kullanici_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_denetim" model="ir.actions.act_window">
+        <field name="name">Denetim Günlüğü</field>
+        <field name="res_model">atlas.radar.denetim</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================== Ayarlar ============================== -->
+    <record id="view_ayar_form" model="ir.ui.view">
+        <field name="name">atlas.radar.ayar.form</field>
+        <field name="model">atlas.radar.ayar</field>
+        <field name="arch" type="xml">
+            <form string="Radar Ayarları">
+                <group>
+                    <group string="Bildirim ve Görev">
+                        <field name="sorumlu_id"/>
+                        <field name="ozet_alici_ids" widget="many2many_tags"/>
+                        <field name="bildirim_onem"/>
+                        <field name="otomatik_gorev"/>
+                        <field name="proje_id"/>
+                    </group>
+                    <group string="Yapay Zekâ (isteğe bağlı)">
+                        <field name="ai_etkin"/>
+                        <field name="ai_anahtar" password="True" invisible="not ai_etkin"/>
+                        <field name="ai_model" invisible="not ai_etkin"/>
+                        <field name="ai_otomatik" invisible="not ai_etkin"/>
+                        <div colspan="2" class="text-muted small" invisible="not ai_etkin">
+                            Değişikliğin başlığı ve metni Anthropic API'ye gönderilir (yalnız kamuya açık kurum duyuruları; ERP verisi gönderilmez).
+                            Öneriler zamanlanmış görevde alınır ve "AI önerisi" olarak işaretlenir; uygulamak insan onayı gerektirir.
+                        </div>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_kaydet" type="object" string="Kaydet" class="btn-primary"/>
+                    <button string="Vazgeç" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_ayar" model="ir.actions.act_window">
+        <field name="name">Radar Ayarları</field>
+        <field name="res_model">atlas.radar.ayar</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_panel" model="ir.actions.client">
+        <field name="name">Radar Paneli</field>
+        <field name="tag">atlas_radar.panel</field>
+    </record>
+
+    <!-- Görev formunda Radar bağlantısı -->
+    <record id="view_task_form_radar" model="ir.ui.view">
+        <field name="name">project.task.form.atlas.radar</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_ids']" position="after">
+                <field name="atlas_radar_degisiklik_id" groups="base.group_system" invisible="not atlas_radar_degisiklik_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
