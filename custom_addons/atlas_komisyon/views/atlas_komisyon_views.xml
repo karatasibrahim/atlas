@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_komisyon_plan_form" model="ir.ui.view">
+        <field name="name">atlas.komisyon.plan.form</field>
+        <field name="model">atlas.komisyon.plan</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_onayla" type="object" string="Onayla" class="btn-primary" invisible="durum != 'taslak'"/>
+                    <button name="action_hesapla" type="object" string="Hesapla" class="btn-primary" invisible="durum != 'onayli'" icon="refresh"/>
+                    <button name="action_kapat" type="object" string="Kapat" invisible="durum != 'onayli'"
+                            confirm="Plan kapatılacak; sonuçlar son kez hesaplanıp sabitlenecek."/>
+                    <button name="action_taslak" type="object" string="Taslağa Al" invisible="durum not in ('onayli', 'iptal')"/>
+                    <button name="action_iptal" type="object" string="İptal" invisible="durum in ('iptal', 'kapali')"/>
+                    <field name="durum" widget="statusbar" statusbar_visible="taslak,onayli,kapali"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_sonuclar" type="object" class="oe_stat_button" icon="payments" invisible="durum == 'taslak'">
+                            <field name="toplam_komisyon" widget="statinfo" string="Komisyon"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="ör. 2026 Satış Primi" readonly="durum != 'taslak'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <label for="bas" string="Geçerlilik"/>
+                            <div class="o_row">
+                                <field name="bas" readonly="durum != 'taslak'"/> → <field name="bit" readonly="durum != 'taslak'"/>
+                            </div>
+                            <field name="periyot" readonly="durum != 'taslak'"/>
+                            <field name="kullanici_tipi" widget="radio" options="{'horizontal': true}" readonly="durum != 'taslak'"/>
+                        </group>
+                        <group>
+                            <field name="tur" widget="radio" readonly="durum != 'taslak'"/>
+                            <field name="hedef_komisyon" invisible="tur != 'hedef'" readonly="durum != 'taslak'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="son_hesap" invisible="not son_hesap"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Başarılar" name="basari">
+                            <p class="text-muted small">
+                                Neyin sayılacağını belirler. Tutar bazlı kurallarda oran yüzdedir (satırın %5'i); miktar bazlı kurallarda
+                                birim başına tutardır. Hedef bazlı planda oran genelde %100 olur (tutarın tamamı hedefe sayılır).
+                            </p>
+                            <field name="basari_ids" readonly="durum != 'taslak'">
+                                <list editable="bottom">
+                                    <field name="tip"/>
+                                    <field name="urun_id" options="{'no_create': True}"/>
+                                    <field name="kategori_id" options="{'no_create': True}"/>
+                                    <field name="oran"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Hedefler" name="hedef" invisible="tur != 'hedef'">
+                            <button name="action_hedefleri_olustur" type="object" string="Dönemleri oluştur" class="btn-link" icon="add"
+                                    invisible="durum != 'taslak'"/>
+                            <field name="hedef_ids">
+                                <list editable="bottom" create="0">
+                                    <field name="name"/>
+                                    <field name="bas"/>
+                                    <field name="bit"/>
+                                    <field name="tutar"/>
+                                </list>
+                            </field>
+                            <separator string="Kademeler"/>
+                            <button name="action_kademe_varsayilan" type="object" string="Varsayılan kademeler (%50 / %100 / %150)" class="btn-link"
+                                    icon="history" invisible="durum != 'taslak'"/>
+                            <field name="kademe_ids" readonly="durum != 'taslak'">
+                                <list editable="bottom">
+                                    <field name="oran" widget="percentage"/>
+                                    <field name="tutar"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Temsilciler" name="uye">
+                            <field name="uye_ids">
+                                <list editable="bottom">
+                                    <field name="kullanici_tipi" column_invisible="1"/>
+                                    <field name="user_id" widget="many2one_avatar_user" column_invisible="parent.kullanici_tipi != 'kisi'"
+                                           required="kullanici_tipi == 'kisi'"/>
+                                    <field name="team_id" column_invisible="parent.kullanici_tipi != 'ekip'" required="kullanici_tipi == 'ekip'"/>
+                                    <field name="bas"/>
+                                    <field name="bit"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_plan_list" model="ir.ui.view">
+        <field name="name">atlas.komisyon.plan.list</field>
+        <field name="model">atlas.komisyon.plan</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="durum in ('iptal', 'kapali')" decoration-info="durum == 'taslak'">
+                <field name="name"/>
+                <field name="bas"/>
+                <field name="bit"/>
+                <field name="periyot"/>
+                <field name="tur"/>
+                <field name="kullanici_tipi"/>
+                <field name="toplam_komisyon" sum="Toplam"/>
+                <field name="durum" widget="badge" decoration-success="durum == 'onayli'" decoration-info="durum == 'taslak'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_komisyon_plan" model="ir.actions.act_window">
+        <field name="name">Komisyon Planları</field>
+        <field name="res_model">atlas.komisyon.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">İlk komisyon planını oluşturun</p>
+            <p>Satış temsilcilerinize satış ya da fatura tutarı üzerinden oransal, veya hedefe göre kademeli komisyon tanımlayın.</p>
+        </field>
+    </record>
+
+    <!-- ============================================================ düzeltmeler -->
+    <record id="view_atlas_komisyon_duzeltme_list" model="ir.ui.view">
+        <field name="name">atlas.komisyon.duzeltme.list</field>
+        <field name="model">atlas.komisyon.duzeltme</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="tarih"/>
+                <field name="plan_id"/>
+                <field name="kullanici_tipi" column_invisible="1"/>
+                <field name="user_id" widget="many2one_avatar_user" required="kullanici_tipi == 'kisi'" readonly="kullanici_tipi == 'ekip'"/>
+                <field name="team_id" required="kullanici_tipi == 'ekip'" readonly="kullanici_tipi == 'kisi'"/>
+                <field name="name"/>
+                <field name="tutar" sum="Toplam"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_komisyon_duzeltme" model="ir.actions.act_window">
+        <field name="name">Düzeltmeler</field>
+        <field name="res_model">atlas.komisyon.duzeltme</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- ============================================================ rapor -->
+    <record id="view_atlas_komisyon_sonuc_list" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.list</field>
+        <field name="model">atlas.komisyon.sonuc</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_yeniden_hesapla" type="object" string="Yeniden Hesapla" groups="sales_team.group_sale_manager"/>
+                </header>
+                <field name="donem_adi"/>
+                <field name="plan_id"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="team_id" optional="show"/>
+                <field name="basari" sum="Toplam"/>
+                <field name="hedef" sum="Toplam" optional="show"/>
+                <field name="gerceklesme" widget="progressbar" optional="show"/>
+                <field name="komisyon" sum="Toplam"/>
+                <button name="action_ayrinti" type="object" string="Ayrıntı" icon="list_alt"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_sonuc_pivot" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.pivot</field>
+        <field name="model">atlas.komisyon.sonuc</field>
+        <field name="arch" type="xml">
+            <pivot string="Komisyon">
+                <field name="user_id" type="row"/>
+                <field name="donem_bas" interval="month" type="col"/>
+                <field name="komisyon" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_sonuc_graph" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.graph</field>
+        <field name="model">atlas.komisyon.sonuc</field>
+        <field name="arch" type="xml">
+            <graph string="Komisyon" type="bar">
+                <field name="donem_bas" interval="month"/>
+                <field name="user_id"/>
+                <field name="komisyon" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_sonuc_search" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.search</field>
+        <field name="model">atlas.komisyon.sonuc</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="team_id"/>
+                <field name="plan_id"/>
+                <filter name="benim" string="Komisyonum" domain="[('user_id', '=', uid)]"/>
+                <filter name="donem" string="Dönem" date="donem_bas"/>
+                <group>
+                    <filter name="g_kisi" string="Temsilci" context="{'group_by': 'user_id'}"/>
+                    <filter name="g_ekip" string="Ekip" context="{'group_by': 'team_id'}"/>
+                    <filter name="g_plan" string="Plan" context="{'group_by': 'plan_id'}"/>
+                    <filter name="g_donem" string="Dönem" context="{'group_by': 'donem_bas:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_komisyon_sonuc" model="ir.actions.act_window">
+        <field name="name">Komisyon Raporu</field>
+        <field name="res_model">atlas.komisyon.sonuc</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="search_view_id" ref="view_atlas_komisyon_sonuc_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Henüz hesaplanmış komisyon yok</p>
+            <p>Onaylı komisyon planları hesaplandıkça sonuçlar burada görünür.</p>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_satir_list" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.satir.list</field>
+        <field name="model">atlas.komisyon.sonuc.satir</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="tarih"/>
+                <field name="kaynak" widget="badge"/>
+                <field name="belge"/>
+                <field name="urun_id"/>
+                <field name="miktar" optional="show"/>
+                <field name="tutar"/>
+                <field name="oran"/>
+                <field name="katki" sum="Toplam"/>
+                <button name="action_belge" type="object" icon="open_in_new" title="Belgeyi aç"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_komisyon_satir_pivot" model="ir.ui.view">
+        <field name="name">atlas.komisyon.sonuc.satir.pivot</field>
+        <field name="model">atlas.komisyon.sonuc.satir</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="urun_id" type="row"/>
+                <field name="kaynak" type="col"/>
+                <field name="katki" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <menuitem id="menu_atlas_komisyon" name="Komisyonlar" parent="sale.sale_menu_root" sequence="40"
+              groups="sales_team.group_sale_salesman">
+        <menuitem id="menu_atlas_komisyon_rapor" name="Komisyon Raporu" action="action_atlas_komisyon_sonuc" sequence="1"/>
+        <menuitem id="menu_atlas_komisyon_plan" name="Komisyon Planları" action="action_atlas_komisyon_plan" sequence="10"
+                  groups="sales_team.group_sale_manager"/>
+        <menuitem id="menu_atlas_komisyon_duzeltme" name="Düzeltmeler" action="action_atlas_komisyon_duzeltme" sequence="20"
+                  groups="sales_team.group_sale_manager"/>
+    </menuitem>
+</odoo>

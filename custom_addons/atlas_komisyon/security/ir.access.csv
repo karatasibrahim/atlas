@@ -1,0 +1,17 @@
+id,name,model_id,group_id/id,operation,domain
+access_plan_temsilci,plan okuma (üye),atlas.komisyon.plan,sales_team.group_sale_salesman,r,"['|', ('uye_ids.user_id', '=', user.id), ('uye_ids.team_id.member_ids', 'in', [user.id])]"
+access_plan_yonetici,plan,atlas.komisyon.plan,sales_team.group_sale_manager,crud,
+access_basari_temsilci,başarı kuralı okuma,atlas.komisyon.plan.basari,sales_team.group_sale_salesman,r,
+access_basari_yonetici,başarı kuralı,atlas.komisyon.plan.basari,sales_team.group_sale_manager,crud,
+access_hedef_temsilci,hedef okuma,atlas.komisyon.plan.hedef,sales_team.group_sale_salesman,r,
+access_hedef_yonetici,hedef,atlas.komisyon.plan.hedef,sales_team.group_sale_manager,crud,
+access_kademe_temsilci,kademe okuma,atlas.komisyon.plan.kademe,sales_team.group_sale_salesman,r,
+access_kademe_yonetici,kademe,atlas.komisyon.plan.kademe,sales_team.group_sale_manager,crud,
+access_uye_temsilci,üye okuma,atlas.komisyon.plan.uye,sales_team.group_sale_salesman,r,
+access_uye_yonetici,üye,atlas.komisyon.plan.uye,sales_team.group_sale_manager,crud,
+access_duzeltme_temsilci,düzeltme okuma,atlas.komisyon.duzeltme,sales_team.group_sale_salesman,r,"['|', ('user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id])]"
+access_duzeltme_yonetici,düzeltme,atlas.komisyon.duzeltme,sales_team.group_sale_manager,crud,
+access_sonuc_temsilci,sonuç okuma (kendi),atlas.komisyon.sonuc,sales_team.group_sale_salesman,r,"['|', ('user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id])]"
+access_sonuc_yonetici,sonuç,atlas.komisyon.sonuc,sales_team.group_sale_manager,crud,
+access_satir_temsilci,ayrıntı okuma (kendi),atlas.komisyon.sonuc.satir,sales_team.group_sale_salesman,r,"['|', ('user_id', '=', user.id), ('team_id.member_ids', 'in', [user.id])]"
+access_satir_yonetici,ayrıntı,atlas.komisyon.sonuc.satir,sales_team.group_sale_manager,crud,
