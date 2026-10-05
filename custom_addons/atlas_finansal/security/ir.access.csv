@@ -1,0 +1,10 @@
+id,name,model_id,group_id/id,operation,domain
+access_rapor_readonly,atlas.finansal.rapor readonly,atlas.finansal.rapor,account.group_account_readonly,r,
+access_rapor_invoice,atlas.finansal.rapor invoice,atlas.finansal.rapor,account.group_account_invoice,r,
+access_rapor_manager,atlas.finansal.rapor manager,atlas.finansal.rapor,account.group_account_manager,crud,
+access_satir_readonly,atlas.finansal.rapor.satir readonly,atlas.finansal.rapor.satir,account.group_account_readonly,r,
+access_satir_invoice,atlas.finansal.rapor.satir invoice,atlas.finansal.rapor.satir,account.group_account_invoice,r,
+access_satir_manager,atlas.finansal.rapor.satir manager,atlas.finansal.rapor.satir,account.group_account_manager,crud,
+access_not_readonly,atlas.finansal.rapor.not readonly,atlas.finansal.rapor.not,account.group_account_readonly,crud,
+access_not_invoice,atlas.finansal.rapor.not invoice,atlas.finansal.rapor.not,account.group_account_invoice,crud,
+access_gonderim_manager,atlas.finansal.gonderim manager,atlas.finansal.gonderim,account.group_account_manager,crud,

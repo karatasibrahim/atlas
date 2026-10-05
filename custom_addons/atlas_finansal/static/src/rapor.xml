@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_finansal.Rapor">
+        <div class="o_atlas_fr o_action h-100 d-flex flex-column">
+            <div class="o_atlas_fr_ust border-bottom px-3 pt-2 pb-2">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <h4 class="m-0 me-2" t-out="this.state.veri ? this.state.veri.rapor.ad : ''"/>
+                    <span class="text-muted small" t-if="this.state.veri">
+                        <t t-out="this.state.veri.sirket"/> · <t t-out="this.donemEtiketi"/>
+                    </span>
+                    <span t-if="this.state.yukleniyor" class="text-muted small"><i class="oi o_atlas_fr_doner me-1" data-icon="progress_activity"/>Hesaplanıyor</span>
+                    <div class="ms-auto d-flex gap-2">
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.yukle()" title="Yenile">
+                            <i class="oi" data-icon="refresh"/>
+                        </button>
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.excel()">
+                            <i class="oi me-1" data-icon="table_view"/>Excel
+                        </button>
+                        <button class="btn btn-secondary" type="button" t-on-click="() => this.pdf()">
+                            <i class="oi me-1" data-icon="picture_as_pdf"/>PDF
+                        </button>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 o_atlas_fr_filtreler" t-if="this.state.veri">
+                    <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.donemSec(ev)" title="Dönem">
+                        <t t-foreach="[['bu_ay', 'Bu ay'], ['bu_ceyrek', 'Bu çeyrek'], ['bu_yil', 'Bu yıl'], ['gecen_ay', 'Geçen ay'], ['gecen_ceyrek', 'Geçen çeyrek'], ['gecen_yil', 'Geçen yıl'], ['ozel', 'Özel tarih']]" t-as="d" t-key="d[0]">
+                            <option t-att-value="d[0]" t-att-selected="this.state.secenekler.donem_kodu === d[0]" t-out="d[1]"/>
+                        </t>
+                    </select>
+                    <input t-if="!this.tekTarih" type="date" class="form-control form-control-sm w-auto" t-att-value="this.state.secenekler.tarih_bas"
+                           t-on-change="(ev) => this.tarihDegisti('tarih_bas', ev)" title="Başlangıç"/>
+                    <input type="date" class="form-control form-control-sm w-auto" t-att-value="this.state.secenekler.tarih_bit"
+                           t-on-change="(ev) => this.tarihDegisti('tarih_bit', ev)" title="Bitiş"/>
+                    <t t-if="this.state.veri.rapor.karsilastirma">
+                        <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.karsilastirmaSec(ev)" title="Karşılaştırma">
+                            <option value="yok" t-att-selected="this.state.secenekler.karsilastirma.tur === 'yok'">Karşılaştırma yok</option>
+                            <option value="onceki" t-att-selected="this.state.secenekler.karsilastirma.tur === 'onceki'">Önceki dönem(ler)</option>
+                            <option value="gecen_yil" t-att-selected="this.state.secenekler.karsilastirma.tur === 'gecen_yil'">Geçen yıl(lar)</option>
+                        </select>
+                        <input t-if="this.state.secenekler.karsilastirma.tur !== 'yok'" type="number" min="1" max="12" class="form-control form-control-sm o_atlas_fr_adet"
+                               t-att-value="this.state.secenekler.karsilastirma.adet" t-on-change="(ev) => this.karsilastirmaAdet(ev)" title="Dönem sayısı"/>
+                        <label t-if="this.state.secenekler.karsilastirma.tur !== 'yok' and this.state.secenekler.karsilastirma.adet === 1" class="form-check-label small d-flex align-items-center gap-1">
+                            <input type="checkbox" class="form-check-input mt-0" t-att-checked="this.state.secenekler.buyume" t-on-change="() => this.secenekDegistir('buyume')"/>% değişim
+                        </label>
+                    </t>
+                    <div t-if="this.state.veri.rapor.filtre_yevmiye" class="dropdown">
+                        <button class="btn btn-sm btn-light border dropdown-toggle" type="button" t-on-click="() => this.state.yevmiyeAcik = !this.state.yevmiyeAcik">
+                            <t t-out="this.yevmiyeEtiketi"/>
+                        </button>
+                        <div t-if="this.state.yevmiyeAcik" class="dropdown-menu show o_atlas_fr_yevmiye">
+                            <t t-foreach="this.state.veri.yevmiyeler" t-as="y" t-key="y.id">
+                                <label class="dropdown-item d-flex gap-2 align-items-center">
+                                    <input type="checkbox" class="form-check-input mt-0" t-att-checked="(this.state.secenekler.yevmiye_ids || []).includes(y.id)"
+                                           t-on-change="() => this.yevmiyeSec(y.id)"/>
+                                    <span t-out="y.ad"/>
+                                </label>
+                            </t>
+                        </div>
+                    </div>
+                    <div t-if="this.state.veri.rapor.filtre_cari" class="o_atlas_fr_secici">
+                        <MultiRecordSelector resModel="'res.partner'" resIds="this.state.secenekler.partner_ids || []"
+                                             update="(ids) => this.guncelle({ partner_ids: ids })" placeholder="'Cari'"/>
+                    </div>
+                    <div t-if="this.state.veri.rapor.filtre_analitik" class="o_atlas_fr_secici">
+                        <MultiRecordSelector resModel="'account.analytic.account'" resIds="this.state.secenekler.analitik_ids || []"
+                                             update="(ids) => this.guncelle({ analitik_ids: ids })" placeholder="'Analitik'"/>
+                    </div>
+                    <input t-if="this.state.veri.rapor.filtre_hesap" type="text" class="form-control form-control-sm o_atlas_fr_hesap"
+                           placeholder="Hesap: 100-399 / 120,320" t-att-value="this.state.secenekler.hesap_filtre"
+                           t-on-change="(ev) => this.metinSecenek('hesap_filtre', ev)"/>
+                    <select t-if="this.state.veri.rapor.filtre_seviye" class="form-select form-select-sm w-auto" t-on-change="(ev) => this.metinSecenek('seviye', ev)" title="Seviye">
+                        <t t-foreach="[['1', 'Sınıf'], ['2', 'Grup'], ['3', 'Ana hesap'], ['4', 'Alt hesap']]" t-as="sv" t-key="sv[0]">
+                            <option t-att-value="sv[0]" t-att-selected="this.state.secenekler.seviye === sv[0]" t-out="sv[1]"/>
+                        </t>
+                    </select>
+                    <select t-if="this.state.veri.rapor.filtre_cari_turu" class="form-select form-select-sm w-auto" t-on-change="(ev) => this.metinSecenek('cari_turu', ev)">
+                        <option value="alacak" t-att-selected="this.state.secenekler.cari_turu === 'alacak'">Alıcılar</option>
+                        <option value="borc" t-att-selected="this.state.secenekler.cari_turu === 'borc'">Satıcılar</option>
+                        <option value="hepsi" t-att-selected="this.state.secenekler.cari_turu === 'hepsi'">Tümü</option>
+                    </select>
+                    <div class="d-flex flex-wrap gap-3 ms-md-2 small">
+                        <label class="d-flex align-items-center gap-1"><input type="checkbox" class="form-check-input mt-0" t-att-checked="this.state.secenekler.taslak" t-on-change="() => this.secenekDegistir('taslak')"/>Taslaklar</label>
+                        <label class="d-flex align-items-center gap-1"><input type="checkbox" class="form-check-input mt-0" t-att-checked="this.state.secenekler.sifir_gizle" t-on-change="() => this.secenekDegistir('sifir_gizle')"/>Sıfırları gizle</label>
+                        <label class="d-flex align-items-center gap-1"><input type="checkbox" class="form-check-input mt-0" t-att-checked="this.state.secenekler.tumunu_ac" t-on-change="() => this.secenekDegistir('tumunu_ac')"/>Tümünü aç</label>
+                    </div>
+                    <input type="search" class="form-control form-control-sm o_atlas_fr_ara ms-auto" placeholder="Ara…" t-att-value="this.state.secenekler.arama"
+                           t-on-change="(ev) => this.metinSecenek('arama', ev)"/>
+                </div>
+            </div>
+            <div class="o_atlas_fr_icerik flex-grow-1 overflow-auto" t-if="this.state.veri">
+                <table class="table table-sm table-hover o_atlas_fr_tablo mb-0">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th class="o_atlas_fr_ad"/>
+                            <t t-foreach="this.state.veri.kolonlar" t-as="k" t-key="k_index">
+                                <th t-att-class="['metin', 'tarih'].includes(k.tur) ? '' : 'text-end'" t-out="k.ad"/>
+                            </t>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="this.gorunurSatirlar()" t-as="s" t-key="s.anahtar">
+                            <tr t-att-class="this.satirSinifi(s)">
+                                <td class="o_atlas_fr_ad" t-att-style="this.girinti(s)">
+                                    <div class="d-flex align-items-start gap-1">
+                                        <span class="o_atlas_fr_ok" t-on-click="() => this.satirTikla(s)">
+                                            <i t-if="s.acilabilir" class="oi o_atlas_fr_ok_simge" t-att-class="s.acik ? 'o_acik' : ''" data-icon="chevron_forward"/>
+                                        </span>
+                                        <span class="flex-grow-1" t-att-class="s.sinif === 'daha' ? 'text-primary' : ''" t-on-click="() => this.satirTikla(s)" t-out="s.ad"/>
+                                        <a t-if="s.kayit" class="o_atlas_fr_kayit small" t-on-click.stop="() => this.kayitAc(s)" title="Kaydı aç"><i class="oi" data-icon="open_in_new"/></a>
+                                        <a t-if="s.sinif !== 'daha'" class="o_atlas_fr_not_dugme small" t-att-class="s.not ? 'o_var' : ''" t-on-click.stop="() => this.notAc(s)"
+                                           t-att-title="s.not || 'Not ekle'"><i class="oi" data-icon="description"/></a>
+                                    </div>
+                                    <div t-if="s.not and this.state.notAnahtar !== s.anahtar" class="small text-muted fst-italic o_atlas_fr_not" t-out="s.not"/>
+                                    <div t-if="this.state.notAnahtar === s.anahtar" class="d-flex gap-1 mt-1">
+                                        <input type="text" class="form-control form-control-sm" t-att-value="this.state.notMetin"
+                                               t-on-input="(ev) => this.state.notMetin = ev.target.value" placeholder="Not (boş bırakılırsa silinir)"/>
+                                        <button class="btn btn-sm btn-primary" type="button" t-on-click="() => this.notKaydet(s)">Kaydet</button>
+                                        <button class="btn btn-sm btn-light" type="button" t-on-click="() => this.notIptal()">Vazgeç</button>
+                                    </div>
+                                </td>
+                                <t t-foreach="this.state.veri.kolonlar" t-as="k" t-key="k_index">
+                                    <td t-att-class="this.hucreSinifi(s, k, s.degerler[k_index], k_index)" t-on-click="() => this.denetle(s, k_index)"
+                                        t-out="this.hucre(s, k, s.degerler[k_index])"/>
+                                </t>
+                            </tr>
+                        </t>
+                        <tr t-if="!this.gorunurSatirlar().length">
+                            <td t-att-colspan="this.state.veri.kolonlar.length + 1" class="text-center text-muted py-4">Bu dönem ve filtrelerle gösterilecek kayıt yok.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_finansal" model="ir.actions.report">
+        <field name="name">Finansal Rapor</field>
+        <field name="model">atlas.finansal.rapor</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atlas_finansal.rapor_pdf</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="rapor_pdf">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page" style="font-size: 10px;">
+                    <h4 t-out="veri['rapor']['ad']"/>
+                    <div>
+                        <t t-out="veri['sirket']"/> —
+                        <t t-if="veri['rapor']['tarih_modu'] == 'tek'"><t t-out="veri['secenekler']['tarih_bit']"/> itibarıyla</t>
+                        <t t-else=""><t t-out="veri['secenekler']['tarih_bas']"/> / <t t-out="veri['secenekler']['tarih_bit']"/></t>
+                        <t t-if="veri['secenekler']['taslak']"> (taslaklar dahil)</t>
+                    </div>
+                    <table class="table table-sm mt-2">
+                        <thead>
+                            <tr>
+                                <th/>
+                                <th t-foreach="veri['kolonlar']" t-as="k" class="text-end" t-out="k['ad']"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="veri['satirlar']" t-as="s">
+                                <tr t-if="s['sinif'] != 'daha'" t-att-style="'font-weight: bold;' if s['sinif'] in ('toplam', 'baslik') else ''">
+                                    <td t-att-style="'padding-left: %spx' % (6 + 14 * (s.get('seviye') or 0))">
+                                        <t t-out="s['ad']"/>
+                                        <div t-if="s.get('not')" style="font-style: italic; color: #666;" t-out="s['not']"/>
+                                    </td>
+                                    <t t-foreach="zip(veri['kolonlar'], s['degerler'])" t-as="kv">
+                                        <td class="text-end text-nowrap">
+                                            <t t-set="v" t-value="kv[1]"/>
+                                            <t t-if="v is None or v is False"/>
+                                            <t t-elif="kv[0]['tur'] in ('metin', 'tarih')" t-out="v"/>
+                                            <t t-elif="s.get('bicim') == 'yuzde' or kv[0]['tur'] == 'yuzde'" t-out="'%%%.1f' % v"/>
+                                            <t t-elif="s.get('bicim') in ('oran', 'gun') or kv[0]['tur'] == 'oran'" t-out="('%.2f' % v).replace('.', ',')"/>
+                                            <t t-else="" t-out="'{:,.2f}'.format(v).replace(',', 'X').replace('.', ',').replace('X', '.')"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

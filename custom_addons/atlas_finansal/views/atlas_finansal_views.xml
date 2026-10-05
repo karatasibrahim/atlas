@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rapor_list" model="ir.ui.view">
+        <field name="name">atlas.finansal.rapor.list</field>
+        <field name="model">atlas.finansal.rapor</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+                <field name="tur"/>
+                <field name="tarih_modu"/>
+                <field name="karsilastirma"/>
+                <field name="active" column_invisible="True"/>
+                <button name="action_ac" type="object" string="Aç" icon="open_in_new" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rapor_form" model="ir.ui.view">
+        <field name="name">atlas.finansal.rapor.form</field>
+        <field name="model">atlas.finansal.rapor</field>
+        <field name="arch" type="xml">
+            <form string="Finansal Rapor">
+                <header>
+                    <button name="action_ac" type="object" string="Raporu Aç" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Arşiv" bg_color="text-bg-secondary" invisible="active"/>
+                    <div class="oe_title"><label for="name"/><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="tur"/>
+                            <field name="tarih_modu"/>
+                            <field name="kapanis_haric"/>
+                            <field name="nakit_hesaplari" invisible="tur != 'nakit_akis'"/>
+                            <field name="varsayilan_seviye" invisible="tur != 'mizan'"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Seçenekler">
+                            <field name="karsilastirma"/>
+                            <field name="filtre_yevmiye"/>
+                            <field name="filtre_cari"/>
+                            <field name="filtre_analitik"/>
+                            <field name="filtre_hesap"/>
+                            <field name="filtre_seviye"/>
+                            <field name="filtre_cari_turu"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Satırlar" name="satirlar" invisible="tur not in ('tanim', 'nakit_akis')">
+                            <field name="satir_ids" context="{'default_rapor_id': id}">
+                                <list editable="bottom" decoration-bf="kalin" decoration-muted="gizli">
+                                    <field name="sira" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="kod" optional="show"/>
+                                    <field name="parent_id" optional="show"/>
+                                    <field name="motor"/>
+                                    <field name="hesaplar" invisible="motor not in ('hesap', 'nakit')"/>
+                                    <field name="donem_turu" invisible="motor != 'hesap'" optional="show"/>
+                                    <field name="isaret" invisible="motor != 'hesap'" optional="show"/>
+                                    <field name="formul" invisible="motor != 'formul'"/>
+                                    <field name="bicim" optional="hide"/>
+                                    <field name="kalin" optional="hide"/>
+                                    <field name="gizle_sifir" optional="hide"/>
+                                    <field name="gizli" optional="hide"/>
+                                    <field name="acilabilir" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Açıklama" name="aciklama">
+                            <field name="aciklama"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rapor_tanim" model="ir.actions.act_window">
+        <field name="name">Finansal Rapor Tanımları</field>
+        <field name="res_model">atlas.finansal.rapor</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_gonderim_list" model="ir.ui.view">
+        <field name="name">atlas.finansal.gonderim.list</field>
+        <field name="model">atlas.finansal.gonderim</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="rapor_id"/>
+                <field name="siklik"/>
+                <field name="donem"/>
+                <field name="bicim"/>
+                <field name="alici_ids" widget="many2many_tags"/>
+                <field name="sonraki_tarih"/>
+                <field name="son_gonderim"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_gonderim_form" model="ir.ui.view">
+        <field name="name">atlas.finansal.gonderim.form</field>
+        <field name="model">atlas.finansal.gonderim</field>
+        <field name="arch" type="xml">
+            <form string="Otomatik Gönderim">
+                <header>
+                    <button name="action_simdi_gonder" type="object" string="Şimdi Gönder" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="rapor_id"/>
+                            <field name="donem"/>
+                            <field name="karsilastir"/>
+                            <field name="bicim"/>
+                        </group>
+                        <group>
+                            <field name="siklik"/>
+                            <field name="sonraki_tarih"/>
+                            <field name="son_gonderim"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="alici_ids" widget="many2many_tags_email" placeholder="Alıcılar"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_gonderim" model="ir.actions.act_window">
+        <field name="name">Rapor Gönderimleri</field>
+        <field name="res_model">atlas.finansal.gonderim</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Otomatik rapor gönderimi tanımlayın</p>
+            <p>Örneğin her ayın başında önceki ayın Gelir Tablosu ve Bilançosu Excel olarak yönetime gönderilsin.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_finansal_ayar" name="Finansal Raporlar" parent="account.menu_finance_configuration" sequence="90"
+              groups="account.group_account_manager"/>
+    <menuitem id="menu_finansal_tanim" name="Rapor Tanımları" parent="menu_finansal_ayar" action="action_rapor_tanim" sequence="1"/>
+    <menuitem id="menu_finansal_gonderim" name="Otomatik Gönderimler" parent="menu_finansal_ayar" action="action_gonderim" sequence="2"/>
+</odoo>

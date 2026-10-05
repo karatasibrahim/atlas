@@ -1,0 +1,127 @@
+.o_atlas_fr {
+    background-color: var(--body-bg, #fff);
+
+    .o_atlas_fr_adet {
+        width: 4.5rem;
+    }
+
+    .o_atlas_fr_hesap {
+        width: 12rem;
+    }
+
+    .o_atlas_fr_ara {
+        width: 12rem;
+    }
+
+    .o_atlas_fr_secici {
+        min-width: 12rem;
+        max-width: 22rem;
+    }
+
+    .o_atlas_fr_yevmiye {
+        max-height: 20rem;
+        overflow-y: auto;
+        z-index: 1050;
+    }
+
+    .o_atlas_fr_tablo {
+        font-variant-numeric: tabular-nums;
+
+        thead th {
+            background-color: var(--gray-100, #f8f9fa);
+            white-space: nowrap;
+            z-index: 2;
+        }
+
+        .o_atlas_fr_ad {
+            min-width: 22rem;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .o_atlas_fr_ok {
+            width: 1.1rem;
+            display: inline-block;
+            cursor: pointer;
+            color: var(--gray-600, #6c757d);
+        }
+
+        .o_atlas_fr_ok_simge {
+            display: inline-block;
+            transition: transform 0.15s;
+
+            &.o_acik {
+                transform: rotate(90deg);
+            }
+        }
+
+        .o_atlas_fr_acilabilir .o_atlas_fr_ad {
+            cursor: pointer;
+        }
+
+        .o_atlas_fr_toplam td {
+            font-weight: 600;
+            background-color: var(--gray-50, #fcfcfd);
+        }
+
+        .o_atlas_fr_baslik td {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            padding-top: 0.75rem;
+        }
+
+        .o_atlas_fr_kalem td {
+            color: var(--gray-700, #495057);
+            font-size: 0.85rem;
+        }
+
+        .o_atlas_fr_daha td {
+            cursor: pointer;
+        }
+
+        .o_atlas_fr_denetim {
+            cursor: pointer;
+
+            &:hover {
+                text-decoration: underline;
+                color: var(--primary, #714b67);
+            }
+        }
+
+        .o_atlas_fr_negatif {
+            color: var(--danger, #d44c59);
+        }
+
+        .o_atlas_fr_not_dugme,
+        .o_atlas_fr_kayit {
+            visibility: hidden;
+            cursor: pointer;
+            color: var(--gray-500, #adb5bd);
+
+            &.o_var {
+                visibility: visible;
+                color: var(--warning, #e99d00);
+            }
+        }
+
+        tr:hover .o_atlas_fr_not_dugme,
+        tr:hover .o_atlas_fr_kayit {
+            visibility: visible;
+        }
+    }
+
+    .o_atlas_fr_doner {
+        display: inline-block;
+        animation: o_atlas_fr_don 1s linear infinite;
+    }
+}
+
+@keyframes o_atlas_fr_don {
+    to {
+        transform: rotate(360deg);
+    }
+}
