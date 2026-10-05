@@ -1,0 +1,17 @@
+id,name,model_id,group_id/id,operation,domain
+access_makale_okuma_uye,makale okuma (üye),atlas.bilgi.makale,base.group_user,r,"[('okuyan_partner_ids', 'in', [user.partner_id.id])]"
+access_makale_okuma_ic,makale okuma (iç erişim),atlas.bilgi.makale,base.group_user,r,"[('etkin_yetki', 'in', ['read', 'write']), ('engelli_partner_ids', 'not in', [user.partner_id.id])]"
+access_makale_yazma_uye,makale yazma (üye),atlas.bilgi.makale,base.group_user,cud,"[('yazan_partner_ids', 'in', [user.partner_id.id])]"
+access_makale_yazma_ic,makale yazma (iç erişim),atlas.bilgi.makale,base.group_user,cud,"[('etkin_yetki', '=', 'write'), ('kisitli_partner_ids', 'not in', [user.partner_id.id])]"
+access_makale_system,makale yönetici,atlas.bilgi.makale,base.group_system,crud,
+access_uye_user,üye okuma,atlas.bilgi.uye,base.group_user,r,
+access_uye_yazma_uye,üye yazma (üye),atlas.bilgi.uye,base.group_user,cud,"[('makale_id.yazan_partner_ids', 'in', [user.partner_id.id])]"
+access_uye_yazma_ic,üye yazma (iç erişim),atlas.bilgi.uye,base.group_user,cud,"[('makale_id.etkin_yetki', '=', 'write'), ('makale_id.kisitli_partner_ids', 'not in', [user.partner_id.id])]"
+access_uye_system,üye yönetici,atlas.bilgi.uye,base.group_system,crud,
+access_favori_user,favori,atlas.bilgi.favori,base.group_user,crud,"[('user_id', '=', user.id)]"
+access_favori_system,favori yönetici,atlas.bilgi.favori,base.group_system,crud,
+access_asama_user,aşama,atlas.bilgi.asama,base.group_user,crud,
+access_sablon_kategori_user,şablon kategorisi okuma,atlas.bilgi.sablon.kategori,base.group_user,r,
+access_sablon_kategori_system,şablon kategorisi,atlas.bilgi.sablon.kategori,base.group_system,crud,
+access_paylas_user,paylaş sihirbazı,atlas.bilgi.paylas,base.group_user,crud,
+access_tasi_user,taşı sihirbazı,atlas.bilgi.tasi,base.group_user,crud,

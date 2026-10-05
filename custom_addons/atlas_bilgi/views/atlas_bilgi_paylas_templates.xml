@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="paylasim_sayfasi" name="Bilgi Bankası: paylaşılan makale">
+        <t t-call="web.layout">
+            <t t-set="title" t-value="makale.name"/>
+            <t t-set="head">
+                <t t-call-assets="web.assets_frontend" t-js="false"/>
+                <style>
+                    .o_ab_paylas { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; font-size: 1.05rem; }
+                    .o_ab_paylas_kapak { height: 240px; background-size: cover; background-position: center; }
+                    .o_ab_paylas h1 { font-size: 2.4rem; font-weight: 700; }
+                    .o_ab_paylas img { max-width: 100%; }
+                </style>
+            </t>
+            <div t-if="makale.kapak" class="o_ab_paylas_kapak"
+                 t-attf-style="background-image: url('/bilgi/paylas/#{makale.id}/#{makale.erisim_anahtari}/kapak'); background-position: center #{makale.kapak_konum}%;"/>
+            <div class="o_ab_paylas">
+                <div t-if="makale.simge" style="font-size: 3rem;" t-out="makale.simge"/>
+                <h1 t-out="makale.name"/>
+                <div class="text-muted small mb-4">Son güncelleme: <span t-out="makale.son_duzenleme" t-options="{'widget': 'datetime'}"/></div>
+                <div t-out="makale.body"/>
+                <t t-if="alt_makaleler">
+                    <hr/>
+                    <h5>Alt sayfalar</h5>
+                    <ul>
+                        <li t-foreach="alt_makaleler" t-as="a">
+                            <a t-attf-href="/bilgi/paylas/#{a.id}/#{a.erisim_anahtari}"><t t-out="a.simge or ''"/> <t t-out="a.name"/></a>
+                        </li>
+                    </ul>
+                </t>
+            </div>
+        </t>
+    </template>
+</odoo>

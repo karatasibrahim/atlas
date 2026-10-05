@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ makale formu (bilgi bankası ekranı) -->
+    <record id="view_atlas_bilgi_makale_form" model="ir.ui.view">
+        <field name="name">atlas.bilgi.makale.form</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form class="o_atlas_bilgi_form" disable_autofocus="1">
+                <field name="duzenleyebilir" invisible="1"/>
+                <field name="kullanici_yetkisi" invisible="1"/>
+                <field name="favori_mi" invisible="1"/>
+                <field name="kilitli" invisible="1"/>
+                <field name="tam_genislik" invisible="1"/>
+                <field name="cope_atildi" invisible="1"/>
+                <field name="sablon_mi" invisible="1"/>
+                <field name="oge_mi" invisible="1"/>
+                <field name="parent_id" invisible="1"/>
+                <field name="kategori" invisible="1"/>
+                <field name="html_field_history_metadata" invisible="1"/>
+                <div class="o_ab_duzen d-flex">
+                    <widget name="atlas_bilgi_kenar"/>
+                    <div class="o_ab_ana flex-grow-1 d-flex flex-column">
+                        <div class="o_ab_ust d-flex align-items-center flex-wrap gap-1 px-3 py-2 border-bottom">
+                            <widget name="atlas_bilgi_yol"/>
+                            <div class="ms-auto d-flex align-items-center gap-1 o_ab_eylemler">
+                                <span class="badge text-bg-light border" invisible="kullanici_yetkisi != 'read'">Salt okunur</span>
+                                <span class="badge text-bg-warning" invisible="not sablon_mi">Şablon</span>
+                                <button name="action_paylas" type="object" class="btn btn-sm btn-light o_ab_paylas" string="Paylaş" icon="share"
+                                        invisible="kullanici_yetkisi != 'write' or cope_atildi"/>
+                                <button name="action_favori" type="object" class="btn btn-sm btn-light o_ab_favori" title="Favorilere ekle" icon="star"
+                                        invisible="favori_mi or cope_atildi"/>
+                                <button name="action_favori" type="object" class="btn btn-sm btn-light text-warning o_ab_favori_aktif" title="Favorilerden çıkar"
+                                        icon="star" invisible="not favori_mi"/>
+                                <button name="action_kilit" type="object" class="btn btn-sm btn-light" title="Kilitle (düzenlemeyi kapat)" icon="lock_open"
+                                        invisible="kilitli or kullanici_yetkisi != 'write' or cope_atildi"/>
+                                <button name="action_kilit" type="object" class="btn btn-sm btn-light text-danger" title="Kilidi aç" icon="lock"
+                                        invisible="not kilitli or kullanici_yetkisi != 'write'"/>
+                                <button name="action_tam_genislik" type="object" class="btn btn-sm btn-light" title="Tam genişlik" icon="expand_content"
+                                        invisible="cope_atildi"/>
+                                <widget name="atlas_bilgi_menu"/>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning rounded-0 mb-0 d-flex align-items-center gap-2" role="status" invisible="not cope_atildi">
+                            <span class="flex-grow-1">Bu makale çöp kutusunda; süre dolunca kalıcı olarak silinir.</span>
+                            <button name="action_geri_yukle" type="object" class="btn btn-sm btn-primary" string="Geri Yükle"/>
+                            <button name="action_kalici_sil" type="object" class="btn btn-sm btn-danger" string="Kalıcı Sil"
+                                    confirm="Makale ve alt sayfaları kalıcı olarak silinecek. Emin misiniz?"/>
+                        </div>
+                        <div class="o_ab_tam_isaret" invisible="not tam_genislik"/>
+                        <div class="o_ab_kaydirma flex-grow-1">
+                            <field name="kapak" widget="atlas_bilgi_kapak" class="o_ab_kapak_alani" readonly="not duzenleyebilir"/>
+                            <div class="o_ab_icerik">
+                                <field name="simge" widget="atlas_bilgi_emoji" class="o_ab_simge_alani" readonly="not duzenleyebilir"/>
+                                <h1 class="o_ab_baslik">
+                                    <field name="name" placeholder="Adsız" readonly="not duzenleyebilir"/>
+                                </h1>
+                                <div class="o_ab_ozellikler" invisible="not oge_mi">
+                                    <field name="asama_id" options="{'no_create': True, 'no_open': True}" placeholder="Aşama"
+                                           context="{'default_makale_id': parent_id}" readonly="not duzenleyebilir"/>
+                                    <field name="ozellikler" columns="2" readonly="not duzenleyebilir"/>
+                                </div>
+                                <field name="body" widget="html" class="o_ab_govde" readonly="not duzenleyebilir"
+                                       placeholder="Yazmaya başlayın ya da / ile komut seçin…" options="{'resizable': false}"/>
+                                <div class="o_ab_ogeler mt-4" invisible="not oge_ids">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h4 class="m-0 flex-grow-1">Öğeler</h4>
+                                        <button name="action_ogeleri_ac" type="object" class="btn btn-sm btn-light border" string="Pano olarak aç" icon="table_view"/>
+                                    </div>
+                                    <field name="oge_ids" context="{'default_parent_id': id, 'default_oge_mi': True}" readonly="not duzenleyebilir">
+                                        <list editable="bottom" open_form_view="1">
+                                            <field name="sira" widget="handle"/>
+                                            <field name="simge" width="40px"/>
+                                            <field name="name"/>
+                                            <field name="asama_id" options="{'no_create': True}"/>
+                                            <field name="ozellikler"/>
+                                            <field name="son_duzenleme" optional="hide"/>
+                                            <field name="oge_mi" column_invisible="1"/>
+                                            <field name="parent_id" column_invisible="1"/>
+                                        </list>
+                                    </field>
+                                </div>
+                            </div>
+                        </div>
+                        <chatter/>
+                    </div>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================ öğeler (veritabanı) -->
+    <record id="view_atlas_bilgi_oge_kanban" model="ir.ui.view">
+        <field name="name">atlas.bilgi.oge.kanban</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="asama_id" quick_create_view="atlas_bilgi.view_atlas_bilgi_oge_hizli">
+                <field name="asama_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex gap-2">
+                            <field name="simge"/>
+                            <field name="name" class="fw-bold"/>
+                        </div>
+                        <field name="ozellikler" widget="properties"/>
+                        <footer class="text-muted small">
+                            <field name="son_duzenleyen_id" widget="many2one_avatar_user"/>
+                            <field name="son_duzenleme" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_atlas_bilgi_oge_hizli" model="ir.ui.view">
+        <field name="name">atlas.bilgi.oge.hizli</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="name" placeholder="Öğe adı"/>
+                <field name="oge_mi" invisible="1"/>
+                <field name="parent_id" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_bilgi_oge_list" model="ir.ui.view">
+        <field name="name">atlas.bilgi.oge.list</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira" widget="handle"/>
+                <field name="simge" width="40px"/>
+                <field name="name"/>
+                <field name="asama_id"/>
+                <field name="ozellikler"/>
+                <field name="son_duzenleyen_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="son_duzenleme" optional="show"/>
+                <field name="parent_id" column_invisible="1"/>
+                <field name="oge_mi" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================ liste / arama / çöp -->
+    <record id="view_atlas_bilgi_makale_list" model="ir.ui.view">
+        <field name="name">atlas.bilgi.makale.list</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="simge" width="40px"/>
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="kategori"/>
+                <field name="son_duzenleyen_id" widget="many2one_avatar_user"/>
+                <field name="son_duzenleme"/>
+                <field name="silinme_tarihi" optional="show"/>
+                <button name="action_ac" type="object" string="Aç" icon="open_in_new"/>
+                <button name="action_geri_yukle" type="object" string="Geri Yükle" icon="undo"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_atlas_bilgi_makale_search" model="ir.ui.view">
+        <field name="name">atlas.bilgi.makale.search</field>
+        <field name="model">atlas.bilgi.makale</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="body"/>
+                <field name="parent_id"/>
+                <filter name="favori" string="Favorilerim" domain="[('favori_mi', '=', True)]"/>
+                <filter name="kok" string="Kök makaleler" domain="[('parent_id', '=', False)]"/>
+                <filter name="sablon" string="Şablonlar" domain="[('sablon_mi', '=', True)]"/>
+                <filter name="cop" string="Çöp kutusu" domain="[('cope_atildi', '=', True), ('active', '=', False)]"/>
+                <group>
+                    <filter name="grup_kategori" string="Bölüm" context="{'group_by': 'kategori'}"/>
+                    <filter name="grup_ust" string="Üst Makale" context="{'group_by': 'parent_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_atlas_bilgi_ana" model="ir.actions.server">
+        <field name="name">Bilgi Bankası</field>
+        <field name="model_id" ref="model_atlas_bilgi_makale"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_bilgi_ana()</field>
+    </record>
+
+    <record id="action_atlas_bilgi_cop" model="ir.actions.act_window">
+        <field name="name">Çöp Kutusu</field>
+        <field name="res_model">atlas.bilgi.makale</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_atlas_bilgi_makale_list"/>
+        <field name="domain">[('cope_atildi', '=', True), ('parent_id.cope_atildi', '=', False)]</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Çöp kutusu boş</p>
+            <p>Çöpe atılan makaleler 30 gün sonra kalıcı olarak silinir.</p>
+        </field>
+    </record>
+
+    <record id="action_atlas_bilgi_tumu" model="ir.actions.act_window">
+        <field name="name">Tüm Makaleler</field>
+        <field name="res_model">atlas.bilgi.makale</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_bilgi_makale_list')}),
+                                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_atlas_bilgi_makale_form')})]"/>
+        <field name="domain">[('oge_mi', '=', False)]</field>
+    </record>
+
+    <record id="action_atlas_bilgi_sablon" model="ir.actions.act_window">
+        <field name="name">Şablonlar</field>
+        <field name="res_model">atlas.bilgi.makale</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('view_atlas_bilgi_makale_list')}),
+                                      (0, 0, {'view_mode': 'form', 'view_id': ref('view_atlas_bilgi_makale_form')})]"/>
+        <field name="domain">[('sablon_mi', '=', True)]</field>
+        <field name="context">{'default_sablon_mi': True, 'default_ic_yetki': 'read'}</field>
+    </record>
+
+    <record id="view_atlas_bilgi_sablon_kategori_list" model="ir.ui.view">
+        <field name="name">atlas.bilgi.sablon.kategori.list</field>
+        <field name="model">atlas.bilgi.sablon.kategori</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sira" widget="handle"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_atlas_bilgi_sablon_kategori" model="ir.actions.act_window">
+        <field name="name">Şablon Kategorileri</field>
+        <field name="res_model">atlas.bilgi.sablon.kategori</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

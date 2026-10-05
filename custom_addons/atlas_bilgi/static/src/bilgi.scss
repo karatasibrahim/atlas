@@ -1,0 +1,156 @@
+$ab-kenar: #f7f7f5;
+$ab-vurgu: #714b67;
+
+.o_form_view .o_atlas_bilgi_form,
+.o_atlas_bilgi_form {
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+.o_form_view:has(.o_atlas_bilgi_form) {
+    .o_form_sheet_bg, .o_form_renderer { padding: 0; }
+}
+
+.o_atlas_bilgi_form {
+    .o_ab_duzen { min-height: calc(100vh - 110px); align-items: stretch; }
+
+    // ---------------------------------------------------------------- kenar
+    .o_ab_kenar {
+        width: 270px;
+        min-width: 270px;
+        background: $ab-kenar;
+        border-right: 1px solid #e7e5e4;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        height: calc(100vh - 110px);
+        font-size: 0.9rem;
+    }
+    .o_ab_bolum_baslik {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #78716c;
+        padding: 0.7rem 0.4rem 0.25rem;
+        border-radius: 0.3rem;
+        .o_ab_ekle { visibility: hidden; color: #78716c; }
+        &:hover .o_ab_ekle { visibility: visible; }
+    }
+    .o_ab_dugum {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.2rem 0.3rem;
+        border-radius: 0.3rem;
+        cursor: pointer;
+        color: #3f3f46;
+        &:hover { background: #ebe9e6; .o_ab_ekle { visibility: visible; } }
+        &.o_ab_aktif { background: #e4dfe3; font-weight: 600; color: #000; }
+        .o_ab_ok { width: 18px; text-align: center; color: #a8a29e; flex-shrink: 0; }
+        .o_ab_dugum_simge { width: 20px; text-align: center; flex-shrink: 0; }
+        .o_ab_dugum_ad { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .o_ab_ekle { visibility: hidden; color: #78716c; }
+        &.o_ab_hedef_once { box-shadow: inset 0 2px 0 $ab-vurgu; }
+        &.o_ab_hedef_sonra { box-shadow: inset 0 -2px 0 $ab-vurgu; }
+        &.o_ab_hedef_ic { background: rgba(113, 75, 103, 0.15); box-shadow: inset 0 0 0 1px $ab-vurgu; }
+    }
+    .o_ab_hedef_ic { background: rgba(113, 75, 103, 0.12); }
+    .o_ab_alt { padding-left: 0.9rem; }
+    .o_ab_alt_bag { color: #57534e; text-decoration: none; padding: 0.2rem 0.3rem; border-radius: 0.3rem; &:hover { background: #ebe9e6; } }
+    .o_ab_sonuclar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 30;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.4rem;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        max-height: 60vh;
+        overflow: auto;
+    }
+    .o_ab_sonuc { display: block; padding: 0.4rem 0.6rem; color: inherit; text-decoration: none; &:hover { background: #f5f5f4; } }
+
+    // ---------------------------------------------------------------- ana alan
+    .o_ab_ana { min-width: 0; background: #fff; }
+    .o_ab_ust { position: sticky; top: 0; background: #fff; z-index: 5; min-height: 46px; }
+    .o_ab_yol_oge { color: #57534e; text-decoration: none; &:hover { text-decoration: underline; } }
+    .o_ab_eylemler .btn { border: 0; }
+    .o_ab_menu_liste {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        z-index: 40;
+        min-width: 230px;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.4rem;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        padding: 0.3rem 0;
+    }
+    .o_ab_icerik { max-width: 900px; margin: 0 auto; width: 100%; padding: 1.5rem 3rem 3rem; }
+    &:has(.o_ab_tam_isaret) .o_ab_icerik { max-width: none; }
+    .o_ab_baslik { font-size: 2.4rem; font-weight: 700; margin: 0.3rem 0 1rem; .o_field_widget, input { font-size: inherit; font-weight: inherit; width: 100%; border: 0; } }
+    .o_ab_govde { min-height: 300px; font-size: 1rem; .note-editable, .odoo-editor-editable { min-height: 300px; } }
+    .o_ab_ozellikler { background: #fafaf9; border: 1px solid #f0efed; border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 1rem; }
+
+    // kapak
+    .o_ab_kapak_alani { display: block; width: 100%; }
+    .o_ab_kapak { height: 230px; background-size: cover; position: relative; &:hover .o_ab_kapak_eylem { opacity: 1; } }
+    .o_ab_kapak_eylem { position: absolute; right: 1rem; bottom: 0.8rem; opacity: 0; transition: opacity 0.15s; }
+    .o_ab_kapak_bos { max-width: 900px; margin: 0 auto; padding: 1rem 3rem 0; }
+    .o_ab_kapak_ekle, .o_ab_emoji_ekle { color: #a8a29e; text-decoration: none; font-size: 0.85rem; &:hover { color: #57534e; } }
+
+    // emoji
+    .o_ab_simge_alani { display: block; }
+    .o_ab_emoji_deger { font-size: 3.6rem; line-height: 1.1; &.o_ab_tiklanir { cursor: pointer; border-radius: 0.4rem; &:hover { background: #f5f5f4; } } }
+    .o_ab_emoji_secici {
+        position: absolute;
+        z-index: 30;
+        top: 100%;
+        left: 0;
+        width: 340px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        padding: 0.5rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+    .o_ab_emoji_secenek { font-size: 1.4rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 0.3rem; &:hover { background: #f5f5f4; } }
+
+    .o-mail-ChatterContainer, .o-mail-Form-chatter { max-width: 900px; margin: 0 auto; width: 100%; }
+}
+
+// şablon galerisi
+.o_ab_ortu {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8vh;
+}
+.o_ab_modal {
+    background: #fff;
+    border-radius: 0.6rem;
+    padding: 1.2rem;
+    width: 860px;
+    max-width: 95vw;
+    max-height: 82vh;
+    overflow: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+.o_ab_sablonlar { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.7rem; }
+.o_ab_sablon {
+    border: 1px solid #e7e5e4;
+    border-radius: 0.5rem;
+    padding: 0.8rem;
+    cursor: pointer;
+    &:hover { border-color: $ab-vurgu; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+}

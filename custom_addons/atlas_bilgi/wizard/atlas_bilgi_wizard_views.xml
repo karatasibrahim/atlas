@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_bilgi_paylas_form" model="ir.ui.view">
+        <field name="name">atlas.bilgi.paylas.form</field>
+        <field name="model">atlas.bilgi.paylas</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="makale_id" invisible="1"/>
+                <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+                    <div class="flex-grow-1">
+                        <label for="davet_partner_ids" string="Kişi davet et"/>
+                        <field name="davet_partner_ids" widget="many2many_tags_email" placeholder="Kişi ya da e-posta…"
+                               options="{'no_create_edit': True}"/>
+                    </div>
+                    <field name="davet_yetki" class="w-auto"/>
+                    <button name="action_davet" type="object" string="Davet Et" class="btn-primary" invisible="not davet_partner_ids"/>
+                </div>
+                <field name="mesaj" placeholder="İsteğe bağlı mesaj" invisible="not davet_partner_ids"/>
+                <group>
+                    <field name="ic_yetki" widget="radio" options="{'horizontal': true}"/>
+                    <field name="yetki_kaynak_id" invisible="not yetki_kaynak_id or yetki_kaynak_id == makale_id" readonly="1"/>
+                    <field name="uyeler_bagimsiz"/>
+                </group>
+                <separator string="Üyeler"/>
+                <field name="uye_ids">
+                    <list editable="bottom">
+                        <field name="partner_id" widget="many2one_avatar"/>
+                        <field name="yetki"/>
+                    </list>
+                </field>
+                <separator string="Bağlantıyla paylaşım"/>
+                <group>
+                    <field name="herkese_acik"/>
+                    <field name="paylasim_url" widget="CopyClipboardChar" invisible="not paylasim_url"/>
+                </group>
+                <footer>
+                    <button name="action_kaydet" type="object" string="Kaydet" class="btn-primary"/>
+                    <button special="cancel" string="Kapat"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_atlas_bilgi_tasi_form" model="ir.ui.view">
+        <field name="name">atlas.bilgi.tasi.form</field>
+        <field name="model">atlas.bilgi.tasi</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="makale_id" invisible="1"/>
+                <group>
+                    <field name="hedef" widget="radio"/>
+                    <field name="ust_id" invisible="hedef != 'makale'" required="hedef == 'makale'" options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_tasi" type="object" string="Taşı" class="btn-primary"/>
+                    <button special="cancel" string="Vazgeç"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

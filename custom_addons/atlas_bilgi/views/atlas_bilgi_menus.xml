@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_atlas_bilgi_root" name="Bilgi Bankası" sequence="38" web_icon="atlas_bilgi,static/description/icon.png"
+              action="action_atlas_bilgi_ana" groups="base.group_user"/>
+    <menuitem id="menu_atlas_bilgi_makaleler" name="Makaleler" parent="menu_atlas_bilgi_root" action="action_atlas_bilgi_ana" sequence="1"/>
+    <menuitem id="menu_atlas_bilgi_tumu" name="Tüm Makaleler" parent="menu_atlas_bilgi_root" action="action_atlas_bilgi_tumu" sequence="5"/>
+    <menuitem id="menu_atlas_bilgi_cop" name="Çöp Kutusu" parent="menu_atlas_bilgi_root" action="action_atlas_bilgi_cop" sequence="20"/>
+    <menuitem id="menu_atlas_bilgi_ayar" name="Yapılandırma" parent="menu_atlas_bilgi_root" sequence="90" groups="base.group_system">
+        <menuitem id="menu_atlas_bilgi_sablon" name="Şablonlar" action="action_atlas_bilgi_sablon" sequence="10"/>
+        <menuitem id="menu_atlas_bilgi_sablon_kategori" name="Şablon Kategorileri" action="action_atlas_bilgi_sablon_kategori" sequence="20"/>
+    </menuitem>
+</odoo>

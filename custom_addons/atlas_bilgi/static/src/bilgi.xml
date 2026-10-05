@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <!-- ============================================================ kenar çubuğu -->
+    <t t-name="atlas_bilgi.Kenar">
+        <div class="o_ab_kenar d-flex flex-column" t-on-dragend="() => this.bitti()">
+            <div class="o_ab_kenar_ust p-2">
+                <div class="position-relative">
+                    <input class="form-control form-control-sm o_ab_ara" placeholder="Makale ara…" t-att-value="this.state.arama"
+                           t-on-input="(ev) => this.ara(ev)"/>
+                    <div t-if="this.state.sonuclar.length" class="o_ab_sonuclar">
+                        <t t-foreach="this.state.sonuclar" t-as="s" t-key="s.id">
+                            <a href="#" class="o_ab_sonuc" t-on-click.prevent="() => this.sonucAc(s)">
+                                <span class="me-1" t-out="s.simge or '📄'"/><span t-out="s.ad"/>
+                                <div t-if="s.yol" class="small text-muted text-truncate" t-out="s.yol"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <div class="o_ab_kenar_govde flex-grow-1 overflow-auto px-2" t-if="this.state.veri">
+                <t t-if="this.state.veri.favoriler.length">
+                    <div class="o_ab_bolum_baslik">Favoriler</div>
+                    <t t-foreach="this.state.veri.favoriler" t-as="d" t-key="'f' + d.id">
+                        <div class="o_ab_dugum" t-att-class="{'o_ab_aktif': d.id === this.resId}" t-on-click="() => this.git(d.id)">
+                            <span class="o_ab_ok"/>
+                            <span class="o_ab_dugum_simge" t-out="this.simge(d)"/>
+                            <span class="o_ab_dugum_ad" t-out="this.ad(d)"/>
+                        </div>
+                    </t>
+                </t>
+                <t t-foreach="[['calisma', 'Çalışma Alanı'], ['paylasilan', 'Paylaşılan'], ['ozel', 'Özel']]" t-as="b" t-key="b[0]">
+                    <t t-set="liste" t-value="this.state.veri.bolumler[b[0]]"/>
+                    <t t-if="b[0] !== 'paylasilan' or liste.length">
+                        <div class="o_ab_bolum_baslik d-flex align-items-center" t-att-class="{'o_ab_hedef_ic': this.state.hedef and this.state.hedef.bolum === b[0]}"
+                             t-att-data-bolum="b[0]" t-on-dragover="(ev) => this.bolumUzerinde(b[0], ev)" t-on-drop="(ev) => this.birak(ev)">
+                            <span class="flex-grow-1" t-out="b[1]"/>
+                            <a t-if="b[0] !== 'paylasilan'" href="#" class="o_ab_ekle" title="Yeni sayfa" t-on-click.prevent="(ev) => this.yeni(false, b[0], ev)">
+                                <i class="oi" data-icon="add"/>
+                            </a>
+                        </div>
+                        <t t-call="atlas_bilgi.KenarListe" liste="liste" ust="false"/>
+                        <div t-if="!liste.length" class="o_ab_bos small text-muted px-2 pb-1">Henüz sayfa yok</div>
+                    </t>
+                </t>
+            </div>
+            <div class="o_ab_kenar_alt border-top p-2 d-flex flex-column gap-1">
+                <a href="#" class="o_ab_alt_bag" t-on-click.prevent="() => this.sablonAc()"><i class="oi me-2" data-icon="widgets"/>Şablondan oluştur</a>
+                <a href="#" class="o_ab_alt_bag" t-on-click.prevent="() => this.copAc()"><i class="oi me-2" data-icon="delete"/>Çöp Kutusu
+                    <span t-if="this.state.veri and this.state.veri.cop_sayisi" class="badge text-bg-light ms-1" t-out="this.state.veri.cop_sayisi"/></a>
+            </div>
+            <div t-if="this.state.sablonlar" class="o_ab_ortu" t-on-click.self="() => this.state.sablonlar = null">
+                <div class="o_ab_modal">
+                    <div class="d-flex align-items-center mb-3"><h4 class="m-0 flex-grow-1">Şablon Galerisi</h4>
+                        <button class="btn btn-sm btn-light" t-on-click="() => this.state.sablonlar = null"><i class="oi" data-icon="close"/></button></div>
+                    <t t-foreach="this.state.sablonlar" t-as="g" t-key="g[0]">
+                        <div class="o_ab_bolum_baslik mt-2" t-out="g[0]"/>
+                        <div class="o_ab_sablonlar">
+                            <t t-foreach="g[1]" t-as="s" t-key="s.id">
+                                <div class="o_ab_sablon" t-on-click="() => this.sablonSec(s)">
+                                    <div class="fs-2" t-out="s.simge"/>
+                                    <div class="fw-bold" t-out="s.ad"/>
+                                    <div class="small text-muted" t-out="s.aciklama"/>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="atlas_bilgi.KenarListe">
+        <t t-foreach="liste" t-as="d" t-key="d.id">
+            <div class="o_ab_dugum" t-att-class="[d.id === this.resId ? 'o_ab_aktif' : '', this.hedefSinif(d)].join(' ')" t-att-data-id="d.id"
+                 draggable="true" t-on-dragstart="(ev) => this.basla(d, ust, ev)" t-on-dragover="(ev) => this.uzerinde(d, ust, liste, ev)"
+                 t-on-drop="(ev) => this.birak(ev)" t-on-click="() => this.git(d.id)">
+                <span class="o_ab_ok" t-on-click="(ev) => d.alt_var and this.ackapa(d, ev)">
+                    <i t-if="d.alt_var" class="oi" t-att-data-icon="this.state.acik[d.id] ? 'expand_more' : 'chevron_right'"/>
+                </span>
+                <span class="o_ab_dugum_simge" t-out="this.simge(d)"/>
+                <span class="o_ab_dugum_ad" t-out="this.ad(d)"/>
+                <a t-if="d.yazabilir" href="#" class="o_ab_ekle" title="Alt sayfa ekle" t-on-click.prevent="(ev) => this.yeni(d.id, d.kategori, ev)">
+                    <i class="oi" data-icon="add"/>
+                </a>
+            </div>
+            <div t-if="this.state.acik[d.id] and this.state.cocuklar[d.id]" class="o_ab_alt">
+                <t t-call="atlas_bilgi.KenarListe" liste="this.state.cocuklar[d.id]" ust="d.id"/>
+            </div>
+        </t>
+    </t>
+
+    <!-- ============================================================ üst yol -->
+    <t t-name="atlas_bilgi.Yol">
+        <div class="o_ab_yol d-flex align-items-center flex-wrap gap-1 small">
+            <t t-foreach="this.ustler" t-as="u" t-key="u.id">
+                <a href="#" class="o_ab_yol_oge" t-on-click.prevent="() => this.git(u.id)"><t t-out="u.simge"/> <t t-out="u.ad"/></a>
+                <span class="text-muted">/</span>
+            </t>
+            <span class="fw-semibold"><t t-out="this.props.record.data.simge or ''"/> <t t-out="this.props.record.data.name or 'Adsız'"/></span>
+            <span t-if="this.sonDuzenleme" class="text-muted ms-2" t-att-title="'Son düzenleme'"><i class="oi me-1" data-icon="history"/><t t-out="this.sonDuzenleme"/></span>
+        </div>
+    </t>
+
+    <!-- ============================================================ menü -->
+    <t t-name="atlas_bilgi.Menu">
+        <div class="position-relative o_ab_menu">
+            <button type="button" class="btn btn-sm btn-light" title="Diğer işlemler" t-on-click="() => this.state.acik = !this.state.acik">
+                <i class="oi" data-icon="more_horiz"/>
+            </button>
+            <div t-if="this.state.acik" class="o_ab_menu_liste">
+                <t t-if="this.yazabilir">
+                    <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_tasi')"><i class="oi me-2" data-icon="open_with"/>Taşı</a>
+                    <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_ogeleri_ac') ">
+                        <i class="oi me-2" data-icon="table_view"/>Öğeler panosu</a>
+                    <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_oge_kur')"><i class="oi me-2" data-icon="view_list"/>Öğe listesine çevir</a>
+                </t>
+                <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_kopyala')"><i class="oi me-2" data-icon="content_copy"/>Kopyasını oluştur</a>
+                <a href="#" class="dropdown-item" t-on-click.prevent="() => this.gecmis()"><i class="oi me-2" data-icon="history"/>Sürüm geçmişi</a>
+                <a t-if="this.yazabilir" href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_sablona_cevir', true)">
+                    <i class="oi me-2" data-icon="widgets"/><t t-out="this.kayit.data.sablon_mi ? 'Şablon olmaktan çıkar' : 'Şablon olarak işaretle'"/></a>
+                <t t-if="this.yazabilir and !this.kayit.data.cope_atildi">
+                    <div class="dropdown-divider"/>
+                    <a href="#" class="dropdown-item text-danger" t-on-click.prevent="() => this.copeAt()"><i class="oi me-2" data-icon="delete"/>Çöpe at</a>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================================================ kapak -->
+    <t t-name="atlas_bilgi.Kapak">
+        <div t-if="this.deger" class="o_ab_kapak" t-att-style="this.stil">
+            <div t-if="!this.props.readonly" class="o_ab_kapak_eylem d-flex gap-1">
+                <button type="button" class="btn btn-sm btn-light" title="Yukarı" t-on-click="() => this.kaydir(-10)"><i class="oi" data-icon="north"/></button>
+                <button type="button" class="btn btn-sm btn-light" title="Aşağı" t-on-click="() => this.kaydir(10)"><i class="oi" data-icon="south"/></button>
+                <button type="button" class="btn btn-sm btn-light" t-on-click="() => this.sec()">Değiştir</button>
+                <button type="button" class="btn btn-sm btn-light" t-on-click="() => this.kaldir()">Kaldır</button>
+            </div>
+        </div>
+        <div t-elif="!this.props.readonly" class="o_ab_kapak_bos">
+            <a href="#" class="o_ab_kapak_ekle" t-on-click.prevent="() => this.sec()"><i class="oi me-1" data-icon="image"/>Kapak ekle</a>
+        </div>
+    </t>
+
+    <!-- ============================================================ emoji -->
+    <t t-name="atlas_bilgi.Emoji">
+        <div class="o_ab_emoji position-relative">
+            <span t-if="this.deger" class="o_ab_emoji_deger" t-att-class="{'o_ab_tiklanir': !this.props.readonly}"
+                  t-on-click="() => !this.props.readonly and (this.state.acik = !this.state.acik)" t-out="this.deger"/>
+            <a t-elif="!this.props.readonly" href="#" class="o_ab_emoji_ekle" t-on-click.prevent="() => this.rastgele()">
+                <i class="oi me-1" data-icon="add"/>Simge ekle</a>
+            <div t-if="this.state.acik" class="o_ab_emoji_secici">
+                <t t-foreach="this.emojiler" t-as="e" t-key="e_index">
+                    <span class="o_ab_emoji_secenek" t-on-click="() => this.sec(e)" t-out="e"/>
+                </t>
+                <div class="w-100 border-top mt-1 pt-1">
+                    <a href="#" class="small text-danger" t-on-click.prevent="() => this.sec(false)">Simgeyi kaldır</a>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>
