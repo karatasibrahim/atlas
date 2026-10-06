@@ -82,11 +82,12 @@ class ResPartner(models.Model):
             if not match:
                 raise ValidationError(self.env._(
                     'Cari kodu 120-00-0001 biçiminde olmalıdır: %s', partner.ref))
-            if match.group(1) != CARI_TIPI_PREFIXES[partner.atlas_cari_tipi][0]:
+            # Alıcı + Satıcı: önce satıcı olarak açılıp sonra genişleyen carinin 320 kodu korunur
+            if match.group(1) not in CARI_TIPI_PREFIXES[partner.atlas_cari_tipi]:
                 raise ValidationError(self.env._(
                     '%(tipi)s tipindeki cari için kod %(prefix)s ile başlamalıdır: %(ref)s',
                     tipi=dict(self._fields['atlas_cari_tipi'].selection)[partner.atlas_cari_tipi],
-                    prefix=CARI_TIPI_PREFIXES[partner.atlas_cari_tipi][0],
+                    prefix=' / '.join(CARI_TIPI_PREFIXES[partner.atlas_cari_tipi]),
                     ref=partner.ref,
                 ))
             duplicate = self.with_context(active_test=False).search([

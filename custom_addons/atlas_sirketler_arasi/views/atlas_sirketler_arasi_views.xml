@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_company_form_sirketler_arasi" model="ir.ui.view">
+        <field name="name">res.company.form.sirketler.arasi</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Şirketler Arası" name="sirketler_arasi">
+                    <p class="text-muted">
+                        Bu ayarlar, grup şirketlerinin <b>bu şirkete</b> kestiği belgeler için geçerlidir: belge onaylanınca
+                        karşılığı burada oluşturulur.
+                    </p>
+                    <group>
+                        <group string="Faturalar">
+                            <field name="sa_fatura"/>
+                            <field name="sa_fatura_durum" invisible="not sa_fatura" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                        <group string="Siparişler">
+                            <field name="sa_satis_olustur"/>
+                            <field name="sa_satin_alma_olustur"/>
+                            <field name="sa_otomatik_onay" invisible="not sa_satis_olustur and not sa_satin_alma_olustur"/>
+                            <field name="sa_depo_id" invisible="not sa_satis_olustur and not sa_satin_alma_olustur" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="sa_kullanici_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_move_form_sirketler_arasi" model="ir.ui.view">
+        <field name="name">account.move.form.sirketler.arasi</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_reference']" position="after">
+                <field name="sa_kaynak_fatura_id" invisible="not sa_kaynak_fatura_id" readonly="1" groups="base.group_multi_company"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_order_form_sirketler_arasi" model="ir.ui.view">
+        <field name="name">sale.order.form.sirketler.arasi</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="sa_kaynak_satin_alma_id" invisible="not sa_kaynak_satin_alma_id" readonly="1" groups="base.group_multi_company"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_form_sirketler_arasi" model="ir.ui.view">
+        <field name="name">purchase.order.form.sirketler.arasi</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="sa_kaynak_satis_id" invisible="not sa_kaynak_satis_id" readonly="1" groups="base.group_multi_company"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
