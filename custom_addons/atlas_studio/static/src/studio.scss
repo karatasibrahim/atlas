@@ -186,6 +186,34 @@ $as-vurgu: #017e84;
     .o_as_arama_oge { padding: 0.35rem 0.5rem; border: 1px solid #e9ecef; border-radius: 0.3rem; margin-bottom: 0.3rem; font-size: 0.85rem; }
     .o_as_arama_ayrac { border-top: 2px dashed #ced4da; margin: 0.4rem 0; height: 8px; }
 
+    // kanban tuvali
+    .o_as_kanban { align-items: flex-start; overflow-x: auto; }
+    .o_as_kanban_kolon { width: 300px; min-width: 300px; background: #eef0f3; border-radius: 0.5rem; padding: 0.6rem; }
+    .o_as_kanban_soluk { opacity: 0.45; pointer-events: none; }
+    .o_as_kanban_baslik { padding: 0.2rem 0.3rem 0.6rem; }
+    .o_as_kanban_kart {
+        position: relative;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.4rem;
+        padding: 0.6rem 0.7rem;
+        margin-bottom: 0.6rem;
+        min-height: 70px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        overflow: hidden;
+    }
+    .o_as_kfield { display: inline-block; padding: 0 0.15rem; border-radius: 0.2rem; min-height: 1.2em; }
+    .o_as_kfooter { border-top: 1px dashed #e9ecef; margin-top: 0.3rem; padding-top: 0.3rem; min-height: 26px; }
+    .o_as_kkap { min-height: 18px; }
+    .o_as_avatar { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: $as-mor; color: #fff;
+                   align-items: center; justify-content: center; font-size: 0.7rem; }
+    .o_as_kresim { display: inline-flex; width: 56px; height: 56px; border: 1px dashed #ced4da; align-items: center; justify-content: center;
+                   color: #adb5bd; font-size: 1.4rem; border-radius: 0.3rem; }
+    .o_as_serit { position: absolute; top: 10px; right: -28px; transform: rotate(45deg); background: #dc3545; color: #fff;
+                  font-size: 0.7rem; padding: 0.1rem 2rem; z-index: 2; }
+
     // genel ağaç
     .o_as_agac { border-left: 2px solid #e9ecef; padding: 0.15rem 0 0.15rem 0.5rem; margin: 0.1rem 0; font-size: 0.85rem; background: #fff; }
     .o_as_agac_cocuk { margin-left: 1rem; }

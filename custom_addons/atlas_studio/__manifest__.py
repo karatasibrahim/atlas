@@ -10,6 +10,8 @@ Studio
   form görünümünde istenen alanın yanına, isteğe bağlı listeye ve aramaya eklenir
 - Yeni Model / Uygulama: alanları tanımla; form, liste, arama görünümleri, menü, erişim hakları otomatik oluşur;
   isteğe bağlı mesajlaşma/aktiviteler, arşivleme, şirket ve sorumlu alanları
+- Görsel kanban kart editörü: alanları karta sürükle, öncelik / avatar / etiket / görsel / şerit / alt bilgi bileşenleri,
+  gruplama, renk alanı, hızlı oluşturma ve sürükleme seçenekleri
 - Özelleştirmeler listesi: yapılan her değişiklik kayıtlı, tek tıkla geri alınır
     """,
     'author': 'Atlas',

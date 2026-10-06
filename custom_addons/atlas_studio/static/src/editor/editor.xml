@@ -6,6 +6,7 @@
                 <t t-if="this.props.tur === 'form'" t-call="atlas_studio.FormTuval"/>
                 <t t-elif="this.props.tur === 'list'" t-call="atlas_studio.ListeTuval"/>
                 <t t-elif="this.props.tur === 'search'" t-call="atlas_studio.AramaTuval"/>
+                <t t-elif="this.props.tur === 'kanban' and this.kart" t-call="atlas_studio.KanbanTuval"/>
                 <t t-else="" t-call="atlas_studio.GenelTuval"/>
             </div>
             <div class="o_as_panel border-start bg-white d-flex flex-column">
@@ -252,7 +253,79 @@
         </div>
     </t>
 
-    <!-- ============================================================ GENEL (kanban, takvim, pivot…) -->
+
+    <!-- ============================================================ KANBAN -->
+    <t t-name="atlas_studio.KanbanTuval">
+        <t t-set="kart" t-value="this.kart"/>
+        <div class="o_as_kanban d-flex gap-3">
+            <t t-foreach="[0, 1]" t-as="kolon" t-key="kolon">
+                <div class="o_as_kanban_kolon" t-att-class="{'o_as_kanban_soluk': kolon === 1}">
+                    <div class="o_as_kanban_baslik d-flex align-items-center">
+                        <span class="fw-bold flex-grow-1" t-out="this.kok.attrs.default_group_by ? (kolon === 0 ? this.kanbanGrupAdi(this.kanbanOrnekleri[0]) : 'Diğer grup') : (kolon === 0 ? 'Kayıtlar' : '')"/>
+                        <i t-if="this.kok.attrs.quick_create !== 'false' and this.kok.attrs.quick_create !== '0'" class="oi text-muted" data-icon="add"/>
+                    </div>
+                    <t t-foreach="kolon === 0 ? this.kanbanOrnekleri : this.kanbanOrnekleri.slice(0, 1)" t-as="k" t-key="k_index">
+                        <div t-att-class="this.sinif(kart, 'o_as_kanban_kart ' + (kart.attrs.class or ''))"
+                             t-on-click="(ev) => this.sec(kart, ev)" t-on-dragover="(ev) => this.uzerinde(kart, ev)" t-on-drop="(ev) => this.birak(ev)">
+                            <t t-foreach="kart.children" t-as="c" t-key="c.anahtar">
+                                <t t-call="atlas_studio.KanbanDugum" d="c" k="k"/>
+                            </t>
+                            <div t-if="!kart.children.length" class="o_as_bos">Alanı karta sürükleyin</div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+        <p class="text-muted small mt-3">
+            Alanları ve bileşenleri karta sürükleyin; bir öğeyi seçip sağ panelden biçimini değiştirin. Kanban seçenekleri
+            (gruplama, renk, hızlı oluşturma) <b>Görüntüle</b> sekmesindedir.
+        </p>
+    </t>
+
+    <t t-name="atlas_studio.KanbanDugum">
+        <t t-if="this.gizli(d) or ['templates', 'progressbar'].includes(d.tag)"/>
+        <div t-elif="d.tag === 'widget' and d.attrs.name === 'web_ribbon'" t-att-class="this.sinif(d, 'o_as_serit')"
+             draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-click="(ev) => this.sec(d, ev)">
+            <span t-out="d.attrs.title or d.attrs.text or 'Şerit'"/>
+        </div>
+        <span t-elif="d.tag === 'field'" t-att-class="this.sinif(d, 'o_as_kfield ' + (d.attrs.class or ''))" t-att-title="this.etiket(d)"
+              draggable="true" t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)"
+              t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(d, ev)">
+            <t t-set="f" t-value="this.alan(d.attrs.name)"/>
+            <t t-if="d.attrs.widget === 'priority'"><i class="oi text-warning" data-icon="star"/><i class="oi text-muted" data-icon="star"/></t>
+            <t t-elif="(d.attrs.widget or '').includes('avatar')">
+                <span class="o_as_avatar" t-out="(this.kanbanDeger(k, d) or '?').slice(0, 1)"/>
+                <span t-if="!(d.attrs.widget or '').includes('user')" class="ms-1" t-out="this.kanbanDeger(k, d)"/>
+            </t>
+            <t t-elif="d.attrs.widget === 'image' or f.type === 'binary'"><span class="o_as_kresim"><i class="oi" data-icon="image"/></span></t>
+            <t t-elif="f.type === 'many2many' or d.attrs.widget === 'many2many_tags'">
+                <span class="badge rounded-pill text-bg-light border me-1" t-out="f.string"/><span class="badge rounded-pill text-bg-light border">…</span>
+            </t>
+            <t t-elif="d.attrs.widget === 'kanban_activity'"><i class="oi text-muted" data-icon="schedule"/></t>
+            <t t-elif="d.attrs.widget === 'properties' or f.type === 'properties'"><span class="text-muted small"><i class="oi me-1" data-icon="widgets"/><t t-out="f.string"/></span></t>
+            <t t-elif="f.type === 'boolean'"><i class="oi" data-icon="check_box" t-att-class="{'text-muted': !k[d.attrs.name]}"/></t>
+            <t t-else="" t-out="this.kanbanDeger(k, d)"/>
+        </span>
+        <div t-elif="d.tag === 'footer'" t-att-class="this.sinif(d, 'o_as_kfooter d-flex align-items-center gap-2 ' + (d.attrs.class or ''))"
+             t-on-click="(ev) => this.sec(d, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)" t-on-drop="(ev) => this.birak(ev)">
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.KanbanDugum" d="c" k="k"/></t>
+            <span t-if="!d.children.length" class="text-muted small">Alt bilgi</span>
+        </div>
+        <t t-elif="d.tag === 't'">
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.KanbanDugum" d="c" k="k"/></t>
+        </t>
+        <t t-elif="['a', 'img', 'button'].includes(d.tag)">
+            <span t-att-class="this.sinif(d, 'o_as_kdiger text-muted small')" t-on-click="(ev) => this.sec(d, ev)" t-out="d.text or d.tag"/>
+        </t>
+        <div t-else="" t-att-class="this.sinif(d, 'o_as_kkap ' + (d.attrs.class or ''))" draggable="true"
+             t-on-dragstart="(ev) => this.surukleBasla({kaynak: d}, ev)" t-on-dragover="(ev) => this.uzerinde(d, ev)"
+             t-on-drop="(ev) => this.birak(ev)" t-on-click="(ev) => this.sec(d, ev)">
+            <span t-if="d.text" t-out="d.text"/>
+            <t t-foreach="d.children" t-as="c" t-key="c.anahtar"><t t-call="atlas_studio.KanbanDugum" d="c" k="k"/></t>
+        </div>
+    </t>
+
+    <!-- ============================================================ GENEL (takvim, pivot…) -->
     <t t-name="atlas_studio.GenelTuval">
         <div class="o_as_genel">
             <div class="alert alert-info small">
@@ -355,6 +428,41 @@
                 <input type="number" min="1" class="form-control form-control-sm" t-att-value="this.kok.attrs.limit or ''" t-on-change="(ev) => this.nitelik(this.kok, {limit: ev.target.value})"/>
             </div>
         </t>
+        <t t-elif="this.props.tur === 'kanban'">
+            <div class="o_as_baslik">Kanban</div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Varsayılan gruplama</label>
+                <select class="form-select form-select-sm o_as_kanban_grup" t-on-change="(ev) => this.nitelik(this.kok, {default_group_by: ev.target.value})">
+                    <option value="">—</option>
+                    <t t-foreach="this.gruplanabilirAlanlar" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-att-selected="this.kok.attrs.default_group_by === a[0]" t-out="a[1]"/></t>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Renk alanı (kart kenarı)</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(this.kok, {highlight_color: ev.target.value})">
+                    <option value="">—</option>
+                    <t t-foreach="this.tamsayiAlanlar" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-att-selected="this.kok.attrs.highlight_color === a[0]" t-out="a[1]"/></t>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label small mb-1">Varsayılan sıralama</label>
+                <div class="d-flex gap-1">
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.siralamaYaz(ev.target.value, this.siralama.yon)">
+                        <option value="">—</option>
+                        <t t-foreach="this.siralanabilirAlanlar" t-as="a" t-key="a[0]"><option t-att-value="a[0]" t-att-selected="this.siralama.alan === a[0]" t-out="a[1]"/></t>
+                    </select>
+                    <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.siralamaYaz(this.siralama.alan, ev.target.value)">
+                        <option value="asc" t-att-selected="this.siralama.yon === 'asc'">Artan</option>
+                        <option value="desc" t-att-selected="this.siralama.yon === 'desc'">Azalan</option>
+                    </select>
+                </div>
+            </div>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('quick_create')" t-on-change="(ev) => this.nitelik(this.kok, {quick_create: ev.target.checked ? '' : 'false'})"/> Hızlı oluşturma</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('records_draggable')" t-on-change="(ev) => this.nitelik(this.kok, {records_draggable: ev.target.checked ? '' : 'false'})"/> Kartlar sürüklenebilir</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('group_create')" t-on-change="(ev) => this.nitelik(this.kok, {group_create: ev.target.checked ? '' : 'false'})"/> Sütun eklenebilir</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('create')" t-on-change="(ev) => this.kokSecenekYaz('create', ev)"/> Oluşturmaya izin ver</label>
+            <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.kokSecenek('delete')" t-on-change="(ev) => this.kokSecenekYaz('delete', ev)"/> Silmeye izin ver</label>
+        </t>
         <t t-elif="this.props.tur !== 'search'">
             <div class="o_as_baslik">Görünüm Özellikleri</div>
             <t t-foreach="this.kokNitelikleri" t-as="n" t-key="n[0]">
@@ -440,6 +548,24 @@
             <div class="mb-2" t-if="liste and d.ust === this.kok">
                 <label class="form-label small mb-1">Genişlik</label>
                 <input class="form-control form-control-sm" placeholder="ör. 120px" t-att-value="d.attrs.width or ''" t-on-change="(ev) => this.metinNitelik(d, 'width', ev)"/>
+            </div>
+        </t>
+
+        <!-- kanban biçimi -->
+        <t t-if="this.props.tur === 'kanban' and d.tag !== 't'">
+            <div class="o_as_baslik mt-3">Kart Biçimi</div>
+            <t t-foreach="[['fw-bold', 'Kalın'], ['fs-5', 'Büyük'], ['text-muted', 'Soluk'], ['text-truncate', 'Taşanı kes'], ['ms-auto', 'Sağa yasla']]" t-as="b" t-key="b[0]">
+                <label class="o_as_secenek"><input type="checkbox" class="form-check-input" t-att-checked="this.sinifVar(d, b[0])" t-on-change="(ev) => this.sinifDegistir(d, b[0], ev)"/> <t t-out="b[1]"/></label>
+            </t>
+            <div class="mb-2" t-if="d.tag === 'widget' and d.attrs.name === 'web_ribbon'">
+                <label class="form-label small mb-1">Şerit metni</label>
+                <input class="form-control form-control-sm" t-att-value="d.attrs.title or ''" t-on-change="(ev) => this.metinNitelik(d, 'title', ev)"/>
+                <label class="form-label small mb-1 mt-2">Renk</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.nitelik(d, {bg_color: ev.target.value})">
+                    <t t-foreach="[['text-bg-danger', 'Kırmızı'], ['text-bg-success', 'Yeşil'], ['text-bg-warning', 'Sarı'], ['text-bg-info', 'Mavi'], ['text-bg-secondary', 'Gri']]" t-as="r" t-key="r[0]">
+                        <option t-att-value="r[0]" t-att-selected="d.attrs.bg_color === r[0]" t-out="r[1]"/>
+                    </t>
+                </select>
             </div>
         </t>
 

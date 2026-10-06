@@ -136,6 +136,32 @@ except UserError:
     son = False
 ok(not son, "son görünüm devre dışı bırakılamaz")
 
+# kanban kartı (görsel kanban editörünün kullandığı işlemler; arayüz her seferinde tek işlem gönderir)
+dk = S.gorunum_getir(X, 'kanban', eylem.id)
+
+
+def kart_ve_kok():
+    kk = etree.fromstring(S.gorunum_getir(X, 'kanban', eylem.id)['arch'])
+    return kk, kk.xpath("//t[@t-name='card']")[0]
+
+
+kk, kart = kart_ve_kok()
+S.islem_uygula(dk['view_id'], {'islem': 'ekle', 'hedef_yol': S._yol(kk, kart.xpath('footer')[0]), 'konum': 'inside',
+                               'dugum': {'tag': 'field', 'attrs': {'name': 'x_studio_value', 'class': 'ms-auto'}}})
+S.islem_uygula(dk['view_id'], {'islem': 'nitelik', 'hedef_yol': [], 'nitelikler': {'default_group_by': 'x_studio_stage_id', 'highlight_color': 'x_studio_sequence'}})
+kk, kart = kart_ve_kok()
+S.islem_uygula(dk['view_id'], {'islem': 'ekle', 'hedef_yol': S._yol(kk, kart[0]), 'konum': 'before',
+                               'dugum': {'tag': 'widget', 'attrs': {'name': 'web_ribbon', 'title': 'Arşiv', 'invisible': 'x_active'}}})
+kk, kart = kart_ve_kok()
+S.islem_uygula(dk['view_id'], {'islem': 'nitelik', 'hedef_yol': S._yol(kk, kart.xpath("field[@name='x_name']")[0]), 'nitelikler': {'class': 'fw-bold fs-5'}})
+ka = etree.fromstring(env[X].get_view(dk['view_id'], 'kanban')['arch'])
+ok(ka.get('default_group_by') == 'x_studio_stage_id' and ka.get('highlight_color') == 'x_studio_sequence'
+   and ka.xpath("//t[@t-name='card']/footer/field[@name='x_studio_value']")
+   and ka.xpath("//t[@t-name='card']/*[1][@name='web_ribbon']") and ka.xpath("//t[@t-name='card']/field[@name='x_name'][@class='fw-bold fs-5']"),
+   "kanban kartı: alt bilgiye alan, şerit, alan biçimi, gruplama ve renk alanı")
+env[X].get_views([(dk['view_id'], 'kanban')])
+S.sifirla(dk['view_id'])
+
 # XML düzenleyici / sıfırla
 dk = S.gorunum_getir(X, 'kanban', eylem.id)
 S.xml_kaydet(dk['view_id'], "<data><xpath expr=\"//field[@name='x_name']\" position=\"after\"><field name=\"x_studio_date\"/></xpath></data>")

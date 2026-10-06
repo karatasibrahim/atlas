@@ -92,6 +92,10 @@ export class AtlasStudioEditor extends Component {
         if (!this.state.secili && this.state.sekme === "ozellikler") {
             this.state.sekme = "ekle";
         }
+        if (durum.tur === "kanban" && this.kart) {
+            const alanlar = [...new Set(this.altDugumler(this.kart).filter((d) => d.tag === "field").map((d) => d.attrs.name))];
+            this.state.ornekler = await this.orm.call("atlas.studio", "ornek_kayitlar", [this.model, alanlar, 3]);
+        }
         if (durum.tur === "list") {
             const alanlar = this.kok.children.filter((c) => c.tag === "field").map((c) => c.attrs.name);
             this.state.ornekler = await this.orm.call("atlas.studio", "ornek_kayitlar", [this.model, alanlar, 4]);
@@ -189,7 +193,8 @@ export class AtlasStudioEditor extends Component {
         }
         // koşullu görünen uyarı kutuları ve şeritler tuvali kalabalıklaştırmasın (Görünmez öğeleri göster ile açılır)
         const sinif = d.attrs.class || "";
-        return Boolean(d.attrs.invisible) && ((d.tag === "div" && sinif.includes("alert")) || (d.tag === "widget" && d.attrs.name === "web_ribbon"));
+        return Boolean(d.attrs.invisible) && ((d.tag === "div" && sinif.includes("alert")) ||
+            (d.tag === "widget" && d.attrs.name === "web_ribbon" && this.props.tur !== "kanban"));
     }
 
     istatEtiket(c) {
@@ -504,7 +509,7 @@ export class AtlasStudioEditor extends Component {
         ev.preventDefault();
         ev.stopPropagation();
         let konum;
-        const bosKapsayici = KAPSAYICILAR.includes(d.tag) && !d.children.length;
+        const bosKapsayici = (KAPSAYICILAR.includes(d.tag) && !d.children.length) || d === this.kart;
         if (bosKapsayici || (["page", "sheet"].includes(d.tag))) {
             konum = "inside";
         } else {
@@ -531,6 +536,9 @@ export class AtlasStudioEditor extends Component {
     /** Tıklayarak eklemede varsayılan konum */
     varsayilanHedef() {
         const kok = this.kok;
+        if (this.props.tur === "kanban" && this.kart) {
+            return { anahtar: this.kart.anahtar, konum: "inside" };
+        }
         if (this.props.tur === "form") {
             const sheet = [...this.state.agac.harita.values()].find((d) => d.tag === "sheet");
             const grup = [...this.state.agac.harita.values()].find(
@@ -592,8 +600,12 @@ export class AtlasStudioEditor extends Component {
     alanDugumuEkle(attrs, hedef) {
         const d = this.dugum(hedef.anahtar);
         const ek = { ...attrs };
-        if (this.props.tur === "list" && this.alan(attrs.name).type === "many2many") {
+        const f = this.alan(attrs.name);
+        if (["list", "kanban"].includes(this.props.tur) && f.type === "many2many") {
             ek.widget = ek.widget || "many2many_tags";
+        }
+        if (this.props.tur === "kanban" && f.type === "many2one" && f.relation === "res.users") {
+            ek.widget = ek.widget || "many2one_avatar_user";
         }
         if (this.props.tur === "form" && this.alan(attrs.name).type === "one2many" && !ek.widget) {
             // gömülü liste sunucunun varsayılan alt görünümüyle açılır
@@ -787,7 +799,8 @@ export class AtlasStudioEditor extends Component {
     }
 
     get mevcutAlanlar() {
-        const kullanilan = new Set([...this.state.agac.harita.values()].filter((d) => d.tag === "field" && this.ustKok(d)).map((d) => d.attrs.name));
+        const kaynak = this.props.tur === "kanban" && this.kart ? this.altDugumler(this.kart) : [...this.state.agac.harita.values()];
+        const kullanilan = new Set(kaynak.filter((d) => d.tag === "field" && this.ustKok(d)).map((d) => d.attrs.name));
         const arama = this.state.arama.toLocaleLowerCase("tr");
         return Object.entries(this.durum.alanlar)
             .filter(([ad, f]) => !kullanilan.has(ad) && !["id", "__last_update"].includes(ad) && !ad.startsWith("message_") && !ad.startsWith("activity_"))
@@ -822,6 +835,16 @@ export class AtlasStudioEditor extends Component {
         if (this.props.tur === "list") {
             return [{ k: "dugme_liste", ad: "Satır Düğmesi", simge: "play_arrow" }];
         }
+        if (this.props.tur === "kanban" && this.kart) {
+            return [
+                { k: "k_oncelik", ad: "Öncelik", simge: "star" },
+                { k: "k_avatar", ad: "Kullanıcı Avatarı", simge: "person" },
+                { k: "k_etiket", ad: "Etiketler", simge: "sell" },
+                { k: "k_resim", ad: "Görsel", simge: "image" },
+                { k: "k_serit", ad: "Şerit", simge: "bookmark" },
+                { k: "k_alt", ad: "Alt Bilgi", simge: "view_list" },
+            ];
+        }
         if (this.props.tur === "search") {
             return [
                 { k: "filtre", ad: "Filtre", simge: "filter_alt" },
@@ -833,6 +856,9 @@ export class AtlasStudioEditor extends Component {
     }
 
     async bilesenTikla(b) {
+        if (b.k.startsWith("k_")) {
+            return this.kanbanBilesen(b.k);
+        }
         if (b.k === "dugme_liste") {
             const eylemler = await this.orm.call("atlas.studio", "sunucu_eylemleri", [this.model]);
             this.state.diyalog = { tur: "dugme", liste: true, etiket: "", hedefTur: eylemler.length ? "eylem" : "metot", eylem: eylemler[0]?.id || false, metot: "", stil: "btn-link", eylemler };
@@ -950,5 +976,124 @@ export class AtlasStudioEditor extends Component {
 
     sutunGenisligi(d) {
         return d.attrs.width ? `width: ${d.attrs.width}` : "";
+    }
+
+    // ------------------------------------------------------------------ kanban
+    get kart() {
+        if (this.props.tur !== "kanban" || !this.state.agac) {
+            return null;
+        }
+        return [...this.state.agac.harita.values()].find((d) => d.tag === "t" && ["card", "kanban-box"].includes(d.attrs["t-name"])) || null;
+    }
+
+    altDugumler(d) {
+        return d.children.flatMap((c) => [c, ...this.altDugumler(c)]);
+    }
+
+    get kanbanOrnekleri() {
+        return this.state.ornekler.length ? this.state.ornekler : [{}, {}];
+    }
+
+    kanbanDeger(k, d) {
+        const f = this.alan(d.attrs.name);
+        const deger = this.ornekDeger(k, d);
+        if (deger) {
+            return deger;
+        }
+        return f.string;
+    }
+
+    kanbanGrupAdi(k) {
+        const g = this.kok.attrs.default_group_by;
+        if (!g) {
+            return "";
+        }
+        const v = k[g];
+        return Array.isArray(v) ? v[1] : v ? this.ornekDeger(k, { attrs: { name: g } }) : this.alan(g).string;
+    }
+
+    sinifVar(d, sinif) {
+        return (d.attrs.class || "").split(/\s+/).includes(sinif);
+    }
+
+    sinifDegistir(d, sinif, ev) {
+        const liste = (d.attrs.class || "").split(/\s+/).filter((c) => c && c !== sinif);
+        if (ev.target.checked) {
+            liste.push(sinif);
+        }
+        return this.nitelik(d, { class: liste.join(" ") });
+    }
+
+    alanBul(kosul) {
+        return Object.entries(this.durum.alanlar).find(([ad, f]) => kosul(ad, f))?.[0];
+    }
+
+    async alanYoksaOlustur(ad, tanim) {
+        if (ad) {
+            return { ad, nitelikler: {} };
+        }
+        const sonuc = await this.orm.call("atlas.studio", "alan_olustur", [this.model, tanim]);
+        const durum = await this.orm.call("atlas.studio", "gorunum_getir", [this.model, this.props.tur, this.props.baglam.eylem.id]);
+        this.state.durum.alanlar = durum.alanlar;
+        return sonuc;
+    }
+
+    kartaEkle(dugum, altBilgiye = false) {
+        const kart = this.kart;
+        if (altBilgiye) {
+            const alt = this.altDugumler(kart).find((d) => d.tag === "footer");
+            if (alt) {
+                return this.uygula({ islem: "ekle", hedef_yol: alt.yol, konum: "inside", dugum });
+            }
+            return this.uygula({ islem: "ekle", hedef_yol: kart.yol, konum: "inside", dugum: { tag: "footer", children: [dugum] } });
+        }
+        if (dugum.basa && kart.children.length) {
+            delete dugum.basa;
+            return this.uygula({ islem: "ekle", hedef_yol: kart.children[0].yol, konum: "before", dugum });
+        }
+        delete dugum.basa;
+        return this.uygula({ islem: "ekle", hedef_yol: kart.yol, konum: "inside", dugum });
+    }
+
+    async kanbanBilesen(k) {
+        try {
+            if (k === "k_oncelik") {
+                const a = await this.alanYoksaOlustur(this.alanBul((ad, f) => f.type === "selection" && /priority|oncelik/.test(ad)),
+                                                      { tur: "priority", etiket: "Öncelik" });
+                return this.kartaEkle({ tag: "field", attrs: { name: a.ad, widget: "priority" } }, true);
+            }
+            if (k === "k_avatar") {
+                const a = await this.alanYoksaOlustur(this.alanBul((ad, f) => f.type === "many2one" && f.relation === "res.users" && !["create_uid", "write_uid"].includes(ad)),
+                                                      { tur: "many2one", etiket: "Sorumlu", iliski: "res.users" });
+                return this.kartaEkle({ tag: "field", attrs: { name: a.ad, widget: "many2one_avatar_user", class: "ms-auto" } }, true);
+            }
+            if (k === "k_etiket") {
+                const a = await this.alanYoksaOlustur(this.alanBul((ad, f) => f.type === "many2many" && /tag|etiket/.test(ad)),
+                                                      { tur: "tags", etiket: "Etiketler" });
+                return this.kartaEkle({ tag: "field", attrs: { name: a.ad, widget: "many2many_tags", ...(a.nitelikler.options ? { options: a.nitelikler.options } : {}) } });
+            }
+            if (k === "k_resim") {
+                const a = await this.alanYoksaOlustur(this.alanBul((ad, f) => f.type === "binary" && /image|resim|gorsel/.test(ad)),
+                                                      { tur: "image", etiket: "Görsel" });
+                return this.kartaEkle({ tag: "field", attrs: { name: a.ad, widget: "image", class: "float-end", options: "{'size': [56, 56]}" }, basa: true });
+            }
+            if (k === "k_serit") {
+                const aktif = ["active", "x_active"].find((a) => a in this.durum.alanlar);
+                return this.kartaEkle({ tag: "widget", attrs: { name: "web_ribbon", title: "Arşiv", bg_color: "text-bg-danger", ...(aktif ? { invisible: aktif } : {}) }, basa: true });
+            }
+            if (k === "k_alt") {
+                if (this.altDugumler(this.kart).some((d) => d.tag === "footer")) {
+                    this.notification.add("Kartta zaten alt bilgi var.", { type: "info" });
+                    return;
+                }
+                return this.uygula({ islem: "ekle", hedef_yol: this.kart.yol, konum: "inside", dugum: { tag: "footer", attrs: { class: "pt-1" } } });
+            }
+        } catch (hata) {
+            this.notification.add(hataMetni(hata), { type: "danger", title: "Studio" });
+        }
+    }
+
+    get tamsayiAlanlar() {
+        return Object.entries(this.durum.alanlar).filter(([, f]) => f.type === "integer").map(([ad, f]) => [ad, f.string]);
     }
 }
