@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_atlas_odeme_talimat_form_ucyol" model="ir.ui.view">
+        <field name="name">atlas.odeme.talimat.form.ucyol</field>
+        <field name="model">atlas.odeme.talimat</field>
+        <field name="inherit_id" ref="atlas_odeme_talimati.view_atlas_odeme_talimat_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids']" position="after">
+                <field name="ucyol_durum" widget="badge" optional="show" decoration-success="ucyol_durum == 'evet'"
+                       decoration-warning="ucyol_durum == 'hayir'" decoration-danger="ucyol_durum == 'istisna'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
