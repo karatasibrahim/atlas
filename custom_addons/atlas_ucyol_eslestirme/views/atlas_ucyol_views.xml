@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_ucyol" model="ir.ui.view">
+        <field name="name">account.move.form.ucyol</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="ucyol_siparisli" invisible="1"/>
+                <field name="ucyol_elle" invisible="1"/>
+                <button name="action_ucyol_serbest" type="object" string="Ödemeye Serbest Bırak"
+                        invisible="move_type not in ('in_invoice', 'in_refund') or ucyol_durum == 'evet' or state == 'cancel'"
+                        groups="account.group_account_manager"/>
+                <button name="action_ucyol_beklet" type="object" string="Ödemeyi Beklet"
+                        invisible="move_type not in ('in_invoice', 'in_refund') or ucyol_durum != 'evet' or state == 'cancel'"
+                        groups="account.group_account_manager"/>
+                <button name="action_ucyol_otomatik" type="object" string="Otomatik Duruma Dön" invisible="not ucyol_elle"
+                        groups="account.group_account_manager"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_reference']" position="after">
+                <field name="ucyol_durum" widget="badge" invisible="move_type not in ('in_invoice', 'in_refund') or not ucyol_siparisli and not ucyol_elle"
+                       decoration-success="ucyol_durum == 'evet'" decoration-warning="ucyol_durum == 'hayir'" decoration-danger="ucyol_durum == 'istisna'"/>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']/list/field[@name='quantity']" position="after">
+                <field name="ucyol_durum" widget="badge" optional="show" string="Eşleştirme"
+                       column_invisible="parent.move_type not in ('in_invoice', 'in_refund')"
+                       decoration-success="ucyol_durum == 'evet'" decoration-warning="ucyol_durum == 'hayir'" decoration-danger="ucyol_durum == 'istisna'"/>
+                <field name="ucyol_aciklama" optional="hide" column_invisible="parent.move_type not in ('in_invoice', 'in_refund')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_in_invoice_bill_tree_ucyol" model="ir.ui.view">
+        <field name="name">account.move.bill.list.ucyol</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="ucyol_durum" widget="badge" optional="show" string="Ödemeye Uygunluk"
+                       decoration-success="ucyol_durum == 'evet'" decoration-warning="ucyol_durum == 'hayir'" decoration-danger="ucyol_durum == 'istisna'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_ucyol" model="ir.ui.view">
+        <field name="name">account.move.filter.ucyol</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='late']" position="after">
+                <separator/>
+                <filter name="ucyol_evet" string="Ödenebilir" domain="[('ucyol_durum', '=', 'evet')]"/>
+                <filter name="ucyol_hayir" string="Teslimat bekleniyor" domain="[('ucyol_durum', '=', 'hayir')]"/>
+                <filter name="ucyol_istisna" string="Eşleştirme istisnası" domain="[('ucyol_durum', '=', 'istisna')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_company_form_ucyol" model="ir.ui.view">
+        <field name="name">res.company.form.ucyol</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="3'lü Eşleştirme" name="ucyol">
+                    <group>
+                        <group>
+                            <field name="ucyol_fiyat_tolerans"/>
+                            <field name="ucyol_miktar_tolerans"/>
+                            <field name="ucyol_odeme_engeli"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
