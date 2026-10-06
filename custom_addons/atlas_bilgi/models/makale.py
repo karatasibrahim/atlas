@@ -287,12 +287,15 @@ class AtlasBilgiMakale(models.Model):
         return True
 
     def action_ac(self):
+        """Makaleyi menüye bağlı pencere eylemiyle açar (üst çubukta Bilgi Bankası uygulaması seçili kalır)."""
         self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window', 'res_model': self._name, 'res_id': self.id, 'name': self.name,
-            'views': [(self.env.ref('atlas_bilgi.view_atlas_bilgi_makale_form').id, 'form')], 'target': 'current',
+        eylem = self.env['ir.actions.act_window']._for_xml_id('atlas_bilgi.action_atlas_bilgi_tumu')
+        eylem.update({
+            'res_id': self.id, 'name': self.name, 'target': 'current', 'domain': [],
+            'views': [(self.env.ref('atlas_bilgi.view_atlas_bilgi_makale_form').id, 'form')],
             'context': {'form_view_initial_mode': 'edit'},
-        }
+        })
+        return eylem
 
     def action_kopyala(self):
         self.ensure_one()

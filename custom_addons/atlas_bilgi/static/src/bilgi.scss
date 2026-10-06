@@ -92,7 +92,7 @@ $ab-vurgu: #714b67;
     .o_ab_icerik { max-width: 900px; margin: 0 auto; width: 100%; padding: 1.5rem 3rem 3rem; }
     &:has(.o_ab_tam_isaret) .o_ab_icerik { max-width: none; }
     .o_ab_baslik { font-size: 2.4rem; font-weight: 700; margin: 0.3rem 0 1rem; .o_field_widget, input { font-size: inherit; font-weight: inherit; width: 100%; border: 0; } }
-    .o_ab_govde { min-height: 300px; font-size: 1rem; .note-editable, .odoo-editor-editable { min-height: 300px; } }
+    .o_ab_govde { display: block; width: 100%; min-height: 300px; font-size: 1rem; .note-editable, .odoo-editor-editable { min-height: 300px; } }
     .o_ab_ozellikler { background: #fafaf9; border: 1px solid #f0efed; border-radius: 0.4rem; padding: 0.6rem 0.8rem; margin-bottom: 1rem; }
 
     // kapak
@@ -154,3 +154,35 @@ $ab-vurgu: #714b67;
     cursor: pointer;
     &:hover { border-color: $ab-vurgu; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
 }
+
+// gömülü bileşenler
+.o_ab_gorunum {
+    border: 1px solid #e7e5e4;
+    border-radius: 0.5rem;
+    margin: 0.8rem 0;
+    background: #fff;
+    overflow: hidden;
+    .o_ab_gorunum_ust { padding: 0.4rem 0.6rem; background: #fafaf9; border-bottom: 1px solid #f0efed; }
+    .o_ab_gorunum_govde { max-height: 460px; overflow: auto; position: relative; }
+    .o_ab_gorunum_govde .o_view_controller { min-height: 120px; }
+    .o_ab_gorunum_govde .o_kanban_renderer { min-height: 200px; }
+}
+.o_ab_alt_sayfalar { border-left: 3px solid #e4dfe3; padding: 0.3rem 0.8rem; margin: 0.6rem 0; }
+.o_ab_alt_sayfa { color: inherit; text-decoration: none; padding: 0.15rem 0; &:hover { text-decoration: underline; } }
+.o_ab_makale_bag { background: #f5f3f4; border-radius: 0.3rem; padding: 0 0.3rem; text-decoration: none; }
+.o_ab_yorum_kap { position: relative; display: inline-block; }
+.o_ab_yorum_isaret {
+    display: inline-flex; align-items: center; gap: 2px; margin: 0 2px; padding: 0 4px; border-radius: 0.6rem;
+    background: #fff3cd; color: #946200; text-decoration: none; font-size: 0.8rem; vertical-align: middle;
+    &.o_ab_yorum_cozuldu { background: #eef0f2; color: #9aa0a6; }
+}
+.o_ab_yorum_panel {
+    position: absolute; z-index: 40; left: 0; top: 1.6rem; width: 340px; display: block;
+    background: #fff; border: 1px solid #dee2e6; border-radius: 0.5rem; padding: 0.7rem; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+    font-size: 0.88rem; white-space: normal; text-align: left;
+}
+.o_ab_yorum_alinti { border-left: 3px solid #f4c84b; padding-left: 0.5rem; color: #57534e; font-style: italic; display: block; }
+.o_ab_gs_liste { max-height: 320px; overflow: auto; border: 1px solid #eee; border-radius: 0.4rem; }
+.o_ab_gs_oge { padding: 0.35rem 0.6rem; color: inherit; text-decoration: none; border-bottom: 1px solid #f3f3f3;
+               &:hover { background: #f7f7f5; } &.o_ab_gs_secili { background: #e4dfe3; font-weight: 600; } }
+.o_ab_kayit_onizleme { max-height: 60vh; overflow: auto; }

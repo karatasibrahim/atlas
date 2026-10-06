@@ -115,6 +115,8 @@
                     <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_oge_kur')"><i class="oi me-2" data-icon="view_list"/>Öğe listesine çevir</a>
                 </t>
                 <a href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_kopyala')"><i class="oi me-2" data-icon="content_copy"/>Kopyasını oluştur</a>
+                <a href="#" class="dropdown-item o_ab_menu_yorumlar" t-on-click.prevent="() => this.yorumlar()"><i class="oi me-2" data-icon="chat_bubble"/>Yorumlar
+                    <span t-if="this.kayit.data.acik_yorum_sayisi" class="badge text-bg-warning ms-1" t-out="this.kayit.data.acik_yorum_sayisi"/></a>
                 <a href="#" class="dropdown-item" t-on-click.prevent="() => this.gecmis()"><i class="oi me-2" data-icon="history"/>Sürüm geçmişi</a>
                 <a t-if="this.yazabilir" href="#" class="dropdown-item" t-on-click.prevent="() => this.calistir('action_sablona_cevir', true)">
                     <i class="oi me-2" data-icon="widgets"/><t t-out="this.kayit.data.sablon_mi ? 'Şablon olmaktan çıkar' : 'Şablon olarak işaretle'"/></a>

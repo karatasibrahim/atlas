@@ -14,6 +14,11 @@ Atlas Bilgi Bankası (Enterprise Knowledge eşleniği)
 - Şablon galerisi (toplantı notu, süreç dokümanı, SSS, proje planı, karar kaydı)
 - Çöp kutusu: 30 gün sonra kalıcı silme; geri yükleme
 - Bağlantıyla herkese açık paylaşım (salt okunur sayfa)
+- Makaleye gömülü görünümler: /Liste görünümü, /Kanban görünümü (herhangi bir menü; canlı, filtreli), listelerin ve
+  kanbanların dişli menüsünden "Bilgi Bankası makalesine ekle"; /Alt sayfalar, /Makale bağlantısı
+- Metin üzerinde yorum: seçili metne yorum dizisi, yanıt, çözüldü / yeniden aç, yorumlar paneli
+- Kayıtlardan bilgi bankası: her formun dişli menüsünde arama, önizleme, kayda bağlama, mesaj olarak ekleme;
+  makalede bağlı kayıtlar
     """,
     'author': 'Atlas',
     'depends': ['mail', 'html_editor'],

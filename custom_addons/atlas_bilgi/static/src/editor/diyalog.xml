@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_bilgi.GorunumSec">
+        <Dialog title="'Görünüm ekle'" size="'md'">
+            <input class="form-control mb-2 o_ab_gs_ara" placeholder="Menü ara… (ör. Satış, Müşteriler)" t-att-value="this.state.arama"
+                   t-on-input="(ev) => this.ara(ev)"/>
+            <div class="o_ab_gs_liste mb-3">
+                <t t-foreach="this.state.sonuclar" t-as="s" t-key="s.eylem_id + '_' + s_index">
+                    <a href="#" class="d-block o_ab_gs_oge" t-att-class="{'o_ab_gs_secili': this.state.secili === s}" t-on-click.prevent="() => this.sec(s)">
+                        <span t-out="s.yol"/> <small class="text-muted" t-out="'(' + s.model + ')'"/>
+                    </a>
+                </t>
+                <div t-if="!this.state.sonuclar.length" class="text-muted small p-2">Sonuç yok.</div>
+            </div>
+            <t t-if="this.state.secili">
+                <div class="row g-2">
+                    <div class="col-8">
+                        <label class="form-label small mb-1">Başlık</label>
+                        <input class="form-control" t-att-value="this.state.ad" t-on-input="(ev) => this.state.ad = ev.target.value"/>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small mb-1">Görünüm</label>
+                        <select class="form-select" t-on-change="(ev) => this.state.tur = ev.target.value">
+                            <t t-foreach="this.state.secili.modlar" t-as="m" t-key="m">
+                                <option t-att-value="m" t-att-selected="this.state.tur === m" t-out="m === 'list' ? 'Liste' : 'Kanban'"/>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+            </t>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_ab_gs_ekle" t-att-disabled="!this.state.secili" t-on-click="() => this.ekle()">Ekle</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Vazgeç</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="atlas_bilgi.MakaleSec">
+        <Dialog title="this.props.baslik" size="'md'">
+            <input class="form-control mb-2" placeholder="Makale ara…" t-att-value="this.state.arama" t-on-input="(ev) => this.ara(ev)"/>
+            <div class="o_ab_gs_liste mb-3">
+                <t t-foreach="this.state.sonuclar" t-as="s" t-key="s.id">
+                    <a href="#" class="d-block o_ab_gs_oge" t-att-class="{'o_ab_gs_secili': this.state.secili === s}" t-on-click.prevent="() => this.state.secili = s">
+                        <span class="me-1" t-out="s.simge or '📄'"/><t t-out="s.ad"/>
+                        <small t-if="s.yol" class="text-muted ms-1" t-out="s.yol"/>
+                    </a>
+                </t>
+            </div>
+            <div t-if="this.props.adGerekli">
+                <label class="form-label small mb-1">Başlık</label>
+                <input class="form-control" t-att-value="this.state.ad" t-on-input="(ev) => this.state.ad = ev.target.value"/>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_ab_ms_tamam" t-att-disabled="!this.state.secili" t-on-click="() => this.tamam()">Tamam</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Vazgeç</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="atlas_bilgi.YorumYaz">
+        <Dialog title="'Yorum ekle'" size="'md'">
+            <blockquote class="o_ab_yorum_alinti mb-2" t-out="this.props.metin"/>
+            <textarea class="form-control o_ab_yorum_metin" rows="3" placeholder="Yorumunuz…" t-att-value="this.state.mesaj"
+                      t-on-input="(ev) => this.state.mesaj = ev.target.value"/>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_ab_yorum_kaydet" t-on-click="() => this.kaydet()">Yorum Ekle</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Vazgeç</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="atlas_bilgi.Yorumlar">
+        <Dialog title="'Yorumlar'" size="'lg'">
+            <label class="o_ab_secenek d-flex gap-2 mb-3"><input type="checkbox" class="form-check-input" t-att-checked="this.state.cozulenler"
+                   t-on-change="(ev) => this.state.cozulenler = ev.target.checked"/> Çözülenleri de göster</label>
+            <t t-foreach="this.gorunen" t-as="y" t-key="y.id">
+                <div class="border rounded p-2 mb-2" t-att-class="{'opacity-50': y.cozuldu}">
+                    <blockquote class="o_ab_yorum_alinti mb-2" t-out="y.metin"/>
+                    <t t-foreach="y.mesajlar" t-as="m" t-key="m.id">
+                        <div class="mb-1"><b t-out="m.yazar"/> <small class="text-muted" t-out="m.tarih.slice(0, 16)"/>: <t t-out="m.govde"/></div>
+                    </t>
+                    <div class="d-flex gap-2 mt-2">
+                        <input class="form-control form-control-sm" placeholder="Yanıtla…" t-att-value="this.state.yanitlar[y.id] or ''"
+                               t-on-input="(ev) => this.state.yanitlar[y.id] = ev.target.value"/>
+                        <button class="btn btn-sm btn-primary" t-on-click="() => this.yanitla(y)">Gönder</button>
+                        <button t-if="!y.cozuldu" class="btn btn-sm btn-light border" t-on-click="() => this.coz(y, true)">Çözüldü</button>
+                        <button t-else="" class="btn btn-sm btn-light border" t-on-click="() => this.coz(y, false)">Yeniden aç</button>
+                    </div>
+                </div>
+            </t>
+            <div t-if="!this.gorunen.length" class="text-muted">Açık yorum yok. Metni seçip araç çubuğundaki yorum düğmesiyle yorum ekleyin.</div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Kapat</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="atlas_bilgi.Kayit">
+        <Dialog title="'Bilgi Bankası'" size="'xl'">
+            <div class="row g-3 o_ab_kayit">
+                <div class="col-lg-4">
+                    <div class="small fw-bold text-uppercase text-muted mb-1">Bu kayda bağlı</div>
+                    <t t-foreach="this.state.bagli" t-as="b" t-key="b.baglanti_id">
+                        <div class="d-flex align-items-center o_ab_gs_oge">
+                            <a href="#" class="flex-grow-1" t-on-click.prevent="() => this.goster(b.id)"><span class="me-1" t-out="b.simge"/><t t-out="b.ad"/></a>
+                            <a href="#" class="text-muted" title="Bağlantıyı kaldır" t-on-click.prevent="() => this.kaldir(b)"><i class="oi" data-icon="close"/></a>
+                        </div>
+                    </t>
+                    <div t-if="!this.state.bagli.length" class="text-muted small mb-2">Henüz bağlı makale yok.</div>
+                    <input class="form-control form-control-sm mt-3 mb-1 o_ab_kayit_ara" placeholder="Makale ara…" t-att-value="this.state.arama"
+                           t-on-input="(ev) => this.ara(ev)"/>
+                    <t t-foreach="this.state.sonuclar" t-as="s" t-key="s.id">
+                        <a href="#" class="d-block o_ab_gs_oge" t-on-click.prevent="() => this.goster(s.id)">
+                            <span class="me-1" t-out="s.simge or '📄'"/><t t-out="s.ad"/>
+                            <small t-if="s.yol" class="d-block text-muted" t-out="s.yol"/>
+                        </a>
+                    </t>
+                </div>
+                <div class="col-lg-8">
+                    <t t-if="this.state.onizleme">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <h4 class="m-0 flex-grow-1"><t t-out="this.state.onizleme.simge"/> <t t-out="this.state.onizleme.ad"/></h4>
+                            <button class="btn btn-sm btn-light border" t-on-click="() => this.ac()"><i class="oi me-1" data-icon="open_in_new"/>Aç</button>
+                            <button t-if="!this.bagliMi" class="btn btn-sm btn-light border" t-on-click="() => this.islem('kayda_bagla', 'Makale kayda bağlandı.')">
+                                <i class="oi me-1" data-icon="link"/>Kayda bağla</button>
+                            <button class="btn btn-sm btn-primary o_ab_kayit_gonder" t-on-click="() => this.islem('kayda_gonder', 'Makale kayda mesaj olarak eklendi.')">
+                                <i class="oi me-1" data-icon="mail"/>Mesaj olarak ekle</button>
+                        </div>
+                        <div class="o_ab_kayit_onizleme border rounded p-3" t-out="this.state.onizleme.govde"/>
+                    </t>
+                    <div t-else="" class="text-muted p-4 text-center">Önizlemek için bir makale seçin.</div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Kapat</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

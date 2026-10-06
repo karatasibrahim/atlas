@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="atlas_bilgi.Gorunum">
+        <div class="o_ab_gorunum">
+            <div class="o_ab_gorunum_ust d-flex align-items-center gap-2">
+                <i class="oi text-muted" t-att-data-icon="this.state.tur === 'kanban' ? 'table_view' : 'view_list'"/>
+                <span class="fw-semibold flex-grow-1 text-truncate" t-out="this.baslik"/>
+                <div t-if="this.state.modlar.length &gt; 1" class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-light" t-att-class="{'active': this.state.tur === 'list'}" title="Liste"
+                            t-on-click="() => this.state.tur = 'list'"><i class="oi" data-icon="view_list"/></button>
+                    <button type="button" class="btn btn-light" t-att-class="{'active': this.state.tur === 'kanban'}" title="Kanban"
+                            t-on-click="() => this.state.tur = 'kanban'"><i class="oi" data-icon="table_view"/></button>
+                </div>
+                <button t-if="this.state.hazir" type="button" class="btn btn-sm btn-light" title="Tam ekran aç" t-on-click="() => this.ac()">
+                    <i class="oi" data-icon="open_in_new"/>
+                </button>
+            </div>
+            <div class="o_ab_gorunum_govde">
+                <div t-if="this.state.hata" class="text-muted p-3">Bu görünüm açılamıyor (eylem silinmiş ya da erişiminiz yok).</div>
+                <View t-elif="this.state.hazir" t-props="this.viewProps" t-key="this.state.tur"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="atlas_bilgi.AltSayfalar">
+        <div class="o_ab_alt_sayfalar">
+            <div class="small text-muted mb-1"><i class="oi me-1" data-icon="account_tree"/>Alt sayfalar</div>
+            <t t-foreach="this.state.liste" t-as="s" t-key="s.id">
+                <a href="#" class="o_ab_alt_sayfa d-block" t-on-click.prevent="() => this.ac(s.id)">
+                    <span class="me-1" t-out="s.simge or '📄'"/><t t-out="s.ad"/>
+                </a>
+            </t>
+            <div t-if="!this.state.liste.length" class="text-muted small">Henüz alt sayfa yok.</div>
+        </div>
+    </t>
+
+    <t t-name="atlas_bilgi.YorumIsaret">
+        <span class="o_ab_yorum_kap">
+            <a href="#" class="o_ab_yorum_isaret" t-att-class="{'o_ab_yorum_cozuldu': this.state.yorum and this.state.yorum.cozuldu}"
+               t-att-title="this.state.yorum ? this.state.yorum.metin : ''" t-on-click="(ev) => this.ackapa(ev)">
+                <i class="oi" data-icon="chat_bubble"/><t t-if="this.adet"><small t-out="this.adet"/></t>
+            </a>
+            <span t-if="this.state.acik and this.state.yorum" class="o_ab_yorum_panel" t-on-click.stop="() => {}">
+                <span class="d-flex align-items-start gap-2 mb-2">
+                    <span class="o_ab_yorum_alinti flex-grow-1" t-out="this.state.yorum.metin"/>
+                    <a href="#" class="small text-muted" t-on-click.prevent="(ev) => this.ackapa(ev)"><i class="oi" data-icon="close"/></a>
+                </span>
+                <t t-foreach="this.state.yorum.mesajlar" t-as="m" t-key="m.id">
+                    <span class="o_ab_yorum_mesaj d-block mb-2">
+                        <b t-out="m.yazar"/> <small class="text-muted" t-out="m.tarih.slice(0, 16)"/>
+                        <span class="d-block" t-out="m.govde"/>
+                    </span>
+                </t>
+                <textarea class="form-control form-control-sm mb-2" rows="2" placeholder="Yanıt yazın…" t-att-value="this.state.yanit"
+                          t-on-input="(ev) => this.state.yanit = ev.target.value"/>
+                <span class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-primary" t-on-click="() => this.yanitla()">Yanıtla</button>
+                    <button t-if="!this.state.yorum.cozuldu" type="button" class="btn btn-sm btn-light border" t-on-click="() => this.coz(true)">
+                        <i class="oi me-1" data-icon="check"/>Çözüldü</button>
+                    <button t-else="" type="button" class="btn btn-sm btn-light border" t-on-click="() => this.coz(false)">Yeniden aç</button>
+                </span>
+            </span>
+        </span>
+    </t>
+</templates>

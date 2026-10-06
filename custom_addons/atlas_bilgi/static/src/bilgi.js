@@ -6,6 +6,7 @@ import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { HistoryDialog } from "@html_editor/components/history_dialog/history_dialog";
 import { getHtmlFieldMetadata, setHtmlFieldMetadata } from "@html_editor/fields/html_field";
+import { AtlasBilgiYorumlar } from "./editor/diyalog";
 
 const MODEL = "atlas.bilgi.makale";
 const widgetProps = { record: t.object(), readonly: t.boolean().optional() };
@@ -313,6 +314,11 @@ export class AtlasBilgiMenu extends Component {
             confirm: () => this.calistir("action_cope_at"),
             cancel: () => {},
         });
+    }
+
+    yorumlar() {
+        this.state.acik = false;
+        this.dialog.add(AtlasBilgiYorumlar, { makaleId: this.kayit.resId });
     }
 
     gecmis() {

@@ -157,6 +157,57 @@ torun_id = torun.id
 M._cron_cop_temizle()
 ok(not alt2.exists() and not M.with_context(active_test=False).browse(torun_id).exists(), "zamanlanmış görev süresi dolanı kalıcı siler")
 
+# ---------------------------------------------------------------- gömülü görünüm, yorum, kayıt bağlantısı
+import json
+from lxml import html as lxml_html
+secenekler = M.with_user(ali).gorunum_secenekleri('Kişi') or M.with_user(ali).gorunum_secenekleri('')
+ok(secenekler and all(s['modlar'] and set(s['modlar']) <= {'list', 'kanban'} for s in secenekler), "gömülebilir menü görünümleri listelenir")
+s0 = secenekler[0]
+belge = M.create({'name': 'Gösterge', 'body': '<p>Özet</p>'})
+belge.with_user(ali).gorunum_ekle(s0['eylem_id'], 'kanban', 'Açık işler', [('id', '>', 0)], {'group_by': ['create_uid']})
+govde = lxml_html.fromstring(belge.body)
+gomulu = govde.xpath("//div[@data-embedded='atlasBilgiGorunum']")
+props = json.loads(gomulu[0].get('data-embedded-props')) if gomulu else {}
+ok(gomulu and props.get('eylem_id') == s0['eylem_id'] and props.get('tur') == 'kanban' and props.get('context', {}).get('group_by') == ['create_uid']
+   and 'Özet' in belge.body, "görünüm makaleye gömüldü (filtre ve gruplama saklı, kaydedince silinmez)")
+ok(M.gorunum_bilgisi(s0['eylem_id'])['model'] == s0['model'], "gömülü görünüm bilgisi")
+belge.kilitli = True
+try:
+    belge.with_user(ali).gorunum_ekle(s0['eylem_id'], 'list', 'x'); kilitli_ekledi = True
+except AccessError:
+    kilitli_ekledi = False
+ok(not kilitli_ekledi, "kilitli makaleye görünüm eklenemez")
+belge.kilitli = False
+
+y = belge.with_user(ali).yorum_olustur('Özet', 'Bu bölüm güncel mi?')
+ok(y['metin'] == 'Özet' and len(y['mesajlar']) == 1 and y['mesajlar'][0]['yazar'] == 'Ali Bilgi', "seçili metne yorum dizisi")
+y2 = M.with_user(ayse).yorum_yanitla(y['id'], 'Evet, güncellendi.')
+ok(len(y2['mesajlar']) == 2 and y2['mesajlar'][1]['yazar'] == 'Ayşe Bilgi', "yoruma yanıt")
+ok(belge.acik_yorum_sayisi == 1, "açık yorum sayısı")
+M.with_user(ayse).yorum_coz(y['id'])
+belge.invalidate_recordset()
+ok(belge.acik_yorum_sayisi == 0 and belge.with_user(ali).yorumlar()[0]['cozuldu'], "yorum çözüldü")
+gizli = M.with_user(ali).create({'name': 'Gizli not', 'ic_yetki': 'none'})
+gy = gizli.with_user(ali).yorum_olustur('x', 'özel')
+try:
+    M.with_user(can).yorum_getir(gy['id']); sizdi = True
+except AccessError:
+    sizdi = False
+ok(not sizdi and not env['atlas.bilgi.yorum'].with_user(can).search_count([('id', '=', gy['id'])]), "erişimi olmayan yorumları göremez")
+
+talep = env['res.partner'].create({'name': 'Kayıt Bağlantısı Testi'})
+belge.with_user(ali).kayda_bagla('res.partner', talep.id)
+ok([m['id'] for m in M.with_user(ali).kayit_makaleleri('res.partner', talep.id)] == [belge.id]
+   and belge.baglanti_listesi()[0]['ad'] == talep.display_name, "makale kayda bağlandı; makalede bağlı kayıtlar")
+belge.kayda_gonder('res.partner', talep.id)
+mesaj = talep.message_ids[:1].body
+ok('Gösterge' in mesaj and 'Özet' in mesaj and '<h4>' in mesaj and 'data-embedded' not in mesaj and 'Açık işler' in mesaj,
+   "makale kayda mesaj olarak eklendi (HTML; gömülü görünüm başlığa çevrildi, yorum işareti yok)")
+ok(M.with_user(ali).kayit_makaleleri('res.partner', talep.id).__len__() == 1, "aynı bağlantı ikinci kez oluşmaz")
+ok(belge.makale_onizleme()['ad'] == 'Gösterge', "makale önizleme")
+M.with_user(ali).baglanti_kaldir(M.with_user(ali).kayit_makaleleri('res.partner', talep.id)[0]['baglanti_id'])
+ok(not M.kayit_makaleleri('res.partner', talep.id), "bağlantı kaldırıldı")
+
 eylem = M.with_user(ali).action_bilgi_ana()
 ok(eylem['res_model'] == 'atlas.bilgi.makale' and eylem['res_id'], "menü eylemi bir makale açar")
 

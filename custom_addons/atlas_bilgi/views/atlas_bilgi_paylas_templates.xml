@@ -17,7 +17,7 @@
                 <div t-if="makale.simge" style="font-size: 3rem;" t-out="makale.simge"/>
                 <h1 t-out="makale.name"/>
                 <div class="text-muted small mb-4">Son güncelleme: <span t-out="makale.son_duzenleme" t-options="{'widget': 'datetime'}"/></div>
-                <div t-out="makale.body"/>
+                <div t-out="makale._disa_govde(herkese_acik=True)"/>
                 <t t-if="alt_makaleler">
                     <hr/>
                     <h5>Alt sayfalar</h5>

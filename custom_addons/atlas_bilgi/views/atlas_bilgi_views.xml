@@ -18,6 +18,7 @@
                 <field name="parent_id" invisible="1"/>
                 <field name="kategori" invisible="1"/>
                 <field name="html_field_history_metadata" invisible="1"/>
+                <field name="acik_yorum_sayisi" invisible="1"/>
                 <div class="o_ab_duzen d-flex">
                     <widget name="atlas_bilgi_kenar"/>
                     <div class="o_ab_ana flex-grow-1 d-flex flex-column">
@@ -60,8 +61,18 @@
                                            context="{'default_makale_id': parent_id}" readonly="not duzenleyebilir"/>
                                     <field name="ozellikler" columns="2" readonly="not duzenleyebilir"/>
                                 </div>
-                                <field name="body" widget="html" class="o_ab_govde" readonly="not duzenleyebilir"
+                                <field name="body" widget="atlas_bilgi_html" class="o_ab_govde" readonly="not duzenleyebilir"
                                        placeholder="Yazmaya başlayın ya da / ile komut seçin…" options="{'resizable': false}"/>
+                                <div class="o_ab_baglantilar mt-4" invisible="not baglanti_ids">
+                                    <h5 class="text-muted"><i class="oi me-1" data-icon="link"/>Bağlı Kayıtlar</h5>
+                                    <field name="baglanti_ids" readonly="1">
+                                        <list create="0" delete="0">
+                                            <field name="kayit_adi"/>
+                                            <field name="res_model" optional="hide"/>
+                                            <button name="action_kayit" type="object" icon="open_in_new" title="Kaydı aç"/>
+                                        </list>
+                                    </field>
+                                </div>
                                 <div class="o_ab_ogeler mt-4" invisible="not oge_ids">
                                     <div class="d-flex align-items-center mb-2">
                                         <h4 class="m-0 flex-grow-1">Öğeler</h4>

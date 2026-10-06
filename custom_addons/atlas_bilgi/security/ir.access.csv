@@ -15,3 +15,9 @@ access_sablon_kategori_user,şablon kategorisi okuma,atlas.bilgi.sablon.kategori
 access_sablon_kategori_system,şablon kategorisi,atlas.bilgi.sablon.kategori,base.group_system,crud,
 access_paylas_user,paylaş sihirbazı,atlas.bilgi.paylas,base.group_user,crud,
 access_tasi_user,taşı sihirbazı,atlas.bilgi.tasi,base.group_user,crud,
+access_yorum_okuma_uye,yorum okuma (üye),atlas.bilgi.yorum,base.group_user,r,"[('makale_id.okuyan_partner_ids', 'in', [user.partner_id.id])]"
+access_yorum_okuma_ic,yorum okuma (iç erişim),atlas.bilgi.yorum,base.group_user,r,"[('makale_id.etkin_yetki', 'in', ['read', 'write']), ('makale_id.engelli_partner_ids', 'not in', [user.partner_id.id])]"
+access_yorum_system,yorum yönetici,atlas.bilgi.yorum,base.group_system,crud,
+access_baglanti_okuma_uye,bağlantı okuma (üye),atlas.bilgi.baglanti,base.group_user,r,"[('makale_id.okuyan_partner_ids', 'in', [user.partner_id.id])]"
+access_baglanti_okuma_ic,bağlantı okuma (iç erişim),atlas.bilgi.baglanti,base.group_user,r,"[('makale_id.etkin_yetki', 'in', ['read', 'write']), ('makale_id.engelli_partner_ids', 'not in', [user.partner_id.id])]"
+access_baglanti_system,bağlantı yönetici,atlas.bilgi.baglanti,base.group_system,crud,
