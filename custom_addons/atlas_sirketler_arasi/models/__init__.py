@@ -1,1 +1,1 @@
-from . import res_company, account_move, sale_order, purchase_order
+from . import res_company, account_move, sale_order, purchase_order, stock_picking

@@ -4,13 +4,12 @@ A = env.company
 B = env['res.company'].create({'name': 'Atlas Grup Lojistik A.Ş.', 'currency_id': A.currency_id.id, 'country_id': A.country_id.id})
 env['account.chart.template'].try_loading(A.chart_template or 'tr', B, install_demo=False)
 env.user.company_ids |= B
-if not env['stock.warehouse'].search_count([('company_id', '=', B.id)]):
-    env['stock.warehouse'].create({'name': 'Lojistik Depo', 'code': 'LJS', 'company_id': B.id})
 urun = env['product.product'].create({'name': 'Grup İçi Hizmet', 'type': 'consu', 'list_price': 100, 'standard_price': 60, 'company_id': False})
 yetkili = env['res.partner'].create({'name': 'Lojistik Satın Alma', 'parent_id': B.partner_id.id, 'type': 'invoice'})
 vergi_a = env['account.tax'].search([('company_id', '=', A.id), ('type_tax_use', '=', 'sale'), ('amount', '=', 20)], limit=1)
-ok(B.chart_template and env['account.journal'].search_count([('company_id', '=', B.id), ('type', '=', 'purchase')])
-   and env['stock.warehouse'].search_count([('company_id', '=', B.id)]), "ikinci grup şirketi: hesap planı, yevmiye, depo")
+ok(B.chart_template and env['account.journal'].search_count([('company_id', '=', B.id), ('type', '=', 'purchase')]),
+   "ikinci grup şirketi: hesap planı, yevmiye")
+ok('sa_fatura' in env['res.config.settings']._fields, "ayarlar Genel Ayarlar > Şirketler bölümünde")
 
 
 def fatura(tur, partner, fiyat=1000, adet=2):
@@ -55,6 +54,8 @@ so.action_confirm()
 po = so.sa_satin_alma_ids
 ok(len(po) == 1 and po.company_id == B and po.partner_id == A.partner_id and po.state == 'purchase' and po.partner_ref == so.name,
    "satış siparişi → karşı şirkette onaylı satın alma siparişi")
+ok(env['stock.warehouse'].search_count([('company_id', '=', B.id)]) == 1, "deposu olmayan karşı şirkete depo otomatik açıldı")
+ok(po.order_line.sa_kaynak_satis_satir_id == so.order_line, "satın alma satırı kaynak satış satırına bağlı")
 ok(po.order_line.product_qty == 5 and abs(po.order_line.price_unit - 108) < 0.001 and po.picking_type_id.company_id == B,
    "miktar, iskontolu fiyat, karşı şirketin giriş operasyonu")
 ok(not po.sa_satis_ids, "oluşan satın alma geri satış doğurmaz")
@@ -71,6 +72,40 @@ ok(len(so2) == 1 and so2.company_id == B and so2.partner_id == A.partner_id and 
 ok(so2.order_line.product_uom_qty == 7 and so2.order_line.price_unit == 95 and so2.warehouse_id.company_id == B, "fiyat korunur, karşı şirket deposu")
 so2.with_company(B).action_confirm()
 ok(not so2.sa_satin_alma_ids, "oluşan satış onaylanınca kaynak şirkette yeniden satın alma oluşmaz")
+
+# ---------------------------------------------------------------- fatura ↔ sipariş satırı bağı (3'lü eşleştirme)
+B.write({'sa_fatura': True, 'sa_fatura_durum': 'onayli'})
+so.with_company(A)._create_invoices()
+fa = so.invoice_ids
+fa.invoice_date = fields.Date.today()
+fa.action_post()
+fb = fa.sa_karsilik_ids
+ok(fb.invoice_line_ids.purchase_line_id == po.order_line and fb.invoice_origin == po.name and po.order_line.qty_invoiced == 5,
+   "satış faturası → karşı şirketin tedarikçi faturası satın alma satırına bağlı, faturalanan miktar güncel")
+so2.with_company(B)._create_invoices()
+fb2 = so2.invoice_ids
+fb2.invoice_date = fields.Date.today()
+fb2.with_company(B).action_post()
+ok(fb2.sa_karsilik_ids.invoice_line_ids.purchase_line_id == po2.order_line and po2.order_line.qty_invoiced == 7,
+   "karşı şirketin satış faturası → kaynak şirketin satın alma satırına bağlı tedarikçi faturası")
+
+# ---------------------------------------------------------------- lot / seri aktarımı
+lotlu = env['product.product'].create({'name': 'Lotlu Ürün', 'type': 'consu', 'is_storable': True, 'tracking': 'lot', 'company_id': False})
+depo_a = env['stock.warehouse'].search([('company_id', '=', A.id)], limit=1)
+lot_a = env['stock.lot'].create({'name': 'LOT-2026-77', 'product_id': lotlu.id, 'company_id': A.id})
+env['stock.quant']._update_available_quantity(lotlu, depo_a.lot_stock_id, 10, lot_id=lot_a)
+B.sa_otomatik_onay = True
+so4 = env['sale.order'].with_company(A).create({'partner_id': B.partner_id.id, 'warehouse_id': depo_a.id,
+                                                'order_line': [(0, 0, {'product_id': lotlu.id, 'product_uom_qty': 4, 'price_unit': 10})]})
+so4.action_confirm()
+teslimat = so4.picking_ids
+teslimat.action_assign()
+teslimat.move_ids.picked = True
+teslimat._action_done()
+alim = so4.sa_satin_alma_ids.picking_ids
+ok(teslimat.state == 'done' and teslimat.location_dest_id == env.ref('stock.stock_location_inter_company'), "teslimat şirketler arası transit lokasyona")
+ok(alim.move_line_ids.lot_id.name == 'LOT-2026-77' and alim.move_line_ids.lot_id.company_id == B and alim.move_line_ids.quantity == 4,
+   "lot numarası karşı şirketin mal kabulüne aktarıldı")
 
 # ---------------------------------------------------------------- oluşturan kullanıcı
 B.sa_kullanici_id = env.ref('base.user_admin')

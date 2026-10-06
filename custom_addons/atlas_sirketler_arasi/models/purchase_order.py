@@ -1,5 +1,4 @@
 from odoo import fields, models
-from odoo.exceptions import UserError
 from odoo.fields import Command
 
 
@@ -22,9 +21,7 @@ class PurchaseOrder(models.Model):
         """Grup şirketinden satın alma → karşı şirkette satış siparişi."""
         self.ensure_one()
         env = hedef._sa_ortam()
-        depo = hedef.sa_depo_id or env['stock.warehouse'].search([('company_id', '=', hedef.id)], limit=1)
-        if not depo:
-            raise UserError(self.env._('Şirketler arası satış siparişi için %s şirketinde depo tanımlı değil.', hedef.name))
+        depo = hedef._sa_depo(env)
         liste = env['product.pricelist'].search([('currency_id', '=', self.currency_id.id),
                                                  ('company_id', 'in', (hedef.id, False))], limit=1)
         if not liste:
@@ -38,6 +35,7 @@ class PurchaseOrder(models.Model):
                 'product_id': s.product_id.id, 'name': s.name, 'product_uom_qty': s.product_qty, 'product_uom_id': s.uom_id.id,
                 'price_unit': s.price_unit,
                 'tax_ids': [Command.set(hedef._sa_vergiler(s.tax_ids, s.product_id, 'sale').ids)],
+                'sa_kaynak_satin_alma_satir_id': s.id,
             }))
         so = env['sale.order'].create({
             'partner_id': self.company_id.partner_id.id,
@@ -57,3 +55,9 @@ class PurchaseOrder(models.Model):
         self.sudo().message_post(body=self.env._('Şirketler arası satış siparişi oluşturuldu: %(sirket)s / %(belge)s',
                                                  sirket=hedef.name, belge=so.name))
         return so
+
+
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    sa_kaynak_satis_satir_id = fields.Many2one('sale.order.line', string='Şirketler Arası Satış Satırı', copy=False, index='btree_not_null')

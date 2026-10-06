@@ -10,11 +10,14 @@ Atlas Şirketler Arası Kurallar (Enterprise account_inter_company_rules / sale_
   iadesi oluşur (ve tersi); taslak ya da onaylı, karşı şirketin vergileri ürün tanımından eşlenir
 - Grup şirketine satış siparişi onaylanınca karşı şirkette satın alma siparişi; satın alma siparişi onaylanınca karşı
   şirkette satış siparişi oluşur; isteğe bağlı otomatik onay ve depo seçimi
-- Kurallar her şirketin kendi kartında (alıcı şirketin ayarı geçerlidir); belgeler birbirine bağlıdır, döngü oluşmaz
+- Faturalar karşı şirketin sipariş satırlarına bağlanır (faturalanan miktar, 3'lü eşleştirme); satır satır izlenebilirlik
+- Teslimat şirketler arası transit lokasyona; gönderilen lot / seri numaraları karşı şirketin mal kabulüne aktarılır
+- Ayarlar: Genel Ayarlar > Şirketler > Şirketler Arası İşlemler (ve şirket kartı); alıcı şirketin ayarı geçerlidir;
+  belgeler birbirine bağlıdır, döngü oluşmaz; deposu olmayan karşı şirkete depo açılır
 - Oluşturan kullanıcı şirket bazında seçilebilir
     """,
     'author': 'Atlas',
-    'depends': ['sale_stock', 'purchase_stock', 'account'],
+    'depends': ['sale_stock', 'purchase_stock', 'account', 'base_setup'],
     'data': [
         'views/atlas_sirketler_arasi_views.xml',
     ],
